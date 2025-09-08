@@ -225,12 +225,17 @@
                         </div>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="index-2.html">
+                        <a class="nav-link" href="{{route('admin.index')}}">
                             <i class="fa fa-home menu-icon"></i>
                             <span class="menu-title">Dashboard</span>
                         </a>
                     </li>
-
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{route('admin.userdetails.index')}}">
+                            <i class="fa fa-home menu-icon"></i>
+                            <span class="menu-title">User Details</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
