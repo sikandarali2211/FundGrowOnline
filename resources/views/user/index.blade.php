@@ -1,5 +1,146 @@
 @extends('layouts.user')
 @section('content')
+    <style>
+        /* Global dark gradient background */
+        body,
+        .content-wrapper,
+        .main-panel,
+        .page-header,
+        footer.footer {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: linear-gradient(145deg, #072d42, #22384e);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            margin-top: 4rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+
+        .page-header h1 {
+            color: var(--white);
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        /* Cards */
+        .card {
+            background: linear-gradient(145deg, #072d42, #22384e);
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+            color: #fff;
+        }
+
+        .card.card-statistics {
+            background: linear-gradient(145deg, #072d42, #22384e);
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+            color: #fff;
+        }
+
+        /* Inner glass effect */
+        .card-body {
+            background: linear-gradient(145deg, #072d42, #22384e);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            color: #e1e1e1;
+        }
+
+        /* Headings */
+        h3.page-title,
+        .card-title {
+            color: #3bd17a;
+            /* green accent */
+            font-weight: 600;
+        }
+
+        /* Statistics items */
+        .statistics-item p {
+            color: #9ec3d8;
+            font-size: 0.9rem;
+        }
+
+        .statistics-item h2 {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        /* Tables */
+        .table {
+            color: #ddd;
+            background: transparent;
+        }
+
+        .table thead th {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f1f1f1;
+        }
+
+        .table tbody tr {
+            transition: background 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* Badges */
+        .badge {
+            border-radius: 30px;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: #3bd17a;
+            border: none;
+        }
+
+        .btn-outline-dark {
+            border-color: #3bd17a;
+            color: #3bd17a;
+        }
+
+        .btn-outline-dark:hover {
+            background: #3bd17a;
+            color: #072d42;
+        }
+
+        /* Footer */
+        .footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 1rem 0;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #ddd;
+        }
+
+        /* Scrollbar styling (optional) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3bd17a;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #072d42;
+        }
+    </style>
+
+
+
     <!-- partial -->
     <div class="main-panel">
         <div class="content-wrapper">
@@ -15,13 +156,16 @@
                             <div class="d-flex flex-column flex-md-row align-items-center justify-content-between">
                                 <div class="statistics-item">
                                     <p>
-                                        <i class="icon-sm fa fa-user mr-2"></i>
-                                        New users
+                                        <i class="icon-sm fa fa-users mr-2"></i>
+                                        Total Referrals
                                     </p>
-                                    <h2>54000</h2>
-                                    <label class="badge badge-outline-success badge-pill">2.7% increase</label>
+                                    <h2>{{ number_format($totalReferrals ?? 0) }}</h2>
+                                    <label class="badge badge-outline-success badge-pill">
+                                        {{ number_format($directReferrals ?? 0) }} direct ·
+                                        {{ number_format($newReferralsToday ?? 0) }} today
+                                    </label>
                                 </div>
-                                <div class="statistics-item">
+                                <!-- <div class="statistics-item">
                                     <p>
                                         <i class="icon-sm fas fa-hourglass-half mr-2"></i>
                                         Avg Time
@@ -31,11 +175,11 @@
                                 </div>
                                 <div class="statistics-item">
                                     <p>
-                                        <i class="icon-sm fas fa-cloud-download-alt mr-2"></i>
-                                        Downloads
+                                        <i class="icon-sm fas fa-chart-line mr-2"></i>
+                                        This Week
                                     </p>
-                                    <h2>3500</h2>
-                                    <label class="badge badge-outline-success badge-pill">12% increase</label>
+                                    <h2>{{ number_format($newReferralsWeek ?? 0) }}</h2>
+                                    <label class="badge badge-outline-info badge-pill">New referrals</label>
                                 </div>
                                 <div class="statistics-item">
                                     <p>
@@ -60,13 +204,13 @@
                                     </p>
                                     <h2>7500</h2>
                                     <label class="badge badge-outline-danger badge-pill">16% decrease</label>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row">
+            <!-- <div class="row">
                 <div class="col-md-6 grid-margin stretch-card">
                     <div class="card">
                         <div class="card-body">
@@ -91,8 +235,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
+            </div> -->
+            <!-- <div class="row">
                 <div class="col-md-4 grid-margin stretch-card">
                     <div class="card">
                         <div class="card-body d-flex flex-column">
@@ -109,72 +253,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4 grid-margin stretch-card">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title">
-                                <i class="far fa-futbol"></i>
-                                Activity
-                            </h4>
-                            <ul class="solid-bullet-list">
-                                <li>
-                                    <h5>4 people shared a post
-                                        <span class="float-right text-muted font-weight-normal small">8:30 AM</span>
-                                    </h5>
-                                    <p class="text-muted">It was an awesome work!</p>
-                                    <div class="image-layers">
-                                        <div class="img-sm profile-image-text bg-warning rounded-circle image-layer-item">M
-                                        </div>
-                                        <img class="img-sm rounded-circle image-layer-item"
-                                            src="{{ asset('assets/dashboard/images/faces/face3.jpg') }}" alt="profile" />
-                                        <img class="img-sm rounded-circle image-layer-item"
-                                            src="{{ asset('assets/dashboard/images/faces/face5.jpg') }}" alt="profile" />
-                                        <img class="img-sm rounded-circle image-layer-item"
-                                            src="{{ asset('assets/dashboard/images/faces/face8.jpg') }}" alt="profile" />
-                                    </div>
-                                </li>
-                                <li>
-                                    <h5>Stella posted in a group
-                                        <span class="float-right text-muted font-weight-normal small">11:40 AM</span>
-                                    </h5>
-                                    <p class="text-muted">The team has done a great job</p>
-                                </li>
-                                <li>
-                                    <h5>Dobrick posted in material
-                                        <span class="float-right text-muted font-weight-normal small">4:30 PM</span>
-                                    </h5>
-                                    <p class="text-muted">Great work. Keep it up!</p>
-                                </li>
-                            </ul>
-                            <div class="border-top pt-3">
-                                <div class="d-flex justify-content-between">
-                                    <button class="btn btn-outline-dark">More</button>
-                                    <button class="btn btn-primary btn-icon-text">
-                                        Add new task
-                                        <i class="btn-icon-append fas fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 grid-margin stretch-card">
-                    <div class="card">
-                        <div class="card-body d-flex flex-column">
-                            <h4 class="card-title">
-                                <i class="fas fa-tachometer-alt"></i>
-                                Daily Sales
-                            </h4>
-                            <p class="card-description">Daily sales for the past one month</p>
-                            <div class="flex-grow-1 d-flex flex-column justify-content-between">
-                                <canvas id="daily-sales-chart" class="mt-3 mb-3 mb-md-0"></canvas>
-                                <div id="daily-sales-chart-legend" class="daily-sales-chart-legend pt-4 border-top"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
+           
+            </div> -->
+            <!-- <div class="row">
                 <div class="col-12 grid-margin">
                     <div class="card">
                         <div class="card-body">
@@ -314,8 +395,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
+            </div> -->
+            <!-- <div class="row">
                 <div class="col-md-8 grid-margin stretch-card">
                     <div class="card">
                         <div class="card-body">
@@ -421,8 +502,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row">
+            </div> -->
+            <!-- <div class="row">
                 <div class="col-md-7 grid-margin stretch-card">
                     <div class="card">
                         <div class="card-body">
@@ -620,19 +701,9 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
         <!-- content-wrapper ends -->
-        <!-- partial:partials/_footer.html -->
-        <footer class="footer">
-            <div class="d-sm-flex justify-content-center justify-content-sm-between">
-                <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Copyright © 2018. All rights
-                    reserved.</span>
-                <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Hand-crafted & made with <i
-                        class="far fa-heart text-danger"></i></span>
-            </div>
-        </footer>
-        <!-- partial -->
     </div>
     <!-- main-panel ends -->
 @endsection

@@ -23,6 +23,7 @@ class User extends Authenticatable
         'referral_code',     // user ka apna unique code
         'referred_by',       // jis user ne refer kiya (users.id)
         'level',             // 👈 NEW: user level
+        'google_id',         // Google OAuth ID
     ];
 
     /** Hidden */

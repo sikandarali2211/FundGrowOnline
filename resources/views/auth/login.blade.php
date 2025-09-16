@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FundGrow-Online Login</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -262,9 +263,9 @@
         <div class="divider">OR</div>
 
         {{-- Social login (enable later if using Socialite) --}}
-        <a href="" class="google-signin-btn">
+        <!-- <a href="{{ url('/auth/google') }}" class="google-signin-btn">
             <img src="https://www.google.com/favicon.ico" class="google-icon" alt="Google"> Sign in with Google
-        </a>
+        </a> -->
 
         <div class="footer-links">
             <a href="{{ route('register') }}" class="footer-link">REGISTER</a>

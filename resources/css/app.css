@@ -1,0 +1,70 @@
+/* Web3 Integration Styles */
+.web3-wallet-component .card {
+    border: 1px solid #e3e6f0;
+    border-radius: 0.35rem;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.web3-wallet-component .card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.web3-wallet-component .btn {
+    border-radius: 0.35rem;
+}
+
+.web3-wallet-component .fas {
+    color: #5a5c69;
+}
+
+/* Web3 Demo Page Styles */
+.web3-demo .card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.web3-demo .card:hover {
+    transform: translateY(-2px);
+}
+
+.web3-demo .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Wallet Status Indicators */
+.wallet-connected {
+    color: #28a745;
+}
+
+.wallet-disconnected {
+    color: #dc3545;
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .web3-wallet-component .card-body {
+        padding: 1rem;
+    }
+    
+    .web3-demo .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}

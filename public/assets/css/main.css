@@ -54,6 +54,20 @@ html {
     line-height: 1.4;
 }
 
+p {
+    font-family: 'Inter', sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600 !important;
+}
+
 /*
  * Remove text-shadow in selection highlight:
  * https://twitter.com/miketaylr/status/12228805301
@@ -1231,18 +1245,18 @@ select {
     background-image: -webkit-linear-gradient(135deg, #072d42 45%, #3bd17a 80%);
     background-image: -ms-linear-gradient(135deg, #072d42 50%, #3bd17a 80%);
 }
-
+/* 
 .cta-section::before,
 .team__item-5 .team__thumb::before {
     background-image: -moz-linear-gradient(135deg, #072d42 40%, #3bd17a 80%);
     background-image: -webkit-linear-gradient(135deg, #072d42 45%, #3bd17a 80%);
     background-image: -ms-linear-gradient(135deg, #072d42 50%, #3bd17a 80%);
-}
+} */
 
 .gradient-2 {
-    background-image: -moz-linear-gradient(135deg, #072d42 40%, #3bd17a 80%);
-    background-image: -webkit-linear-gradient(135deg, #072d42 45%, #3bd17a 80%);
-    background-image: -ms-linear-gradient(135deg, #072d42 50%, #3bd17a 80%);
+    background-image: -moz-linear-gradient(135deg, #072d42 30%, #072d42 70%);
+    background-image: -webkit-linear-gradient(135deg, #072d42 40%, #072d42 60%);
+    background-image: -ms-linear-gradient(135deg, #072d42 45%, #072d42 55%);
 }
 
 
@@ -1658,7 +1672,8 @@ select {
     align-items: center;
     margin: 0 auto;
     max-width: 1200px;
-    padding: 15px 0;
+    padding: 2px 0;
+    height: 60px ;
 }
 
 @media (max-width: 991px) {
@@ -1708,7 +1723,7 @@ select {
 
     .menu li a {
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 8px 15px 5px;
+        padding: 4px 5px 5px;
         display: flex;
         justify-content: space-between;
         text-decoration: none;
@@ -2044,7 +2059,7 @@ body[class*="bg"] .select-bar .list {
 }
 
 .hero-wrapper .hero-thumb {
-    width: calc(100% - 600px);
+    width: 600px;
 }
 
 .hero-wrapper .hero-content-3 {
@@ -3409,6 +3424,9 @@ textarea.form--control {
 }
 
 /*About Section*/
+
+
+
 .about--list li {
     font-weight: 500;
     color: #0d1856;

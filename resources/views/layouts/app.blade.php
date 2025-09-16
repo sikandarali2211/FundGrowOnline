@@ -4,29 +4,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>FundGrow-Online</title>
 
-    <title>Kaniz - Bitcoin & Cryptocurrency ICO Landing Page HTML5 Template</title>
+    <!-- Bootstrap & Fonts -->
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/line-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
+    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" type="image/x-icon">
 
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="assets/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/line-awesome.min.css">
-    <link rel="stylesheet" href="assets/css/magnific-popup.css">
-    <link rel="stylesheet" href="assets/css/animate.css">
-    <link rel="stylesheet" href="assets/css/owl.min.css">
-    <link rel="stylesheet" href="assets/css/odometer.css">
-    <link rel="stylesheet" href="assets/css/nice-select.css">
-    <link rel="stylesheet" href="assets/css/main.css">
+    <style>
+        html,
+        body {
+            overflow-x: hidden;
+            /* Prevent horizontal scroll */
+        }
 
-    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/x-icon">
+        /* Loader Fullscreen */
+        #page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #072d42;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.6s ease;
+        }
+
+        @media (min-width: 992px) {
+            .floating-nav {
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(7, 45, 66, 0.85);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(59, 209, 122, 0.3);
+                border-radius: 50px;
+                height: 80px;
+                width: 95%;
+                max-width: 900px;
+                padding: 0 30px;
+                display: flex;
+                align-items: center;
+                /* 👈 all items vertically center */
+                justify-content: space-between;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+                z-index: 1000;
+                transition: transform 0.3s ease, opacity 0.3s ease;
+            }
+
+            .floating-nav.hidden-nav {
+                transform: translateX(-50%) translateY(-120%);
+                opacity: 0;
+            }
+
+            .navbar-brand img {
+                height: 60px;
+                /* 👈 logo resize to fit height */
+                display: block;
+            }
+
+            .menu {
+                display: flex;
+                align-items: center;
+                gap: 25px;
+                margin: 0 !important;
+                padding: 0;
+                list-style: none;
+            }
+
+            .menu .nav-link {
+                font-size: 15px;
+                font-weight: 600;
+                color: #3bd17a !important;
+                transition: color 0.2s;
+                line-height: normal;
+                /* 👈 remove extra baseline */
+                padding: 0;
+            }
+
+            .menu .nav-link:hover {
+                color: #fff !important;
+            }
+
+            .cmn--btn {
+                background: #3bd17a;
+                color: #072d42;
+                border: none;
+                padding: 8px 18px;
+                font-size: 15px;
+                border-radius: 25px;
+                font-weight: 600;
+                transition: all 0.3s;
+                text-decoration: none;
+                
+            }
+        }
+
+
+        /* Mobile Navbar */
+        @media (max-width: 991px) {
+            .navbar {
+                background: #072d42 !important;
+            }
+
+            .navbar .nav-link {
+                color: #fff !important;
+                font-weight: 500;
+                text-align: center;
+            }
+
+            .navbar .nav-link:hover {
+                color: #3bd17a !important;
+            }
+
+            .cmn--btn {
+                background: #3bd17a;
+                color: #072d42;
+                border-radius: 25px;
+                margin: 5px auto;
+                padding: 6px 16px;
+                display: block;
+                width: 80%;
+                text-align: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
-
-
-    <!-- ==========Preloader Starts Here========== -->
-
-    <div class="overlayer" id="page-loader">
+    <!-- Loader -->
+    <div id="page-loader">
         <div class="candles-loader">
             <span></span>
             <span></span>
@@ -34,72 +148,75 @@
             <span></span>
             <span></span>
         </div>
-        <h4 class="loader-text">FundGrow-Online</h4>
+        <h4 class="loader-text text-white">FundGrow-Online</h4>
     </div>
 
-
-
-    <div class="toTopBtn"><i class="fas fa-angle-up"></i></div>
-    <div class="overlay"></div>
-    <!-- ==========Preloader Ends Here========== -->
-
-
-    <!-- Header Section -->
-    <header class="header-section">
-        <div class="container">
-            <div class="header-area">
-                <div class="logo me-auto">
-                    <a href="/"><img src="assets/images/logo/FundGrow-logo.png" alt="logo"></a>
-                </div>
-                <ul class="menu">
-                    <li>
-                        <a href="/">home</a>
-                    </li>
-                    <li>
-                        <a href="/">About</a>
-                    </li>
-                    <li>
-                        <a href="/">Services</a>
-                    </li>
-                    <li>
-                        <a href="/">Contact</a>
-                    </li>
-                    <li>
-                        <div class="header-buttons d-flex flex-wrap justify-content-center d-md-none">
-                            <a href="{{ route('register') }}" class="cmn--btn btn--white m-3 btn-pill">sign up</a>
-                        </div>
-                    </li>
+    <!-- Desktop Floating Navbar -->
+    <header id="floatingNav" class="floating-nav d-none d-lg-block">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid justify-content-between">
+                <a class="navbar-brand text-white" href="/">
+                    <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="70">
+                </a>
+                <ul class="navbar-nav menu mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
                 </ul>
-                @guest
-                    <div class="header-buttons d-none d-md-flex">
-                        <a href="{{ route('login') }}" class="cmn--btn btn--white btn-pill">sign in</a>
-                        <a href="{{ route('register') }}" class="cmn--btn btn--white btn-pill">sign up</a>
-                    </div>
-                @else
-                    <div class="header-buttons d-none d-md-flex">
+                <div>
+                    @guest
+                        <a href="{{ route('login') }}" class="cmn--btn me-2">Sign In</a>
+                        <a href="{{ route('register') }}" class="cmn--btn">Sign Up</a>
+                    @else
                         <a href="{{ Auth::user()->utype === 'ADM' ? route('admin.index') : route('user.index') }}"
-                            class="cmn--btn btn--white btn-pill"><span>{{ Auth::user()->name }}</span></a>
-                        {{-- Logout Form --}}
+                            class="cmn--btn me-2">{{ Auth::user()->name }}</a>
+                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            @csrf
+                            <button type="submit" class="cmn--btn">Logout</button>
+                        </form>
+                    @endguest
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile Navbar -->
+    <nav class="navbar navbar-expand-lg d-lg-none">
+        <div class="container-fluid">
+            <a class="navbar-brand text-white" href="/">
+                <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="40">
+            </a>
+            <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMenu">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+                </ul>
+                <div class="text-center mt-3">
+                    @guest
+                        <a href="{{ route('login') }}" class="cmn--btn">Sign In</a>
+                        <a href="{{ route('register') }}" class="cmn--btn">Sign Up</a>
+                    @else
+                        <a href="{{ Auth::user()->utype === 'ADM' ? route('admin.index') : route('user.index') }}"
+                            class="cmn--btn">{{ Auth::user()->name }}</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="cmn--btn btn--white btn-pill"
-                                onclick="return confirm('Are you sure you want to logout?')">
-                                Logout
-                            </button>
+                            <button type="submit" class="cmn--btn">Logout</button>
                         </form>
-                    </div>
-                @endguest
-
-                <div class="header-bar d-lg-none ms-3">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+                    @endguest
                 </div>
             </div>
         </div>
-    </header>
-    <!-- Header Section -->
+    </nav>
 
+    <!-- Main Content -->
     @yield('content')
 
     <!-- Footer Section -->
@@ -112,38 +229,38 @@
                     <div class="col-lg-3 col-sm-6">
                         <div class="text-start footer-about">
                             <div class="footer-logo mb-25 ms-0">
-                                <a href="index-10.html#0">
+                                <a href="#">
                                     <img src="assets/images/logo/FundGrow-logo.png" alt="footer">
                                 </a>
                             </div>
                             <ul class="footer__links">
-                                <li>
+                                <!-- <li>
                                     <a href="Mailto:info@yourdomain.com">info@yourdomain.com</a>
                                 </li>
                                 <li>
                                     <h5 class="m-0 fw--semibold">
                                         <a href="Tel:+0015481592491" class="text-white">+001 548 159 2491</a>
                                     </h5>
-                                </li>
+                                </li> -->
                             </ul>
                             <ul class="social-icons-2 mt-3">
                                 <li>
-                                    <a href="index-10.html#0">
+                                    <a href="#">
                                         <i class="fab fa-facebook-f"></i>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">
+                                    <a href="#">
                                         <i class="fab fa-twitter"></i>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">
+                                    <a href="#">
                                         <i class="fab fa-instagram"></i>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">
+                                    <a href="#">
                                         <i class="fab fa-pinterest"></i>
                                     </a>
                                 </li>
@@ -151,50 +268,50 @@
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6">
-                        <div class="text-start footer-widget social-border-color-1">
+                        <!-- <div class="text-start footer-widget social-border-color-1">
                             <h6 class="footer__title text-white">About Company</h6>
                             <ul class="footer__links">
                                 <li>
-                                    <a href="index-10.html#0">Web Design</a>
+                                    <a href="#">Web Design</a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">Development</a>
+                                    <a href="#">Development</a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">Graphic Design</a>
+                                    <a href="#">Graphic Design</a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">Branding</a>
+                                    <a href="#">Branding</a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">Creative Solution</a>
+                                    <a href="#">Creative Solution</a>
                                 </li>
                             </ul>
-                        </div>
+                        </div> -->
                     </div>
                     <div class="col-lg-3 col-sm-6">
                         <div class="text-start footer-widget social-border-color-1">
                             <h6 class="footer__title text-white">Our Resorces </h6>
                             <ul class="footer__links">
                                 <li>
-                                    <a href="index-10.html#0">Documentation</a>
+                                    <a href="#">Home</a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">
-                                        IOS & Android Apps</a>
+                                    <a href="#">
+                                        About Us</a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">
-                                        Privacy Policy</a>
+                                    <a href="#">
+                                        Services</a>
                                 </li>
                                 <li>
-                                    <a href="index-10.html#0">
-                                        Support Forum</a>
+                                    <a href="#">
+                                        Contact Us</a>
                                 </li>
-                                <li>
-                                    <a href="index-10.html#0">
+                                <!-- <li>
+                                    <a href="#">
                                         Terms Conditions</a>
-                                </li>
+                                </li> -->
                             </ul>
                         </div>
                     </div>
@@ -221,29 +338,29 @@
                 <div class="row g-2">
                     <div class="col-lg-6">
                         <div class="copyright text-center text-lg-start">
-                            Copyright &copy; 2024 <a href="javascript:void(0)"
-                                class="text-white fw--semibold text-decoration-none">Kaniz</a> all right resurved.
+                            Copyright &copy; 2025 <a href="javascript:void(0)"
+                                class="text-white fw--semibold text-decoration-none">Fund Grow Online</a> all right resurved.
                         </div>
                     </div>
-                    <div class="col-lg-6">
+                    <!-- <div class="col-lg-6">
                         <ul class="quick-links justify-content-center justify-content-lg-end">
                             <li>
-                                <a href="index-10.html#0">Home</a>
+                                <a href="#">Home</a>
                             </li>
                             <li>
-                                <a href="index-10.html#0">Buy or Sell</a>
+                                <a href="#">Buy or Sell</a>
                             </li>
                             <li>
-                                <a href="index-10.html#0">Privacy Policy</a>
+                                <a href="#">Privacy Policy</a>
                             </li>
                             <li>
-                                <a href="index-10.html#0">Faq</a>
+                                <a href="#">Faq</a>
                             </li>
                             <li>
-                                <a href="index-10.html#0">Contact</a>
+                                <a href="#">Contact</a>
                             </li>
                         </ul>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -251,27 +368,36 @@
     <!-- Footer Section -->
 
 
-    <script src="assets/js/jquery-3.6.0.min.js"></script>
-    <script src="assets/js/bootstrap.min.js"></script>
-    <script src="assets/js/isotope.pkgd.min.js"></script>
-    <script src="assets/js/magnific-popup.min.js"></script>
-    <script src="assets/js/wow.min.js"></script>
-    <script src="assets/js/viewport.jquery.js"></script>
-    <script src="assets/js/odometer.min.js"></script>
-    <script src="assets/js/nice-select.js"></script>
-    <script src="assets/js/owl.min.js"></script>
-    <script src="assets/js/countdown.min.js"></script>
-    <script src="assets/js/main.js"></script>
+    <!-- Scripts -->
+    <script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-        // Hide loader after 3 seconds
+        // Loader hide after 3s
         window.addEventListener("load", () => {
             setTimeout(() => {
-                document.getElementById("page-loader").style.opacity = "0";
-                document.getElementById("page-loader").style.pointerEvents = "none";
-            }, 3000); // 3 sec
+                const loader = document.getElementById("page-loader");
+                loader.style.opacity = "0";
+                loader.style.pointerEvents = "none";
+                setTimeout(() => loader.style.display = "none", 600);
+            }, 3000);
+        });
+
+        // Floating navbar hide on scroll down, show on scroll up
+        document.addEventListener("DOMContentLoaded", function() {
+            const navbar = document.getElementById("floatingNav");
+            let lastScrollY = window.scrollY;
+
+            window.addEventListener("scroll", () => {
+                if (window.scrollY > lastScrollY) {
+                    navbar.classList.add("hidden-nav");
+                } else {
+                    navbar.classList.remove("hidden-nav");
+                }
+                lastScrollY = window.scrollY;
+            });
         });
     </script>
-
 </body>
 
 </html>

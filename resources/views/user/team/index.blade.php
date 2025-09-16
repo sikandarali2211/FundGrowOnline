@@ -1,396 +1,640 @@
 @extends('layouts.user')
 
 @section('content')
-<style>
-    :root {
-        --gold: #f0c24b;
-        --bgDark: #0b1f2a;
-        --line: #1dd1a1;
-        --cardGlass: linear-gradient(145deg, rgba(255, 215, 0, 0.03), rgba(0, 0, 0, 0.95));
-    }
+    <style>
+        :root {
+            --gold: #f0c24b;
+            --bgDark: #0b1f2a;
+            --line: #1dd1a1;
+            --cardGlass: linear-gradient(145deg, rgba(255, 215, 0, .03), rgba(0, 0, 0, .95));
+        }
 
-    .card-dark {
-        border: 0;
-        box-shadow: 0 8px 28px rgba(0, 0, 0, .15)
-    }
+        .card-dark {
+            border: 0;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .15);
+        }
 
-    .head-stat .badge-soft {
-        background: rgba(29, 209, 161, .15);
-        color: #1dd1a1;
-        padding: 2px 8px;
-        border-radius: 999px;
-        font-size: 12px
-    }
+        .head-stat .badge-soft {
+            background: rgba(29, 209, 161, .15);
+            color: #1dd1a1;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+        }
 
-    .progress {
-        background: #0b2030;
-        height: 8px;
-        border-radius: 999px;
-        overflow: hidden
-    }
+        .progress {
+            background: #0b2030;
+            height: 8px;
+            border-radius: 999px;
+            overflow: hidden;
+        }
 
-    .progress>span {
-        display: block;
-        height: 100%;
-        background: #1dd1a1
-    }
+        .progress>span {
+            display: block;
+            height: 100%;
+            background: #1dd1a1;
+        }
 
-    .org-toolbar {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px
-    }
+        .org-toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
 
-    .org-toolbar .btn {
-        background: #0e1f2d;
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, .08);
-        padding: 6px 10px;
-        border-radius: 10px;
-        font-size: 13px
-    }
+        .org-toolbar .btn {
+            background: #0e1f2d;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .08);
+            padding: 6px 10px;
+            border-radius: 10px;
+            font-size: 13px;
+        }
 
-    .org-toolbar .btn:hover {
-        background: #123246
-    }
+        .org-toolbar .btn:hover {
+            background: #123246;
+        }
 
-    .org-toolbar .hint {
-        font-size: 12px;
-        color: #9bb3c7
-    }
+        .org-toolbar .hint {
+            font-size: 12px;
+            color: #9bb3c7;
+        }
 
-    #orgchart {
-        height: 560px;
-        border-radius: 18px;
-        background: var(--cardGlass);
-        border: 1px solid rgba(255, 255, 255, .12);
-        position: relative;
-        overflow: hidden
-    }
+        .orgbox {
+            height: 520px;
+            border-radius: 18px;
+            background: var(--cardGlass);
+            border: 1px solid rgba(255, 255, 255, .12);
+            position: relative;
+            overflow: hidden;
+        }
 
-    .org-node {
-        width: 280px;
-        height: 92px;
-        background: #071724;
-        border: 1px solid rgba(255, 255, 255, .08);
-        border-radius: 16px;
-        display: grid;
-        grid-template-columns: 72px 1fr;
-        gap: 10px;
-        padding: 10px;
-        color: #e8f2ff;
-        box-shadow: 0 10px 22px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .04)
-    }
+        .org-node {
+            width: 280px;
+            height: 92px;
+            background: #071724;
+            border: 1px solid rgba(255, 255, 255, .08);
+            border-radius: 16px;
+            display: grid;
+            grid-template-columns: 72px 1fr;
+            gap: 10px;
+            padding: 10px;
+            color: #e8f2ff;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .04);
+        }
 
-    .org-node.me {
-        height: 110px;
-        border-color: rgba(240, 194, 75, .45);
-        box-shadow: 0 14px 28px rgba(0, 0, 0, .35), 0 0 0 1px rgba(240, 194, 75, .15) inset
-    }
+        .org-node.me {
+            height: 110px;
+            border-color: rgba(240, 194, 75, .45);
+            box-shadow: 0 14px 28px rgba(0, 0, 0, .35), 0 0 0 1px rgba(240, 194, 75, .15) inset;
+        }
 
-    .org-node .avatar {
-        width: 62px;
-        height: 62px;
-        border-radius: 16px;
-        display: grid;
-        place-items: center;
-        font-weight: 800;
-        font-size: 20px;
-        color: #fff;
-        border: 4px solid rgba(255, 255, 255, .10)
-    }
+        .org-node .avatar {
+            width: 62px;
+            height: 62px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            font-size: 20px;
+            color: #fff;
+            border: 4px solid rgba(255, 255, 255, .10);
+        }
 
-    .org-node.me .avatar {
-        width: 74px;
-        height: 74px;
-        border-radius: 18px;
-        font-size: 24px;
-        border-width: 5px
-    }
+        .org-node.me .avatar {
+            width: 74px;
+            height: 74px;
+            border-radius: 18px;
+            font-size: 24px;
+            border-width: 5px;
+        }
 
-    .g-a {
-        background: radial-gradient(70% 70% at 30% 30%, #58d68d, #1e8449)
-    }
+        .g-a {
+            background: radial-gradient(70% 70% at 30% 30%, #58d68d, #1e8449);
+        }
 
-    .g-b {
-        background: radial-gradient(70% 70% at 30% 30%, #ffd37a, #d68910)
-    }
+        .g-b {
+            background: radial-gradient(70% 70% at 30% 30%, #ffd37a, #d68910);
+        }
 
-    .g-c {
-        background: radial-gradient(70% 70% at 30% 30%, #be9cff, #6c3483)
-    }
+        .g-c {
+            background: radial-gradient(70% 70% at 30% 30%, #be9cff, #6c3483);
+        }
 
-    .g-me {
-        background: radial-gradient(70% 70% at 30% 30%, #ff7e6b, #b71f1f)
-    }
+        .g-me {
+            background: radial-gradient(70% 70% at 30% 30%, #ff7e6b, #b71f1f);
+        }
 
-    .org-node .info {
-        display: flex;
-        flex-direction: column;
-        justify-content: center
-    }
+        .org-node .info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
 
-    .org-node .nm {
-        font-weight: 700;
-        font-size: 15px;
-        line-height: 1.15;
-        margin: 0 0 4px;
-        color: #fff
-    }
+        .org-node .nm {
+            font-weight: 700;
+            font-size: 15px;
+            line-height: 1.15;
+            margin: 0 0 4px;
+            color: #fff;
+        }
 
-    .org-node .meta {
-        font-size: 12px;
-        color: #9bb3c7
-    }
+        .org-node .meta {
+            font-size: 12px;
+            color: #9bb3c7;
+        }
 
-    .org-node .tag {
-        display: inline-block;
-        font-size: 11px;
-        padding: 2px 8px;
-        border-radius: 999px;
-        background: rgba(29, 209, 161, .15);
-        color: #1dd1a1;
-        margin-top: 6px
-    }
+        .org-node .tag {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(29, 209, 161, .15);
+            color: #1dd1a1;
+            margin-top: 6px;
+        }
 
-    .link {
-        stroke: var(--line) !important;
-        stroke-width: 1.5px !important;
-        opacity: .85
-    }
-</style>
+        .status-pill {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            z-index: 5;
+            font: 12px/1.2 system-ui;
+            background: #0e1f2d;
+            color: #bfe8ff;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 999px;
+            padding: 6px 10px;
+        }
 
-@php
-// --- Safe defaults ---
-$level1 = $level1 ?? collect();
-$level2 = $level2 ?? collect();
+        .level-filter {
+            min-width: 150px;
+        }
 
-// --- Build flat nodes for d3-org-chart ---
-$nodes = [];
-$nodes[] = [
-'id' => (int) $me->id,
-'parentId' => null,
-'name' => (string) $me->name,
-'code' => (string) $me->referral_code,
-'joined' => optional($me->created_at)->format('d M Y'),
-'type' => 'me',
-'g' => 'g-me',
-];
-$palette = ['g-a','g-b','g-c','g-a','g-b']; $i=0;
+        .level-dropdown {
+            background: #0e1f2d;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
 
-foreach($level1 as $l1){
-$g = $palette[$i % count($palette)];
-$nodes[] = [
-'id' => (int) $l1->id,
-'parentId' => (int) $me->id,
-'name' => (string) $l1->name,
-'code' => (string) $l1->referral_code,
-'joined' => optional($l1->created_at)->format('d M Y'),
-'type' => 'l1',
-'g' => $g,
-];
-$kids = $level2->get($l1->id) ?? collect();
-foreach($kids as $l2){
-$nodes[] = [
-'id' => (int) $l2->id,
-'parentId' => (int) $l1->id,
-'name' => (string) $l2->name,
-'code' => (string) $l2->referral_code,
-'joined' => optional($l2->created_at)->format('d M Y'),
-'type' => 'l2',
-'g' => $g,
-];
-}
-$i++;
-}
-@endphp
+        .level-dropdown:focus {
+            background: #123246;
+            border-color: rgba(29, 209, 161, .5);
+            box-shadow: 0 0 0 2px rgba(29, 209, 161, .2);
+            outline: none;
+        }
 
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-12 col-xxl-10">
-            <div class="card card-dark mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 head-stat">
-                        <div>
-                            <h5 class="mb-1">My Team</h5>
-                            <div class="text-muted small">
-                                Current Level: <span class="badge-soft">Level {{ $me->level }}</span>
+        .level-dropdown option {
+            background: #0e1f2d;
+            color: #fff;
+            padding: 8px;
+        }
+
+        .chart-container {
+            transition: all 0.3s ease;
+        }
+
+        .chart-container.hidden {
+            display: none !important;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Dark Glassy Card */
+        .card-dark {
+            background: linear-gradient(145deg, #072d42, #22384e);
+            border-radius: 16px;
+            border: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+            color: #fff;
+            overflow: hidden;
+        }
+
+        /* Card Heading */
+        .head-stat h5 {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+
+        .head-stat .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        /* Level Badge */
+        .badge-soft {
+            background: rgba(59, 209, 122, 0.15);
+            color: #3bd17a;
+            border-radius: 8px;
+            padding: 3px 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Level Filter Dropdown */
+        .level-dropdown {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            color: #f1f1f1;
+            padding: 6px 12px;
+            min-width: 150px;
+            transition: 0.2s;
+        }
+
+        .level-dropdown:focus {
+            outline: none;
+            border-color: #3bd17a;
+            box-shadow: 0 0 6px rgba(59, 209, 122, 0.4);
+        }
+
+        /* Progress Bar */
+        .progress {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress span {
+            display: block;
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #3bd17a, #29a35c);
+            transition: width 0.4s ease;
+        }
+
+        /* Success & Muted Text */
+        .text-success {
+            color: #3bd17a !important;
+        }
+    </style>
+
+    @php
+        $level1 = $level1 ?? collect();
+        $level2 = $level2 ?? collect();
+
+        /** flat nodes for charts */
+        $nodes = [];
+        $nodes[] = [
+            'id' => (int) $me->id,
+            'parentId' => null,
+            'name' => (string) $me->name,
+            'code' => (string) $me->referral_code,
+            'joined' => optional($me->created_at)->format('d M Y'),
+            'type' => 'me',
+            'g' => 'g-me',
+        ];
+        $palette = ['g-a', 'g-b', 'g-c', 'g-a', 'g-b'];
+        $i = 0;
+        foreach ($level1 as $l1) {
+            $g = $palette[$i % count($palette)];
+            $nodes[] = [
+                'id' => (int) $l1->id,
+                'parentId' => (int) $me->id,
+                'name' => (string) $l1->name,
+                'code' => (string) $l1->referral_code,
+                'joined' => optional($l1->created_at)->format('d M Y'),
+                'type' => 'l1',
+                'g' => $g,
+            ];
+            $kids = $level2->get($l1->id) ?? collect();
+            foreach ($kids as $l2) {
+                $nodes[] = [
+                    'id' => (int) $l2->id,
+                    'parentId' => (int) $l1->id,
+                    'name' => (string) $l2->name,
+                    'code' => (string) $l2->referral_code,
+                    'joined' => optional($l2->created_at)->format('d M Y'),
+                    'type' => 'l2',
+                    'g' => $g,
+                ];
+            }
+            $i++;
+        }
+    @endphp
+    <div class="main-panel">
+        <div class="container py-4" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); margin-top:4rem;">
+            <div class="row justify-content-center">
+                <div class="col-12 col-xxl-10">
+                    {{-- header --}}
+                    <div class="card card-dark mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 head-stat">
+                                <div>
+                                    <h5 class="mb-1">My Team</h5>
+                                    <div class="text-muted small">Current Level: <span class="badge-soft">Level
+                                            {{ $me->level }}</span></div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    {{-- Level Filter Dropdown --}}
+                                    <div class="level-filter">
+                                        <label for="levelFilter" class="form-label small text-muted mb-1">Filter by
+                                            Level:</label>
+                                        <select id="levelFilter" class="form-select level-dropdown">
+                                            <option value="all">All Levels</option>
+                                            <option value="1">Level 1 Only</option>
+                                            <option value="2">Level 2 Only</option>
+                                        </select>
+                                    </div>
+                                    <div style="min-width:260px">
+                                        <div class="d-flex justify-content-between small mb-1">
+                                            <span>Directs:
+                                                {{ $directCount ?? 0 }}/12</span><span>{{ $progress ?? 0 }}%</span>
+                                        </div>
+                                        <div class="progress mb-1"><span style="width:{{ $progress ?? 0 }}%"></span></div>
+                                        <div class="small {{ ($toNext ?? 0) > 0 ? 'text-muted' : 'text-success' }}">
+                                            {{ $progressText ?? '' }}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div style="min-width:260px">
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>Directs: {{ $directCount ?? 0 }}/12</span>
-                                <span>{{ $progress ?? 0 }}%</span>
-                            </div>
-                            <div class="progress mb-1"><span style="width:{{ $progress ?? 0 }}%"></span></div>
-                            @if(($toNext ?? 0)>0)
-                            <div class="small text-muted">Need {{ $toNext }} more directs to reach <b>Level 2</b>.</div>
-                            @else
-                            <div class="small text-success">Congrats! You have unlocked <b>Level 2</b>.</div>
-                            @endif
-                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="card card-dark">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Organization (You → Directs → Their Teams)</h6>
-                </div>
-                <div class="card-body">
-                    <div class="org-toolbar">
-                        <div class="d-flex gap-2">
-                            <button class="btn" id="btnFit">Fit</button>
-                            <button class="btn" id="btnZoomIn">Zoom In</button>
-                            <button class="btn" id="btnZoomOut">Zoom Out</button>
-                            <button class="btn" id="btnExpand">Expand All</button>
-                            <button class="btn" id="btnCollapse">Collapse All</button>
-                            <button class="btn" id="btnCenterMe">Center on Me</button>
+                    {{-- ========== CHART: ALL LEVELS ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="all">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">All Levels</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-all">Fit</button>
+                                    <button class="btn" id="zin-all">Zoom In</button>
+                                    <button class="btn" id="zout-all">Zoom Out</button>
+                                    <button class="btn" id="exp-all">Expand</button>
+                                    <button class="btn" id="col-all">Collapse</button>
+                                    <button class="btn" id="me-all">Center on Me</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="hint">Tip: Scroll/drag to pan, wheel to zoom</div>
+                        <div class="card-body">
+                            <div id="chart-all" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
                     </div>
-                    <div id="orgchart"></div>
+
+                    {{-- ========== CHART: LEVEL 1 (YOU + DIRECTS) ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="1">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 1</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l1">Fit</button>
+                                    <button class="btn" id="zin-l1">Zoom In</button>
+                                    <button class="btn" id="zout-l1">Zoom Out</button>
+                                    <button class="btn" id="exp-l1">Expand</button>
+                                    <button class="btn" id="col-l1">Collapse</button>
+                                    <button class="btn" id="me-l1">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l1" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 2 (YOU + DIRECTS + THEIR DIRECTS) ========== --}}
+                    <div class="card card-dark chart-container" data-level="2">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 2</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l2">Fit</button>
+                                    <button class="btn" id="zin-l2">Zoom In</button>
+                                    <button class="btn" id="zout-l2">Zoom Out</button>
+                                    <button class="btn" id="exp-l2">Expand</button>
+                                    <button class="btn" id="col-l2">Collapse</button>
+                                    <button class="btn" id="me-l2">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l2" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <script type="module">
+        (async () => {
+            // ====== CDN loader ======
+            const D3 = ['https://esm.sh/d3@7', 'https://unpkg.com/d3@7?module'];
+            const ORG = ['https://esm.sh/d3-org-chart@3', 'https://unpkg.com/d3-org-chart@3.2.0?module'];
+            async function tryImport(list) {
+                let e;
+                for (const u of list) {
+                    try {
+                        return await import(u);
+                    } catch (err) {
+                        e = err;
+                    }
+                }
+                throw e;
+            }
 
-{{-- ========= ESM build (no globals needed) ========= --}}
-<!-- ===== DYNAMIC ESM LOADER (replaces your previous script tags) ===== -->
-<script type="module">
-    (async () => {
-        const hostSel = '#orgchart';
-        const host = document.querySelector(hostSel);
+            // All three canvases exist from your layout
+            const boxes = {
+                all: document.getElementById('chart-all'),
+                l1: document.getElementById('chart-l1'),
+                l2: document.getElementById('chart-l2'),
+            };
+            Object.values(boxes).forEach(b => {
+                if (!b) return;
+                if (!b.querySelector('.status-pill')) {
+                    const pill = document.createElement('span');
+                    pill.className = 'status-pill';
+                    pill.textContent = 'Loading…';
+                    b.appendChild(pill);
+                }
+            });
 
-        // Little status pill (optional but handy)
-        const pill = document.createElement('div');
-        pill.style.cssText = 'position:absolute;right:12px;top:12px;z-index:5;font:12px/1.2 system-ui;background:#0e1f2d;color:#bfe8ff;border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:6px 10px';
-        pill.textContent = 'Loading…';
-        host.appendChild(pill);
+            let OrgModule;
+            try {
+                await tryImport(D3);
+                OrgModule = await tryImport(ORG);
+            } catch (e) {
+                Object.values(boxes).forEach(b => b.innerHTML =
+                    '<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">CDN blocked</div>');
+                return;
+            }
+            const Chart = OrgModule.OrgChart || OrgModule.default || (OrgModule.default && OrgModule.default
+                .OrgChart);
+            if (!Chart) {
+                Object.values(boxes).forEach(b => b.innerHTML =
+                    '<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">OrgChart export missing</div>'
+                );
+                return;
+            }
 
-        // Try multiple CDNs for ESM
-        const D3_CANDIDATES = [
-            'https://esm.sh/d3@7', // fast ESM CDN
-            'https://unpkg.com/d3@7?module' // unpkg ESM
-        ];
-        const ORG_CANDIDATES = [
-            'https://esm.sh/d3-org-chart@3', // fast ESM CDN
-            'https://unpkg.com/d3-org-chart@3.2.0?module'
-        ];
+            // ====== Data from PHP ======
+            const RAW = @json($nodes ?? []);
+            const data = (Array.isArray(RAW) ? RAW : []).map(n => ({
+                ...n,
+                id: n?.id != null ? parseInt(n.id, 10) : null,
+                parentId: n?.parentId != null ? parseInt(n.parentId, 10) : null,
+                name: n?.name ?? ''
+            })).filter(n => n && n.id != null);
 
-        async function importFirst(urls, label) {
-            let lastErr;
-            for (const u of urls) {
-                try {
-                    return await import(u);
-                } catch (e) {
-                    lastErr = e;
+            const esc = s => (s == null) ? '' : (s + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g,
+                '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            const initials = name => {
+                const p = (name || '').trim().split(/\s+/);
+                return (((p[0] || '?')[0] || '?') + (p.length > 1 ? (p[p.length - 1][0] || '') : ''))
+                    .toUpperCase();
+            };
+            const nodeHTML = d => {
+                const n = d.data || d,
+                    g = n.g || 'g-a',
+                    me = n.type === 'me';
+                return `<div class="org-node ${me?'me':''}">
+      <div class="avatar ${me?'g-me':g}">${initials(n.name)}</div>
+      <div class="info">
+        <div class="nm">${esc(n.name)}</div>
+        <div class="meta">Code: ${esc(n.code||'-')}</div>
+        ${n.joined ? `<div class="meta">Joined: ${esc(n.joined)}</div>` : ``}
+        ${me ? `<span class="tag">YOU</span>` : ``}
+      </div>
+    </div>`;
+            };
+
+            if (!data.length) {
+                Object.values(boxes).forEach(b => b.innerHTML =
+                    '<div style="height:100%;display:grid;place-items:center;color:#9bb3c7">No team data</div>');
+                return;
+            }
+
+            // ====== Build ordered children map (data order preserve) ======
+            const root = data.find(n => n.parentId == null) || data[0];
+            const childrenMap = new Map(); // parentId -> [childNodeObjects in display order]
+            for (const n of data) {
+                if (n.parentId != null) {
+                    const arr = childrenMap.get(n.parentId) || [];
+                    arr.push(n);
+                    childrenMap.set(n.parentId, arr);
                 }
             }
-            throw new Error(`Failed to load ${label}: ${lastErr?.message||'unknown'}`);
-        }
+            const L1 = childrenMap.get(root.id) || [];
 
-        let d3mod, orgmod;
-        try {
-            d3mod = await importFirst(D3_CANDIDATES, 'd3');
-            orgmod = await importFirst(ORG_CANDIDATES, 'd3-org-chart');
-        } catch (e) {
-            console.error(e);
-            pill.textContent = 'CDN blocked';
-            host.innerHTML = '<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">Libraries could not be loaded (network/CDN blocked).</div>';
-            return;
-        }
+            // ====== Subset makers ======
+            // All levels (no limit)
+            const subsetAll = () => data;
 
-        // Normalize exports
-        const d3 = d3mod.default || d3mod;
-        const OrgChart = orgmod.OrgChart || orgmod.default || (orgmod.default && orgmod.default.OrgChart);
-        if (!OrgChart) {
-            pill.textContent = 'Export mismatch';
-            host.innerHTML = '<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">OrgChart export not found in module.</div>';
-            return;
-        }
+            // Level-1 requirement: exactly first 2 directs (if available) + YOU
+            const subsetLevel1_Min2 = () => {
+                const set = [root];
+                set.push(...L1.slice(0, 2));
+                return set;
+            };
 
-        // ===== Data from PHP =====
-        const RAW = @json($nodes ?? []);
+            // Level-2 requirement: 3 directs (A,B,C) + each 3 kids => 12 nodes + YOU on top
+            const subsetLevel2_3x3 = () => {
+                const set = [root];
+                const top3 = L1.slice(0, 3);
+                set.push(...top3);
+                for (const p of top3) {
+                    const kids = (childrenMap.get(p.id) || []).slice(0, 3);
+                    set.push(...kids);
+                }
+                return set;
+            };
 
-        // Sanitize & cast
-        const data = (Array.isArray(RAW) ? RAW : []).map(n => ({
-            ...n,
-            id: n?.id != null ? parseInt(n.id, 10) : null,
-            parentId: n?.parentId != null ? parseInt(n.parentId, 10) : null,
-            name: n?.name ?? ''
-        })).filter(n => n && n.id != null);
+            // ====== Generic chart initializer ======
+            function initChart(suffix, getSubset) {
+                const hostId = `chart-${suffix}`;
+                const host = document.getElementById(hostId);
+                if (!host) return;
 
-        // Helpers
-        const esc = s => (s == null) ? '' : (s + '')
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-        const initials = name => {
-            const p = (name || '').trim().split(/\s+/);
-            return (((p[0] || '?')[0] || '?') + (p.length > 1 ? (p[p.length - 1][0] || '') : '')).toUpperCase();
-        };
-        const nodeHTML = d => {
-            const n = d.data || d,
-                g = n.g || 'g-a',
-                me = n.type === 'me';
-            return `
-      <div class="org-node ${me?'me':''}">
-        <div class="avatar ${me?'g-me':g}">${initials(n.name)}</div>
-        <div class="info">
-          <div class="nm">${esc(n.name)}</div>
-          <div class="meta">Code: ${esc(n.code||'-')}</div>
-          ${n.joined ? `<div class="meta">Joined: ${esc(n.joined)}</div>` : ``}
-          ${me ? `<span class="tag">YOU</span>` : ``}
-        </div>
-      </div>`;
-        };
+                const pill = host.querySelector('.status-pill');
 
-        if (!data.length) {
-            pill.textContent = 'LIB:OK • NODES:0';
-            host.innerHTML = '<div style="height:100%;display:grid;place-items:center;color:#9bb3c7">No team data yet</div>';
-            return;
-        }
+                const chart = new Chart()
+                    .container('#' + hostId)
+                    .nodeId(d => d.id)
+                    .parentNodeId(d => d.parentId)
+                    .nodeWidth(() => 280)
+                    .nodeHeight(d => (d?.data?.type === 'me' ? 110 : 92))
+                    .childrenMargin(() => 40)
+                    .compact(false)
+                    .nodeContent(nodeHTML);
 
-        // ===== Render
-        try {
-            const chart = new OrgChart()
-                .container(hostSel)
-                .data(data)
-                .nodeId(d => d.id)
-                .parentNodeId(d => d.parentId)
-                .nodeWidth(() => 280)
-                .nodeHeight(d => (d?.data?.type === 'me' ? 110 : 92))
-                .childrenMargin(() => 40)
-                .compact(false)
-                .nodeContent(nodeHTML);
+                const render = () => {
+                    const ds = getSubset();
+                    chart.data(ds).render().fit();
+                    if (pill) pill.textContent = `Nodes: ${ds.length}`;
+                };
 
-            chart.render().fit();
-            pill.textContent = `LIB:OK • NODES:${data.length}`;
+                // Initial render
+                render();
 
-            // Toolbar
-            const $ = id => document.getElementById(id);
-            $('#btnFit')?.addEventListener('click', () => chart.fit());
-            $('#btnZoomIn')?.addEventListener('click', () => chart.zoomIn());
-            $('#btnZoomOut')?.addEventListener('click', () => chart.zoomOut());
-            $('#btnExpand')?.addEventListener('click', () => chart.expandAll());
-            $('#btnCollapse')?.addEventListener('click', () => chart.collapseAll());
-            $('#btnCenterMe')?.addEventListener('click', () => {
-                const me = data.find(x => x.type === 'me') || data[0];
-                if (me) chart.setCentered(me.id).fit();
-            });
-            window.addEventListener('resize', () => chart.fit(), {
-                passive: true
-            });
-        } catch (err) {
-            console.error('Render failed:', err);
-            pill.textContent = 'DATA ERROR';
-            host.innerHTML = '<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">Render error (see console).</div>';
-        }
-    })();
-</script>
+                // Toolbar binds
+                const bind = (id, fn) => document.getElementById(id)?.addEventListener('click', fn);
+                bind(`fit-${suffix}`, () => chart.fit());
+                bind(`zin-${suffix}`, () => chart.zoomIn());
+                bind(`zout-${suffix}`, () => chart.zoomOut());
+                bind(`exp-${suffix}`, () => chart.expandAll());
+                bind(`col-${suffix}`, () => chart.collapseAll());
+                bind(`me-${suffix}`, () => chart.setCentered(root.id).fit());
+                window.addEventListener('resize', () => chart.fit(), {
+                    passive: true
+                });
 
+                return {
+                    render
+                };
+            }
+
+            // ====== Create the three charts with exact requirements ======
+            const chartInstances = {
+                all: initChart('all', subsetAll), // All levels (poora tree)
+                l1: initChart('l1', subsetLevel1_Min2), // Level 1 -> 2 directs only
+                l2: initChart('l2', subsetLevel2_3x3) // Level 2 -> 3 top + 3x kids (12)
+            };
+
+            // ====== Level Filter Functionality ======
+            const levelFilter = document.getElementById('levelFilter');
+            const chartContainers = document.querySelectorAll('.chart-container');
+
+            function filterCharts(selectedLevel) {
+                console.log('Filtering charts for level:', selectedLevel);
+
+                chartContainers.forEach(container => {
+                    const level = container.getAttribute('data-level');
+                    console.log('Processing container with level:', level);
+
+                    if (selectedLevel === 'all') {
+                        // Show all charts
+                        container.classList.remove('hidden');
+                        container.style.display = 'block';
+                        console.log('Showing all charts');
+                    } else if (level === selectedLevel) {
+                        // Show only the selected level
+                        container.classList.remove('hidden');
+                        container.style.display = 'block';
+                        console.log('Showing level:', level);
+                    } else {
+                        // Hide other levels
+                        container.classList.add('hidden');
+                        container.style.display = 'none';
+                        console.log('Hiding level:', level);
+                    }
+                });
+            }
+
+            // Add event listener for level filter
+            if (levelFilter) {
+                levelFilter.addEventListener('change', function() {
+                    console.log('Level filter changed to:', this.value);
+                    filterCharts(this.value);
+                });
+            }
+
+            // Initialize with all levels visible
+            filterCharts('all');
+        })();
+    </script>
 @endsection

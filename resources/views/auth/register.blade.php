@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
     <title>FundGrow-Online — Register</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
 
     <!-- Bootstrap & Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -322,11 +323,10 @@
                 </div>
             </div>
 
-            {{-- Keep your existing Google link; replace "#" with your route if available and you want to forward ref:
-                 href="{{ route('google.redirect', ['ref' => $refParam]) }}" --}}
-            <a href="#" class="google-signin-btn">
+           
+            <!-- <a href="{{ url('/auth/google') }}{{ request('ref') ? '?ref=' . request('ref') : '' }}" class="google-signin-btn">
                 <img src="https://www.google.com/favicon.ico" class="google-icon" alt="Google"> Sign in with Google
-            </a>
+            </a> -->
 
             <button type="submit" class="submit-btn">REGISTER</button>
         </form>

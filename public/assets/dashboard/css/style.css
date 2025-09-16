@@ -8675,14 +8675,16 @@
   --gray-lighter: #e8eff4;
   --gray-lightest: #e6e9ed;
   --black: #000000;
-  --primary: #392C70;
-  --secondary: #DEDEDE;
+  --primary: #072d42; /* Changed to your color */
+  --secondary: #3bd17a; /* Changed to your color */
   --success: #04B76B;
   --info: #0B94F7;
   --warning: #F5A623;
   --danger: #FF5E6D;
   --light: #E9E8EF;
   --dark: #3a3f51;
+}
+
   --breakpoint-xs: 0;
   --breakpoint-sm: 576px;
   --breakpoint-md: 768px;
@@ -13642,7 +13644,7 @@ input[type="button"].btn-block {
   background-color: #fff;
   background-clip: border-box;
   border: 1px solid #e0e0ef;
-  border-radius: 0.375rem;
+  border-radius: 15px;
 }
 
 .card > hr {
@@ -18417,7 +18419,7 @@ input:focus {
 /* Sidebar */
 .sidebar {
   min-height: calc(100vh - 70px);
-  background: #ffffff;
+  background: #072d42;
   font-family: "PTSans", sans-serif;
   font-weight: 400;
   padding: 0;
@@ -18877,7 +18879,7 @@ input:focus {
 }
 
 .navbar.default-layout-navbar .navbar-brand-wrapper {
-  background: #ffffff;
+  background: #072d42;
   transition: width 0.25s ease, background 0.25s ease;
   -webkit-transition: width 0.25s ease, background 0.25s ease;
   -moz-transition: width 0.25s ease, background 0.25s ease;
@@ -18911,7 +18913,7 @@ input:focus {
 .navbar.default-layout-navbar .navbar-brand-wrapper .navbar-brand img {
   width: calc(255px - 100px);
   max-width: 100%;
-  height: 38px;
+  height: 100px;
   margin: auto;
   vertical-align: middle;
 }
@@ -19860,6 +19862,7 @@ html {
 
 .container-scroller {
   overflow: hidden;
+  background-color: #072d42;
 }
 
 pre {
@@ -22544,7 +22547,7 @@ code {
 }
 
 .card.card-statistics {
-  background: linear-gradient(85deg, #392c70, #6a005b);
+  background: linear-gradient(85deg, #3bd17a, #072d42);
   color: #ffffff;
 }
 
