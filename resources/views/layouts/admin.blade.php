@@ -249,6 +249,13 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.wallet.index') }}">
+                        <i class="fa fa-wallet menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Wallet Connect</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.setting.index') }}">
                         <i class="fa fa-cog menu-icon mr-2" style="color: #3bd17a;"></i>
                         <span class="menu-title" style="color: #3bd17a;">Setting</span>
@@ -273,6 +280,10 @@
     <script src="{{ asset('assets/dashboard/js/settings.js') }}"></script>
     <script src="{{ asset('assets/dashboard/js/todolist.js') }}"></script>
 
+    <!-- Ethers.js for Web3 functionality -->
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <!-- Wallet Service -->
+    <script src="{{ asset('js/wallet-service.js') }}"></script>
     <script src="js/dashboard.js"></script>
 
     <script>

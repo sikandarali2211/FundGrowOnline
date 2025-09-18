@@ -18,6 +18,7 @@ use App\Http\Controllers\TransactionController;   // ← NEW
 use App\Http\Controllers\ReferralPlanController;   // ← NEW
 use App\Http\Controllers\PlanSelectionController;   // ← NEW
 use App\Http\Controllers\AdminInvestmentPlanController;   // ← NEW
+use App\Http\Controllers\AdminWalletController;   // ← NEW
 
 Route::view('/', 'index');
 
@@ -109,6 +110,13 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
 
     // User Plan Details
     Route::get('/admin/user-plan/{userId}', [AdminController::class, 'showUserPlan'])->name('admin.user-plan.show');
+
+    // Admin Wallet Routes
+    Route::get('/admin/wallet', [AdminWalletController::class, 'index'])->name('admin.wallet.index');
+    Route::post('/admin/wallet/connect', [AdminWalletController::class, 'connectWallet'])->name('admin.wallet.connect');
+    Route::post('/admin/wallet/balance', [AdminWalletController::class, 'getBalance'])->name('admin.wallet.balance');
+    Route::post('/admin/wallet/send', [AdminWalletController::class, 'sendTransaction'])->name('admin.wallet.send');
+    Route::get('/admin/wallet/transactions', [AdminWalletController::class, 'getTransactionHistory'])->name('admin.wallet.transactions');
     Route::patch('/admin/user-plan/{planId}/status', [AdminController::class, 'updatePlanStatus'])->name('admin.user-plan.update-status');
 
     // Investment Plans Management
