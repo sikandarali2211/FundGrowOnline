@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\AdminUserDetailController;
 use App\Http\Controllers\PlanController;   // ← NEW
 use App\Http\Controllers\TeamController;   // ← NEW
 use App\Http\Controllers\Auth\GoogleController;   // ← NEW
+use App\Http\Controllers\TransactionController;   // ← NEW
 use App\Http\Controllers\ReferralPlanController;   // ← NEW
 use App\Http\Controllers\PlanSelectionController;   // ← NEW
 use App\Http\Controllers\AdminInvestmentPlanController;   // ← NEW
@@ -57,19 +60,35 @@ Route::middleware(['auth'])->prefix('User-dashboard')->name('user.')->group(func
         return view('user.profile.index');
     })->name('profile.index');
 
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.index');
+    Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+
     // NEW: User Settings page
     Route::get('/settings', function () {
         return view('user.settings.index');
     })->name('settings.index');
 
+    // NEW: Wallet page
+    Route::get('/wallet', function () {
+        return view('user.wallet.index');
+    })->name('wallet.index');
+
     // Plan Selection Routes
     Route::get('/plan-selections', [PlanSelectionController::class, 'userSelections'])->name('plan-selections.index');
-    Route::get('/plan-selections/create', function () {
-        return view('user.plan-selections.create');
-    })->name('plan-selections.create');
+    Route::get('/plan-selections/create', [PlanSelectionController::class, 'create'])->name('plan-selections.create');
     Route::post('/plan-selections', [PlanSelectionController::class, 'store'])->name('plan-selections.store');
     Route::get('/plan-selections/success', [PlanSelectionController::class, 'success'])->name('plan-selections.success');
+
+    // Wallet and Transaction Routes
+    Route::post('/wallet/verify-transaction', [TransactionController::class, 'verifyTransaction'])->name('wallet.verify');
+    Route::get('/wallet/transaction-status/{txHash}', [TransactionController::class, 'getTransactionStatus'])->name('wallet.status');
+    Route::get('/wallet/balance/{address}', [TransactionController::class, 'getBSCBalance'])->name('wallet.balance');
+    Route::get('/wallet/transactions', [TransactionController::class, 'getTransactionHistory'])->name('wallet.transactions');
+    Route::post('/wallet/transactions', [TransactionController::class, 'storeTransaction'])->name('wallet.store');
+    Route::patch('/wallet/transactions/{txHash}', [TransactionController::class, 'updateTransactionStatus'])->name('wallet.update');
 });
+
 
 // Main User Dashboard Route
 Route::get('/user', function () {
@@ -88,6 +107,10 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
     // Status update (POST ya PATCH dono chalenge)
     Route::match(['post', 'patch'], '/admin/user-details/{user}/status', [AdminUserDetailController::class, 'updateStatus']);
 
+    // User Plan Details
+    Route::get('/admin/user-plan/{userId}', [AdminController::class, 'showUserPlan'])->name('admin.user-plan.show');
+    Route::patch('/admin/user-plan/{planId}/status', [AdminController::class, 'updatePlanStatus'])->name('admin.user-plan.update-status');
+
     // Investment Plans Management
     Route::get('/admin/investment-plans', [AdminInvestmentPlanController::class, 'index'])->name('admin.investmentplans.index');
     Route::post('/admin/investment-plans/{userInvestment}/status', [AdminInvestmentPlanController::class, 'updateUserInvestmentStatus'])->name('admin.investmentplans.updateStatus');
@@ -97,6 +120,12 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
     Route::get('/admin/plan-selections', [PlanSelectionController::class, 'adminIndex'])->name('admin.plan-selections.index');
     Route::get('/admin/plan-selections/{planSelection}', [PlanSelectionController::class, 'adminShow'])->name('admin.plan-selections.show');
     Route::patch('/admin/plan-selections/{planSelection}/status', [PlanSelectionController::class, 'updateStatus'])->name('admin.plan-selections.update-status');
+
+
+    // Admin Setting
+    Route::get('/admin/setting', [AdminProfileController::class, 'edit'])->name('admin.setting.index');
+    Route::post('/admin/setting', [AdminProfileController::class, 'update'])->name('admin.setting.update');
+
 
     // Debug route for plan selections
     Route::get('/admin/debug-plan-selections', function () {

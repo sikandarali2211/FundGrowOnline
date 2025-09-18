@@ -324,9 +324,9 @@
             </div>
 
            
-            <!-- <a href="{{ url('/auth/google') }}{{ request('ref') ? '?ref=' . request('ref') : '' }}" class="google-signin-btn">
+            <a href="{{ route('google.login') }}{{ request('ref') ? '?ref=' . request('ref') : '' }}" class="google-signin-btn">
                 <img src="https://www.google.com/favicon.ico" class="google-icon" alt="Google"> Sign in with Google
-            </a> -->
+            </a>
 
             <button type="submit" class="submit-btn">REGISTER</button>
         </form>

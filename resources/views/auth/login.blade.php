@@ -262,10 +262,10 @@
 
         <div class="divider">OR</div>
 
-        {{-- Social login (enable later if using Socialite) --}}
-        <!-- <a href="{{ url('/auth/google') }}" class="google-signin-btn">
+        {{-- Google Login --}}
+        <a href="{{ route('google.login') }}" class="google-signin-btn">
             <img src="https://www.google.com/favicon.ico" class="google-icon" alt="Google"> Sign in with Google
-        </a> -->
+        </a>
 
         <div class="footer-links">
             <a href="{{ route('register') }}" class="footer-link">REGISTER</a>

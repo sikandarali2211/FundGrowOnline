@@ -36,10 +36,6 @@ class UserInvestment extends Model
         return $this->belongsTo(InvestmentPlan::class);
     }
 
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
 
     // Status constants
     const STATUS_PENDING = 'pending';

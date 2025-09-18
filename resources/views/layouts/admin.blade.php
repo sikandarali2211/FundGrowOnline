@@ -147,14 +147,18 @@
                 </ul>
 
                 <!-- Profile -->
+                <!-- Profile -->
                 <ul class="navbar-nav navbar-nav-right ml-auto">
                     <li class="nav-item nav-profile dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-                            <img src="{{ asset('assets/dashboard/images/faces/face5.jpg') }}" alt="profile" />
+                            <img src="{{ Auth::user()->profile_picture
+                                ? asset('storage/' . Auth::user()->profile_picture)
+                                : asset('assets/images/default-avatar.png') }}"
+                                alt="profile" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown"
                             aria-labelledby="profileDropdown">
-                            <a class="dropdown-item">
+                            <a class="dropdown-item" href="{{ route('admin.setting.index') }}">
                                 <i style="color: #3bd17a;" class="fas fa-cog text-primary"></i> Settings
                             </a>
                             <div class="dropdown-divider"></div>
@@ -190,13 +194,18 @@
                 <li class="nav-item nav-profile my-3">
                     <div class="nav-link d-flex align-items-center px-3 py-2">
                         <!-- Profile Image -->
-                        <div class="profile-image mr-3">
-                            <img src="{{ asset('assets/dashboard/images/faces/face5.jpg') }}" alt="Profile"
-                                style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #3bd17a;">
+                        <div class="profile-image" style="margin-right: 1rem;">
+                            <img src="{{ Auth::user()->profile_picture
+                                ? asset('storage/' . Auth::user()->profile_picture)
+                                : asset('assets/images/default-avatar.png') }}"
+                                alt="Profile"
+                                style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #3bd17a; object-fit: cover;">
                         </div>
                         <!-- Profile Name -->
-                        <div class="profile-name text-left">
-                            <p style="color: #3bd17a; margin: 0; font-weight: 500;">Welcome, {{ Auth::user()->name }}
+                        <div class="profile-name">
+                            <p class="mb-0"
+                                style="color: #3bd17a; font-weight: 600; font-size: 15px; white-space: normal; word-break: break-word; line-height: 1.3;">
+                                Welcome, {{ Auth::user()->full_name ?? Auth::user()->name }}
                             </p>
                         </div>
                     </div>
@@ -231,11 +240,18 @@
                         <i class="fa fa-clipboard-list menu-icon mr-2" style="color: #3bd17a;"></i>
                         <span class="menu-title" style="color: #3bd17a;">Plan Selections</span>
                         @php
-                            $pendingCount = \App\Models\PlanSelection::where('status', 'pending')->count();
+                        $pendingCount = \App\Models\PlanSelection::where('status', 'pending')->count();
                         @endphp
                         @if ($pendingCount > 0)
-                            <span class="badge badge-warning badge-pill ml-auto">{{ $pendingCount }}</span>
+                        <span class="badge badge-warning badge-pill ml-auto">{{ $pendingCount }}</span>
                         @endif
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.setting.index') }}">
+                        <i class="fa fa-cog menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Setting</span>
                     </a>
                 </li>
             </ul>

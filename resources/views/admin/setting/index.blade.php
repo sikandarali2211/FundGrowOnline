@@ -1,7 +1,7 @@
-@extends('layouts.user')
+@extends('layouts.admin')
 
 @section('content')
-    @php($user = $user ?? auth()->user())
+    @php($admin = $admin ?? auth()->user())
     <div class="main-panel" style="margin-top: 4rem; background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);">
         <div class="container py-5">
             <div class="row justify-content-center">
@@ -9,73 +9,65 @@
                     <div class="card shadow-lg"
                         style="background: rgba(7, 45, 66, 0.85); backdrop-filter: blur(10px); border-radius: 15px; border: 1px solid rgba(59, 209, 122, 0.3);">
                         <div class="card-body">
-                            <h4 class="mb-4 text-center" style="color: #3bd17a;">Update Profile</h4>
+                            <h4 class="mb-4 text-center" style="color: #3bd17a;">Admin Profile</h4>
 
                             @if (session('success'))
                                 <div class="alert alert-success">{{ session('success') }}</div>
                             @endif
 
-                            <form action="{{ route('user.profile.update') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('admin.setting.update') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
 
                                 {{-- Profile Picture --}}
                                 <div class="mb-3 text-center">
-                                    <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('assets/images/default-avatar.png') }}"
+                                    <img src="{{ $admin->profile_picture ? asset('storage/' . $admin->profile_picture) : asset('assets/images/default-avatar.png') }}"
                                         alt="Profile Picture" class="rounded-circle mb-3" width="100" height="100">
 
-                                    <div class="d-flex justify-content-center" style="gap: 0.75rem;">
-                                        <!-- Hidden file input -->
+                                    <div class="d-flex justify-content-center" style="gap: 1rem;">
                                         <input type="file" id="profileInput" name="profile_picture" class="d-none"
                                             onchange="document.getElementById('fileName').innerText = this.files[0].name">
 
-                                        <!-- Upload button -->
                                         <button type="button" class="btn btn-outline-light" style="border-radius: 10px;"
                                             onclick="document.getElementById('profileInput').click()">
                                             Upload Photo
                                         </button>
 
-                                        <!-- Save button -->
                                         <button type="submit" name="action" value="save" class="btn btn-success"
-                                            style="border-radius: 10px;">
-                                            Save
-                                        </button>
+                                            style="border-radius: 10px;">Save</button>
                                     </div>
-
-                                    <!-- File name preview -->
                                     <small id="fileName" class="text-light d-block mt-2"></small>
                                 </div>
 
-
                                 {{-- Full Name --}}
                                 <div class="mb-3">
-                                    <label for="fullName" class="form-label" style="color: #e0e0e0;">Full Name</label>
-                                    <input type="text" class="form-control" id="fullName" name="fullName"
-                                        value="{{ old('fullName', $user->full_name) }}"
-                                        style="background-color: rgba(0, 0, 0, 0.5); color: #e0e0e0; border: 1px solid rgba(59, 209, 122, 0.5); border-radius: 10px;">
+                                    <label class="form-label" style="color: #e0e0e0;">Full Name</label>
+                                    <input type="text" class="form-control" name="fullName"
+                                        value="{{ old('fullName', $admin->full_name) }}"
+                                        style="background-color: rgba(0,0,0,0.5); color: #e0e0e0; border: 1px solid rgba(59,209,122,0.5); border-radius: 10px;">
                                 </div>
 
                                 {{-- Email --}}
                                 <div class="mb-3">
-                                    <label for="email" class="form-label" style="color: #e0e0e0;">Email Address</label>
-                                    <input type="email" class="form-control" id="email" name="email"
-                                        value="{{ old('email', $user->email) }}" readonly
-                                        style="background-color: rgba(0, 0, 0, 0.5); color: #e0e0e0; border: 1px solid rgba(59, 209, 122, 0.5); border-radius: 10px;">
+                                    <label class="form-label" style="color: #e0e0e0;">Email Address</label>
+                                    <input type="email" class="form-control" name="email"
+                                        value="{{ old('email', $admin->email) }}" readonly
+                                        style="background-color: rgba(0,0,0,0.5); color: #e0e0e0; border: 1px solid rgba(59,209,122,0.5); border-radius: 10px;">
                                 </div>
 
                                 {{-- Phone --}}
                                 <div class="mb-3">
-                                    <label for="phone" class="form-label" style="color: #e0e0e0;">Phone Number</label>
-                                    <input type="tel" class="form-control" id="phone" name="phone"
-                                        value="{{ old('phone', $user->phone) }}"
-                                        style="background-color: rgba(0, 0, 0, 0.5); color: #e0e0e0; border: 1px solid rgba(59, 209, 122, 0.5); border-radius: 10px;">
+                                    <label class="form-label" style="color: #e0e0e0;">Phone Number</label>
+                                    <input type="tel" class="form-control" name="phone"
+                                        value="{{ old('phone', $admin->phone) }}"
+                                        style="background-color: rgba(0,0,0,0.5); color: #e0e0e0; border: 1px solid rgba(59,209,122,0.5); border-radius: 10px;">
                                 </div>
 
                                 {{-- Country --}}
                                 <div class="mb-3">
-                                    <label for="country" class="form-label" style="color: #e0e0e0;">Country</label>
-                                    <input type="text" class="form-control" id="country" name="country"
-                                        value="{{ old('country', $user->country) }}"
-                                        style="background-color: rgba(0, 0, 0, 0.5); color: #e0e0e0; border: 1px solid rgba(59, 209, 122, 0.5); border-radius: 10px;">
+                                    <label class="form-label" style="color: #e0e0e0;">Country</label>
+                                    <input type="text" class="form-control" name="country"
+                                        value="{{ old('country', $admin->country) }}"
+                                        style="background-color: rgba(0,0,0,0.5); color: #e0e0e0; border: 1px solid rgba(59,209,122,0.5); border-radius: 10px;">
                                 </div>
 
                                 <div class="text-center">

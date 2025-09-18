@@ -42,8 +42,12 @@ class GoogleAuthController extends Controller
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
                     'password' => bcrypt(Str::random(24)), // Random password
+                    'phone' => '', // ✅ Add phone field with empty string
+                    'utype' => 'USR', // ✅ Add default user type
                     'referral_code' => $this->generateUniqueReferralCode(),
                     'referred_by' => $referrer ? $referrer->id : null, // ✅ save referrer if found
+                    'referral' => $refCode ?? '', // ✅ Add referral field
+                    'level' => 1, // ✅ Add default level
                 ]);
             } else {
                 // ✅ Update existing user if fields are missing
@@ -59,11 +63,27 @@ class GoogleAuthController extends Controller
                     $user->referred_by = $referrer->id;
                 }
 
+                if (empty($user->referral) && $refCode) {
+                    $user->referral = $refCode;
+                }
+
+                if (empty($user->level)) {
+                    $user->level = 1;
+                }
+
+                if (empty($user->phone)) {
+                    $user->phone = '';
+                }
+
+                if (empty($user->utype)) {
+                    $user->utype = 'USR';
+                }
+
                 $user->save();
             }
 
             Auth::login($user);
-            return redirect()->intended('/account-dashboard');
+            return redirect()->intended('/User-dashboard');
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Failed to login with Google: ' . $e->getMessage());
         }
