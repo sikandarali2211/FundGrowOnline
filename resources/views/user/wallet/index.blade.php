@@ -625,6 +625,48 @@
             }
         }
 
+        // Wallet state persistence
+        function saveWalletState(account, walletType) {
+            localStorage.setItem('walletAccount', account);
+            localStorage.setItem('walletType', walletType);
+            localStorage.setItem('walletConnected', 'true');
+        }
+
+        function loadWalletState() {
+            const isConnected = localStorage.getItem('walletConnected') === 'true';
+            const account = localStorage.getItem('walletAccount');
+            const walletType = localStorage.getItem('walletType');
+            
+            if (isConnected && account) {
+                currentAccount = account;
+                updateWalletStatus();
+                loadBalances();
+                return true;
+            }
+            return false;
+        }
+
+        function clearWalletState() {
+            localStorage.removeItem('walletAccount');
+            localStorage.removeItem('walletType');
+            localStorage.removeItem('walletConnected');
+        }
+
+        // Disconnect wallet function
+        window.disconnectWallet = function() {
+            currentAccount = null;
+            clearWalletState();
+            updateWalletStatus();
+            showSuccessMessage('Wallet disconnected successfully!');
+        };
+
+        // Check wallet connection on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (loadWalletState()) {
+                console.log('Wallet state restored from localStorage');
+            }
+        });
+
         // Mobile wallet connection function
         window.connectMobileWallet = async function(walletType) {
             console.log('Mobile wallet connection:', walletType);
@@ -1175,6 +1217,7 @@
                         const result = await window.walletService.connectWallet();
                         if (result.success) {
                             currentAccount = result.account;
+                            saveWalletState(result.account, 'Web3 Extension');
                             updateWalletStatus();
                             loadBalances();
                             showSuccessMessage('Wallet connected successfully!');

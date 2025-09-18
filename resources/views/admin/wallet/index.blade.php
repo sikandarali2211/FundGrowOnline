@@ -198,14 +198,56 @@
                                 <i class="fa fa-wallet me-2"></i>Trust Wallet Connection
                             </h4>
                             
-                            <!-- Wallet Connect Button -->
+                            <!-- Wallet Connect Options -->
                             <div id="walletConnectSection">
-                                <button id="connectWalletBtn" class="wallet-connect-btn">
-                                    <i class="fa fa-wallet me-2"></i>Connect Trust Wallet
-                                </button>
-                                <p class="mt-3 text-muted">
-                                    Connect your Trust Wallet to access BSC network features
-                                </p>
+                                <h6 class="text-white mb-3">Choose Wallet Type:</h6>
+                                
+                                <!-- Trust Wallet Option -->
+                                <div class="wallet-option mb-3">
+                                    <button id="connectTrustWalletBtn" class="wallet-connect-btn w-100">
+                                        <i class="fa fa-wallet me-2"></i>Connect Trust Wallet
+                                    </button>
+                                    <small class="text-muted">Mobile & Desktop Trust Wallet</small>
+                                </div>
+                                
+                                <!-- Web Extension Option -->
+                                <div class="wallet-option mb-3">
+                                    <button id="connectExtensionBtn" class="wallet-connect-btn w-100" style="background: linear-gradient(45deg, #f6851b, #ff9500);">
+                                        <i class="fa fa-puzzle-piece me-2"></i>Connect Web Extension
+                                    </button>
+                                    <small class="text-muted">MetaMask, WalletConnect, or other Web3 extensions</small>
+                                </div>
+                                
+                                <!-- Manual Address Option -->
+                                <div class="wallet-option">
+                                    <button id="manualAddressBtn" class="wallet-connect-btn w-100" style="background: linear-gradient(45deg, #6c757d, #495057);">
+                                        <i class="fa fa-key me-2"></i>Enter Address Manually
+                                    </button>
+                                    <small class="text-muted">Enter wallet address directly</small>
+                                </div>
+                            </div>
+
+                            <!-- Manual Address Form (Hidden by default) -->
+                            <div id="manualAddressSection" class="wallet-info" style="display: none;">
+                                <h5 class="text-info mb-3">
+                                    <i class="fa fa-key me-2"></i>Enter Wallet Address
+                                </h5>
+                                <form id="manualAddressForm">
+                                    <div class="form-group mb-3">
+                                        <label for="walletAddressInput" class="form-label">Wallet Address</label>
+                                        <input type="text" class="form-control" id="walletAddressInput" 
+                                               placeholder="0x..." required>
+                                        <small class="form-text text-muted">Enter your BSC wallet address</small>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fa fa-check me-1"></i>Connect
+                                        </button>
+                                        <button type="button" id="cancelManualBtn" class="btn btn-secondary">
+                                            <i class="fa fa-times me-1"></i>Cancel
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
 
                             <!-- Wallet Info (Hidden by default) -->
@@ -214,11 +256,17 @@
                                     <i class="fa fa-check-circle me-2"></i>Wallet Connected
                                 </h5>
                                 <div class="row">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <strong>Wallet Address:</strong>
                                         <div id="walletAddress" class="wallet-address mt-2"></div>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <strong>Wallet Type:</strong>
+                                        <div class="mt-2">
+                                            <span id="walletType" class="badge badge-primary">Unknown</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
                                         <strong>Network:</strong>
                                         <div class="mt-2">
                                             <span class="badge badge-success">Binance Smart Chain</span>
@@ -344,7 +392,47 @@
         // Wallet connection state
         let isWalletConnected = false;
         let walletAddress = null;
+        let walletType = null;
         let walletService = null;
+
+        // Wallet state persistence
+        function saveWalletState(address, type) {
+            localStorage.setItem('adminWalletAddress', address);
+            localStorage.setItem('adminWalletType', type);
+            localStorage.setItem('adminWalletConnected', 'true');
+        }
+
+        function loadWalletState() {
+            const isConnected = localStorage.getItem('adminWalletConnected') === 'true';
+            const address = localStorage.getItem('adminWalletAddress');
+            const type = localStorage.getItem('adminWalletType');
+            
+            if (isConnected && address) {
+                walletAddress = address;
+                walletType = type;
+                isWalletConnected = true;
+                
+                // Update UI
+                document.getElementById('walletAddress').textContent = walletAddress;
+                document.getElementById('walletType').textContent = walletType;
+                document.getElementById('walletConnectSection').style.display = 'none';
+                document.getElementById('walletInfoSection').style.display = 'block';
+                document.getElementById('walletFeaturesSection').style.display = 'block';
+                
+                // Load balances and transaction history
+                refreshBalances();
+                loadTransactionHistory();
+                
+                return true;
+            }
+            return false;
+        }
+
+        function clearWalletState() {
+            localStorage.removeItem('adminWalletAddress');
+            localStorage.removeItem('adminWalletType');
+            localStorage.removeItem('adminWalletConnected');
+        }
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -357,37 +445,56 @@
             }
 
             // Event listeners
-            document.getElementById('connectWalletBtn').addEventListener('click', connectWallet);
+            document.getElementById('connectTrustWalletBtn').addEventListener('click', () => connectWallet('trust'));
+            document.getElementById('connectExtensionBtn').addEventListener('click', () => connectWallet('extension'));
+            document.getElementById('manualAddressBtn').addEventListener('click', showManualAddressForm);
+            document.getElementById('manualAddressForm').addEventListener('submit', connectManualAddress);
+            document.getElementById('cancelManualBtn').addEventListener('click', hideManualAddressForm);
             document.getElementById('disconnectWalletBtn').addEventListener('click', disconnectWallet);
             document.getElementById('refreshBalanceBtn').addEventListener('click', refreshBalances);
             document.getElementById('refreshUsdtBalanceBtn').addEventListener('click', refreshUsdtBalance);
             document.getElementById('transactionForm').addEventListener('submit', sendTransaction);
 
             // Check if wallet is already connected
-            checkWalletConnection();
+            if (!loadWalletState()) {
+                checkWalletConnection();
+            }
         });
 
-        async function connectWallet() {
-            const connectBtn = document.getElementById('connectWalletBtn');
+        async function connectWallet(type) {
+            const connectBtn = type === 'trust' ? 
+                document.getElementById('connectTrustWalletBtn') : 
+                document.getElementById('connectExtensionBtn');
             const originalText = connectBtn.innerHTML;
             
             try {
                 connectBtn.disabled = true;
                 connectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connecting...';
                 
-                const result = await walletService.connectWallet();
+                let result;
+                if (type === 'trust') {
+                    result = await walletService.connectWallet();
+                    walletType = 'Trust Wallet';
+                } else if (type === 'extension') {
+                    result = await connectWebExtension();
+                    walletType = 'Web Extension';
+                }
                 
                 if (result.success) {
                     walletAddress = result.account;
                     isWalletConnected = true;
                     
+                    // Save wallet state
+                    saveWalletState(walletAddress, walletType);
+                    
                     // Update UI
                     document.getElementById('walletAddress').textContent = walletAddress;
+                    document.getElementById('walletType').textContent = walletType;
                     document.getElementById('walletConnectSection').style.display = 'none';
                     document.getElementById('walletInfoSection').style.display = 'block';
                     document.getElementById('walletFeaturesSection').style.display = 'block';
                     
-                    showStatus('success', 'Wallet connected successfully!');
+                    showStatus('success', `${walletType} connected successfully!`);
                     
                     // Load balances and transaction history
                     await refreshBalances();
@@ -403,6 +510,104 @@
             }
         }
 
+        async function connectWebExtension() {
+            try {
+                if (typeof window.ethereum !== 'undefined') {
+                    // Request account access
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    
+                    if (accounts.length > 0) {
+                        // Check if on BSC network
+                        const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                        if (chainId !== '0x38') { // BSC mainnet
+                            await switchToBSC();
+                        }
+                        
+                        return { success: true, account: accounts[0] };
+                    } else {
+                        return { success: false, error: 'No accounts found' };
+                    }
+                } else {
+                    return { success: false, error: 'No Web3 extension found' };
+                }
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function switchToBSC() {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x38' }],
+                });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0x38',
+                            chainName: 'Binance Smart Chain',
+                            nativeCurrency: {
+                                name: 'BNB',
+                                symbol: 'BNB',
+                                decimals: 18,
+                            },
+                            rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                            blockExplorerUrls: ['https://bscscan.com/'],
+                        }],
+                    });
+                }
+            }
+        }
+
+        function showManualAddressForm() {
+            document.getElementById('walletConnectSection').style.display = 'none';
+            document.getElementById('manualAddressSection').style.display = 'block';
+        }
+
+        function hideManualAddressForm() {
+            document.getElementById('manualAddressSection').style.display = 'none';
+            document.getElementById('walletConnectSection').style.display = 'block';
+        }
+
+        function connectManualAddress(event) {
+            event.preventDefault();
+            
+            const address = document.getElementById('walletAddressInput').value.trim();
+            
+            if (!address) {
+                showStatus('error', 'Please enter a wallet address');
+                return;
+            }
+            
+            if (!address.startsWith('0x') || address.length !== 42) {
+                showStatus('error', 'Please enter a valid BSC wallet address');
+                return;
+            }
+            
+            // Connect with manual address
+            walletAddress = address;
+            walletType = 'Manual Address';
+            isWalletConnected = true;
+            
+            // Save wallet state
+            saveWalletState(walletAddress, walletType);
+            
+            // Update UI
+            document.getElementById('walletAddress').textContent = walletAddress;
+            document.getElementById('walletType').textContent = walletType;
+            document.getElementById('manualAddressSection').style.display = 'none';
+            document.getElementById('walletInfoSection').style.display = 'block';
+            document.getElementById('walletFeaturesSection').style.display = 'block';
+            
+            showStatus('success', 'Manual address connected successfully!');
+            
+            // Load balances and transaction history
+            refreshBalances();
+            loadTransactionHistory();
+        }
+
         function disconnectWallet() {
             if (walletService) {
                 walletService.disconnect();
@@ -410,11 +615,19 @@
             
             isWalletConnected = false;
             walletAddress = null;
+            walletType = null;
+            
+            // Clear wallet state
+            clearWalletState();
             
             // Reset UI
             document.getElementById('walletConnectSection').style.display = 'block';
+            document.getElementById('manualAddressSection').style.display = 'none';
             document.getElementById('walletInfoSection').style.display = 'none';
             document.getElementById('walletFeaturesSection').style.display = 'none';
+            
+            // Clear form
+            document.getElementById('walletAddressInput').value = '';
             
             showStatus('info', 'Wallet disconnected');
         }
@@ -516,10 +729,12 @@
             // Check if wallet is already connected
             if (typeof window.ethereum !== 'undefined' && window.ethereum.selectedAddress) {
                 walletAddress = window.ethereum.selectedAddress;
+                walletType = 'Web Extension';
                 isWalletConnected = true;
                 
                 // Update UI
                 document.getElementById('walletAddress').textContent = walletAddress;
+                document.getElementById('walletType').textContent = walletType;
                 document.getElementById('walletConnectSection').style.display = 'none';
                 document.getElementById('walletInfoSection').style.display = 'block';
                 document.getElementById('walletFeaturesSection').style.display = 'block';
