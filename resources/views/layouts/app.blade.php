@@ -20,22 +20,6 @@
             /* Prevent horizontal scroll */
         }
 
-        /* Loader Fullscreen */
-        #page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #072d42;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.6s ease;
-        }
-
         @media (min-width: 992px) {
             .floating-nav {
                 position: fixed;
@@ -46,7 +30,7 @@
                 backdrop-filter: blur(10px);
                 border: 1px solid rgba(59, 209, 122, 0.3);
                 border-radius: 50px;
-                height: 80px;
+                height: 100px;
                 width: 95%;
                 max-width: 900px;
                 padding: 0 30px;
@@ -65,7 +49,7 @@
             }
 
             .navbar-brand img {
-                height: 60px;
+                height: 80px;
                 /* 👈 logo resize to fit height */
                 display: block;
             }
@@ -103,7 +87,7 @@
                 font-weight: 600;
                 transition: all 0.3s;
                 text-decoration: none;
-                
+
             }
         }
 
@@ -139,17 +123,7 @@
 </head>
 
 <body>
-    <!-- Loader -->
-    <div id="page-loader">
-        <div class="candles-loader">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        <h4 class="loader-text text-white">FundGrow-Online</h4>
-    </div>
+
 
     <!-- Desktop Floating Navbar -->
     <header id="floatingNav" class="floating-nav d-none d-lg-block">
@@ -164,19 +138,21 @@
                     <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
                 </ul>
-                <div>
+                <div class="d-flex align-items-center" style="gap: 0.75rem;">
                     @guest
-                        <a href="{{ route('login') }}" class="cmn--btn me-2">Sign In</a>
+                        <a href="{{ route('login') }}" class="cmn--btn">Sign In</a>
                         <a href="{{ route('register') }}" class="cmn--btn">Sign Up</a>
                     @else
                         <a href="{{ Auth::user()->utype === 'ADM' ? route('admin.index') : route('user.index') }}"
-                            class="cmn--btn me-2">{{ Auth::user()->name }}</a>
-                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                            class="cmn--btn">{{ Auth::user()->name }}</a>
+
+                        <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
                             @csrf
                             <button type="submit" class="cmn--btn">Logout</button>
                         </form>
                     @endguest
                 </div>
+
             </div>
         </nav>
     </header>
@@ -339,7 +315,8 @@
                     <div class="col-lg-6">
                         <div class="copyright text-center text-lg-start">
                             Copyright &copy; 2025 <a href="javascript:void(0)"
-                                class="text-white fw--semibold text-decoration-none">Fund Grow Online</a> all right resurved.
+                                class="text-white fw--semibold text-decoration-none">Fund Grow Online</a> all right
+                            resurved.
                         </div>
                     </div>
                     <!-- <div class="col-lg-6">
