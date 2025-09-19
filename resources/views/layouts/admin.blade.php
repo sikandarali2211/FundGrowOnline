@@ -256,6 +256,13 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.payments.index') }}">
+                        <i class="fa fa-credit-card menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Payments</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.setting.index') }}">
                         <i class="fa fa-cog menu-icon mr-2" style="color: #3bd17a;"></i>
                         <span class="menu-title" style="color: #3bd17a;">Setting</span>

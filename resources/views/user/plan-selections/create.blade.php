@@ -124,9 +124,14 @@
                             <input type="hidden" name="plan_amount" value="{{ $plan['amount'] }}">
                             <input type="hidden" name="return_percentage" value="{{ $plan['return_percentage'] }}">
                             <input type="hidden" name="duration_days" value="{{ $plan['duration_days'] }}">
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-paper-plane me-2"></i> Confirm & Submit
-                            </button>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-paper-plane me-2"></i> Confirm & Submit
+                                </button>
+                                <a href="{{ route('payment.form', 'temp') }}?plan={{ $plan['name'] }}&amount={{ $plan['amount'] }}&return={{ $plan['return_percentage'] }}&duration={{ $plan['duration_days'] }}" class="btn btn-warning">
+                                    <i class="fas fa-credit-card me-2"></i> Pay with Wallet
+                                </a>
+                            </div>
                         </form>
 
                     </div>

@@ -20,6 +20,7 @@ class PlanSelectionController extends Controller
     {
         // Query params se data pass
         $plan = [
+            'id'               => 'temp_' . uniqid(), // Temporary ID for payment form
             'name'             => $request->get('plan'),
             'amount'           => $request->get('amount'),
             'return_percentage' => $request->get('return'),
