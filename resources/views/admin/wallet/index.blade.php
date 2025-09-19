@@ -198,6 +198,13 @@
                                 <i class="fa fa-wallet me-2"></i>Trust Wallet Connection
                             </h4>
                             
+                            @if($adminWalletAddress)
+                                <div class="alert alert-success mb-4">
+                                    <i class="fa fa-check-circle me-2"></i>
+                                    <strong>Current Admin Wallet Address:</strong> {{ $adminWalletAddress }}
+                                </div>
+                            @endif
+
                             <!-- Wallet Connect Options -->
                             <div id="walletConnectSection">
                                 <h6 class="text-white mb-3">Choose Wallet Type:</h6>
@@ -741,6 +748,33 @@
                 
                 // Load balances
                 refreshBalances();
+                
+                // Save wallet address to database
+                saveWalletAddressToDatabase(walletAddress);
+            }
+        }
+
+        async function saveWalletAddressToDatabase(address) {
+            try {
+                const response = await fetch('/admin/wallet/save-address', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        wallet_address: address
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Wallet address saved to database');
+                } else {
+                    console.error('Failed to save wallet address:', result.message);
+                }
+            } catch (error) {
+                console.error('Error saving wallet address:', error);
             }
         }
 

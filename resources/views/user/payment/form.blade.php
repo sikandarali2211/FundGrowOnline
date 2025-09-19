@@ -128,6 +128,7 @@
             display: inline-block;
         }
     </style>
+<<<<<<< HEAD
     <div class="main-panel">
         <div class="payment-container">
             <div class="container">
@@ -137,6 +138,154 @@
                         <i class="fa fa-credit-card me-2"></i> Payment for Investment Plan
                     </h2>
                     <p class="text-muted">Complete your payment to activate your investment plan</p>
+=======
+<div class="main-panel">
+    <div class="payment-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <h2 class="text-success mb-3">
+                            <i class="fa fa-credit-card me-2"></i>Payment for Investment Plan
+                        </h2>
+                        <p class="text-muted">Complete your payment to activate your investment plan</p>
+                    </div>
+
+                    <!-- Plan Information -->
+                    <div class="payment-card mb-4">
+                        <div class="plan-info">
+                            <h4 class="text-success mb-3">
+                                <i class="fa fa-chart-line me-2"></i>{{ $plan['name'] }}
+                            </h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Investment Amount:</strong></p>
+                                    <h3 class="text-warning">${{ number_format($plan['amount'], 2) }}</h3>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Expected Return:</strong></p>
+                                    <h3 class="text-success">${{ number_format($plan['amount'] * (1 + $plan['return_percentage'] / 100), 2) }}</h3>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Duration:</strong> {{ $plan['duration_days'] }} days</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Return Rate:</strong> {{ $plan['return_percentage'] }}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Wallet Connection Section -->
+                    <div class="payment-card mb-4">
+                        <div class="wallet-connect-section">
+                            <h5 class="text-white mb-4">
+                                <i class="fa fa-wallet me-2"></i>Connect Your Wallet
+                            </h5>
+                            
+                            <div id="walletConnectSection">
+                                <button id="connectWalletBtn" class="btn btn-wallet w-100 mb-3">
+                                    <i class="fa fa-wallet me-2"></i>Connect Wallet
+                                </button>
+                                <p class="text-muted text-center">
+                                    Connect your Trust Wallet or MetaMask to proceed with payment
+                                </p>
+                            </div>
+
+                            <div id="walletInfoSection" class="wallet-info" style="display: none;">
+                                <h6 class="text-success mb-3">
+                                    <i class="fa fa-check-circle me-2"></i>Wallet Connected
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <strong>Address:</strong>
+                                        <div id="walletAddress" class="text-muted font-monospace"></div>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button id="disconnectWalletBtn" class="btn btn-outline-danger btn-sm">
+                                            <i class="fa fa-times me-1"></i>Disconnect
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <div class="payment-card">
+                        <div class="payment-form">
+                            <h5 class="text-white mb-4">
+                                <i class="fa fa-credit-card me-2"></i>Payment Details
+                            </h5>
+
+                            <form id="paymentForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="paymentAmount" class="form-label">Amount (BNB)</label>
+                                            <input type="number" class="form-control" id="paymentAmount" 
+                                                   value="{{ $plan['amount'] }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="currency" class="form-label">Currency</label>
+                                            <select class="form-control" id="currency">
+                                                <option value="BNB">BNB</option>
+                                                <option value="USDT">USDT</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="adminWalletAddress" class="form-label">Admin Wallet Address</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" id="adminWalletAddress" 
+                                               value="{{ $adminWalletAddress }}" readonly>
+                                        <button type="button" class="btn btn-outline-success" id="copyAddressBtn">
+                                            <i class="fa fa-copy"></i>
+                                        </button>
+                                    </div>
+                                    <small class="form-text text-muted">Send payment to this address</small>
+                                </div>
+
+                                <div class="form-group mb-3">
+                                    <label for="transactionHash" class="form-label">Transaction Hash</label>
+                                    <input type="text" class="form-control" id="transactionHash" 
+                                           placeholder="0x..." required>
+                                    <small class="form-text text-muted">Enter the transaction hash after sending payment</small>
+                                </div>
+
+                                <div class="text-center">
+                                    <button type="submit" class="btn btn-payment btn-lg" id="submitPaymentBtn">
+                                        <span class="loading-spinner me-2">
+                                            <i class="fa fa-spinner fa-spin"></i>
+                                        </span>
+                                        <i class="fa fa-paper-plane me-2"></i>Submit Payment
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div id="paymentStatus" class="mt-4" style="display: none;">
+                        <div class="payment-card">
+                            <div class="text-center">
+                                <div id="statusIcon" class="mb-3">
+                                    <i class="fa fa-spinner fa-spin fa-3x text-warning"></i>
+                                </div>
+                                <h4 id="statusTitle" class="text-white mb-3">Processing Payment...</h4>
+                                <p id="statusMessage" class="text-muted mb-3">Please wait while we verify your payment</p>
+                                <div id="statusBadge" class="status-badge status-pending">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+>>>>>>> 0ace04b33a843d3e8034c6863b23a09c8745e1cb
                 </div>
 
                 <div class="row">
@@ -288,7 +437,7 @@
             </div>
         </div>
     </div>
-
+</div>
     <!-- Ethers.js for Web3 functionality -->
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
     <script src="{{ asset('js/wallet-service.js') }}"></script>

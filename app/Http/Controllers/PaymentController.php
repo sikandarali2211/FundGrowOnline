@@ -30,9 +30,13 @@ class PaymentController extends Controller
                 $plan = InvestmentPlan::findOrFail($planId);
             }
             
-            $user = Auth::user();
-            
-            return view('user.payment.form', compact('plan', 'user'));
+        $user = Auth::user();
+        
+        // Get admin wallet address
+        $admin = \App\Models\User::where('utype', 'ADM')->first();
+        $adminWalletAddress = $admin ? $admin->wallet_address : '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
+        
+        return view('user.payment.form', compact('plan', 'user', 'adminWalletAddress'));
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
@@ -176,10 +180,7 @@ class PaymentController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return response()->json([
-            'success' => true,
-            'transactions' => $transactions,
-        ]);
+        return view('admin.payments.index', compact('transactions'));
     }
 
     /**

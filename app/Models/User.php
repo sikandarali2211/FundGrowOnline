@@ -24,6 +24,7 @@ class User extends Authenticatable
         'referred_by',       // jis user ne refer kiya (users.id)
         'level',             // 👈 NEW: user level
         'google_id',         // Google OAuth ID
+        'wallet_address',    // Admin wallet address
     ];
 
     /** Hidden */

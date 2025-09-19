@@ -123,6 +123,7 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
     // Admin Wallet Routes
     Route::get('/admin/wallet', [AdminWalletController::class, 'index'])->name('admin.wallet.index');
     Route::post('/admin/wallet/connect', [AdminWalletController::class, 'connectWallet'])->name('admin.wallet.connect');
+    Route::post('/admin/wallet/save-address', [AdminWalletController::class, 'saveWalletAddress'])->name('admin.wallet.save-address');
     Route::post('/admin/wallet/balance', [AdminWalletController::class, 'getBalance'])->name('admin.wallet.balance');
     Route::post('/admin/wallet/send', [AdminWalletController::class, 'sendTransaction'])->name('admin.wallet.send');
     Route::get('/admin/wallet/transactions', [AdminWalletController::class, 'getTransactionHistory'])->name('admin.wallet.transactions');

@@ -13,19 +13,19 @@
         <div class="row mb-4">
             <div class="col-md-3">
                 <div style="background: rgba(59, 209, 122, 0.1); border: 1px solid rgba(59, 209, 122, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
-                    <div id="pendingCount" style="font-size: 2rem; font-weight: 700; color: #3bd17a; margin: 10px 0;">0</div>
+                    <div id="pendingCount" style="font-size: 2rem; font-weight: 700; color: #3bd17a; margin: 10px 0;">{{ $transactions->where('status', 'pending')->count() }}</div>
                     <div style="color: #a5f2d5; font-size: 0.9rem;">Pending Payments</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div style="background: rgba(59, 209, 122, 0.1); border: 1px solid rgba(59, 209, 122, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
-                    <div id="confirmedCount" style="font-size: 2rem; font-weight: 700; color: #3bd17a; margin: 10px 0;">0</div>
+                    <div id="confirmedCount" style="font-size: 2rem; font-weight: 700; color: #3bd17a; margin: 10px 0;">{{ $transactions->where('status', 'confirmed')->count() }}</div>
                     <div style="color: #a5f2d5; font-size: 0.9rem;">Confirmed Today</div>
                 </div>
             </div>
             <div class="col-md-3">
                 <div style="background: rgba(59, 209, 122, 0.1); border: 1px solid rgba(59, 209, 122, 0.3); border-radius: 12px; padding: 20px; text-align: center;">
-                    <div id="totalAmount" style="font-size: 2rem; font-weight: 700; color: #3bd17a; margin: 10px 0;">$0</div>
+                    <div id="totalAmount" style="font-size: 2rem; font-weight: 700; color: #3bd17a; margin: 10px 0;">${{ number_format($transactions->sum('amount'), 2) }}</div>
                     <div style="color: #a5f2d5; font-size: 0.9rem;">Total Amount</div>
                 </div>
             </div>
@@ -65,12 +65,45 @@
                                 </tr>
                             </thead>
                             <tbody id="paymentsTableBody">
-                                <tr>
-                                    <td colspan="8" class="text-center text-muted py-4">
-                                        <i class="fa fa-spinner fa-spin fa-2x mb-3"></i>
-                                        <p>Loading payments...</p>
-                                    </td>
-                                </tr>
+                                @if($transactions->count() > 0)
+                                    @foreach($transactions as $transaction)
+                                        <tr>
+                                            <td>{{ $transaction->id }}</td>
+                                            <td>{{ $transaction->user->name ?? 'N/A' }}</td>
+                                            <td>{{ $transaction->plan->name ?? 'N/A' }}</td>
+                                            <td>${{ number_format($transaction->amount, 2) }} {{ $transaction->currency }}</td>
+                                            <td>
+                                                <code style="font-size: 0.8rem;">{{ substr($transaction->transaction_hash, 0, 10) }}...</code>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{{ $transaction->status === 'pending' ? 'warning' : ($transaction->status === 'confirmed' ? 'success' : 'danger') }}">
+                                                    {{ ucfirst($transaction->status) }}
+                                                </span>
+                                            </td>
+                                            <td>{{ $transaction->created_at->format('M d, Y H:i') }}</td>
+                                            <td>
+                                                @if($transaction->status === 'pending')
+                                                    <button class="btn btn-success btn-sm me-1" onclick="confirmPayment({{ $transaction->id }})">
+                                                        <i class="fa fa-check"></i> Confirm
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" onclick="rejectPayment({{ $transaction->id }})">
+                                                        <i class="fa fa-times"></i> Reject
+                                                    </button>
+                                                @else
+                                                    <span class="text-muted">Processed</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <td colspan="8" class="text-center text-muted py-4">
+                                            <i class="fa fa-info-circle fa-2x mb-3"></i>
+                                            <p>No payments found</p>
+                                            <small>Payments will appear here when users submit them</small>
+                                        </td>
+                                    </tr>
+                                @endif
                             </tbody>
                         </table>
                     </div>
