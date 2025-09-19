@@ -128,7 +128,7 @@
             display: inline-block;
         }
     </style>
-
+<div class="main-panel">
     <div class="payment-container">
         <div class="container">
             <div class="row justify-content-center">
@@ -234,7 +234,7 @@
                                     <label for="adminWalletAddress" class="form-label">Admin Wallet Address</label>
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="adminWalletAddress" 
-                                               value="0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6" readonly>
+                                               value="{{ $adminWalletAddress }}" readonly>
                                         <button type="button" class="btn btn-outline-success" id="copyAddressBtn">
                                             <i class="fa fa-copy"></i>
                                         </button>
@@ -278,7 +278,7 @@
             </div>
         </div>
     </div>
-
+</div>
     <!-- Ethers.js for Web3 functionality -->
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
     <script src="{{ asset('js/wallet-service.js') }}"></script>

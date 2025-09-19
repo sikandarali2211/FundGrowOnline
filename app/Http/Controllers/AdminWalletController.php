@@ -12,7 +12,10 @@ class AdminWalletController extends Controller
      */
     public function index()
     {
-        return view('admin.wallet.index');
+        $admin = \App\Models\User::where('utype', 'ADM')->first();
+        $adminWalletAddress = $admin ? $admin->wallet_address : null;
+        
+        return view('admin.wallet.index', compact('adminWalletAddress'));
     }
 
     /**
@@ -31,6 +34,41 @@ class AdminWalletController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to initiate wallet connection: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Save admin wallet address
+     */
+    public function saveWalletAddress(Request $request)
+    {
+        try {
+            $request->validate([
+                'wallet_address' => 'required|string|min:42|max:42'
+            ]);
+
+            $admin = \App\Models\User::where('utype', 'ADM')->first();
+            if (!$admin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Admin user not found'
+                ], 404);
+            }
+
+            $admin->update([
+                'wallet_address' => $request->wallet_address
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Wallet address saved successfully',
+                'wallet_address' => $request->wallet_address
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
     }
