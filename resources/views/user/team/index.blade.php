@@ -331,6 +331,10 @@
                                     <h5 class="mb-1">My Team</h5>
                                     <div class="text-muted small">Current Level: <span class="badge-soft">Level
                                             {{ $me->level }}</span></div>
+                                    <div id="levelProgressStatus" class="text-muted small mt-1">
+                                        <span id="level1Status">Level 1: {{ $directCount ?? 0 }}/3 users</span>
+                                        <span id="level2Status" style="display: none;">Level 2: Available</span>
+                                    </div>
                                 </div>
                                 <div class="d-flex align-items-center gap-3">
                                     {{-- Level Filter Dropdown --}}
@@ -377,10 +381,10 @@
                         </div>
                     </div>
 
-                    {{-- ========== CHART: LEVEL 1 (YOU + DIRECTS) ========== --}}
+                    {{-- ========== CHART: LEVEL 1 ONLY ========== --}}
                     <div class="card card-dark mb-4 chart-container" data-level="1">
                         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">Level 1</h6>
+                            <h6 class="mb-0">Level 1 Direct Referrals</h6>
                             <div class="org-toolbar">
                                 <div class="d-flex gap-2">
                                     <button class="btn" id="fit-l1">Fit</button>
@@ -397,10 +401,10 @@
                         </div>
                     </div>
 
-                    {{-- ========== CHART: LEVEL 2 (YOU + DIRECTS + THEIR DIRECTS) ========== --}}
-                    <div class="card card-dark chart-container" data-level="2">
+                    {{-- ========== CHART: LEVEL 2 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="2">
                         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0">Level 2</h6>
+                            <h6 class="mb-0">Level 2 Referrals</h6>
                             <div class="org-toolbar">
                                 <div class="d-flex gap-2">
                                     <button class="btn" id="fit-l2">Fit</button>
@@ -416,6 +420,7 @@
                             <div id="chart-l2" class="orgbox"><span class="status-pill">Loading…</span></div>
                         </div>
                     </div>
+
 
                 </div>
             </div>
@@ -544,6 +549,112 @@
                 return set;
             };
 
+            // Level 1 only: Show only Level 1 direct referrals + YOU
+            const subsetLevel1Only = () => {
+                const set = [root];
+                set.push(...L1);
+                return set;
+            };
+
+            // Level 2 only: Show only Level 2 referrals + their parents + YOU
+            const subsetLevel2Only = () => {
+                const set = [root];
+                const level2Users = [];
+                
+                // Get all Level 2 users
+                for (const l1 of L1) {
+                    const kids = childrenMap.get(l1.id) || [];
+                    level2Users.push(...kids);
+                }
+                
+                set.push(...level2Users);
+                return set;
+            };
+
+            // Level progression system
+            const checkLevelProgression = () => {
+                const level1Count = L1.length;
+                const level2Count = data.filter(n => n.type === 'l2').length;
+                
+                // Update level status display
+                const level1Status = document.getElementById('level1Status');
+                const level2Status = document.getElementById('level2Status');
+                
+                if (level1Status) {
+                    level1Status.textContent = `Level 1: ${level1Count}/3 users`;
+                }
+                
+                // Check if Level 1 is complete (3+ users)
+                if (level1Count >= 3) {
+                    // Level 1 complete - show Level 2
+                    document.querySelector('[data-level="1"]').style.display = 'none';
+                    document.querySelector('[data-level="2"]').style.display = 'block';
+                    document.querySelector('[data-level="all"]').style.display = 'block';
+                    
+                    // Update status display
+                    if (level1Status) level1Status.style.display = 'none';
+                    if (level2Status) {
+                        level2Status.style.display = 'inline';
+                        level2Status.textContent = `Level 2: Available (${level2Count} users)`;
+                    }
+                    
+                    // Update filter dropdown
+                    const levelFilter = document.getElementById('levelFilter');
+                    if (levelFilter) {
+                        levelFilter.value = '2'; // Auto-select Level 2
+                    }
+                    
+                    // Show level progression message
+                    showLevelProgressionMessage('Level 1 Complete! Level 2 is now available.');
+                    
+                    return true; // Level 1 complete
+                } else {
+                    // Level 1 not complete - show Level 1
+                    document.querySelector('[data-level="1"]').style.display = 'block';
+                    document.querySelector('[data-level="2"]').style.display = 'none';
+                    document.querySelector('[data-level="all"]').style.display = 'block';
+                    
+                    // Update status display
+                    if (level1Status) level1Status.style.display = 'inline';
+                    if (level2Status) level2Status.style.display = 'none';
+                    
+                    // Update filter dropdown
+                    const levelFilter = document.getElementById('levelFilter');
+                    if (levelFilter) {
+                        levelFilter.value = '1'; // Auto-select Level 1
+                    }
+                    
+                    return false; // Level 1 not complete
+                }
+            };
+
+            // Show level progression message
+            const showLevelProgressionMessage = (message) => {
+                // Create or update progress message
+                let progressDiv = document.getElementById('levelProgressMessage');
+                if (!progressDiv) {
+                    progressDiv = document.createElement('div');
+                    progressDiv.id = 'levelProgressMessage';
+                    progressDiv.className = 'alert alert-success alert-dismissible fade show';
+                    progressDiv.style.marginBottom = '1rem';
+                    
+                    const closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.className = 'btn-close';
+                    closeBtn.setAttribute('data-bs-dismiss', 'alert');
+                    progressDiv.appendChild(closeBtn);
+                    
+                    // Insert after header
+                    const header = document.querySelector('.card.card-dark.mb-4');
+                    header.parentNode.insertBefore(progressDiv, header.nextSibling);
+                }
+                
+                progressDiv.innerHTML = `
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <i class="fa fa-check-circle me-2"></i>${message}
+                `;
+            };
+
             // ====== Generic chart initializer ======
             function initChart(suffix, getSubset) {
                 const hostId = `chart-${suffix}`;
@@ -565,7 +676,7 @@
                 const render = () => {
                     const ds = getSubset();
                     chart.data(ds).render().fit();
-                    if (pill) pill.textContent = `Nodes: ${ds.length}`;
+                    if (pill) pill.textContent = `Users: ${ds.length}`;
                 };
 
                 // Initial render
@@ -588,11 +699,11 @@
                 };
             }
 
-            // ====== Create the three charts with exact requirements ======
+            // ====== Create the charts with exact requirements ======
             const chartInstances = {
                 all: initChart('all', subsetAll), // All levels (poora tree)
-                l1: initChart('l1', subsetLevel1_Min2), // Level 1 -> 2 directs only
-                l2: initChart('l2', subsetLevel2_3x3) // Level 2 -> 3 top + 3x kids (12)
+                l1: initChart('l1', subsetLevel1Only), // Level 1 only
+                l2: initChart('l2', subsetLevel2Only) // Level 2 only
             };
 
             // ====== Level Filter Functionality ======
@@ -633,8 +744,15 @@
                 });
             }
 
-            // Initialize with all levels visible
-            filterCharts('all');
+            // Initialize level progression system
+            const isLevel1Complete = checkLevelProgression();
+            
+            // Initialize with appropriate level visible
+            if (isLevel1Complete) {
+                filterCharts('2'); // Show Level 2 if Level 1 is complete
+            } else {
+                filterCharts('1'); // Show Level 1 if not complete
+            }
         })();
     </script>
 @endsection
