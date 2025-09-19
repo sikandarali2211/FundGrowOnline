@@ -346,7 +346,9 @@
                     <div class="card card-statistics">
                         <div class="card-body">
                             <h4 class="card-title text-white"><i class="fa fa-user me-2"></i> Total Users</h4>
-                            <canvas id="orders-chart"></canvas>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="usersChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -354,8 +356,8 @@
                     <div class="card card-statistics">
                         <div class="card-body">
                             <h4 class="card-title text-white"><i class="fas fa-chart-line me-2"></i> Sales</h4>
-                            <h2 class="mb-4">56000</h2>
-                            <canvas id="sales-chart"></canvas>
+                            <h2 class="mb-4 text-center" style="color: #3bd17a; font-size: 3rem;">${{ number_format(array_sum($salesChartData) ?? 0, 0) }}</h2>
+                            <p class="text-center text-muted">Total Sales Amount</p>
                         </div>
                     </div>
                 </div>
@@ -490,5 +492,74 @@
             document.body.style.paddingRight = '0px';
             document.body.style.marginRight = '0px';
         });
+    </script>
+
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Users Pie Chart
+        const usersCtx = document.getElementById('usersChart').getContext('2d');
+        new Chart(usersCtx, {
+            type: 'pie',
+            data: {
+                labels: ['New Users (Last 6 Days)', 'Existing Users'],
+                datasets: [{
+                    data: [
+                        @json(array_sum($usersChartData)),
+                        @json($totalUsers - array_sum($usersChartData))
+                    ],
+                    backgroundColor: [
+                        '#3bd17a',
+                        'rgba(59, 209, 122, 0.3)'
+                    ],
+                    borderColor: [
+                        '#3bd17a',
+                        'rgba(59, 209, 122, 0.5)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 1.5,
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10,
+                        left: 10,
+                        right: 10
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#fff',
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${value} users (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
     </script>
 @endsection

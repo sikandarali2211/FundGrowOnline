@@ -52,9 +52,10 @@ class PaymentController extends Controller
     public function processPayment(Request $request)
     {
         $request->validate([
-            'plan_id' => 'required|exists:investment_plans,id',
+            'plan_id' => 'required|string',
             'transaction_hash' => 'required|string|unique:payment_transactions,transaction_hash',
             'from_address' => 'required|string',
+            'to_address' => 'required|string',
             'amount' => 'required|numeric|min:0',
             'currency' => 'required|string|in:BNB,USDT',
         ]);
@@ -62,16 +63,36 @@ class PaymentController extends Controller
         try {
             DB::beginTransaction();
 
-            $plan = InvestmentPlan::findOrFail($request->plan_id);
+            // Handle temporary plan data
+            if (strpos($request->plan_id, 'temp') === 0) {
+                // For temporary plans, we'll create a basic plan record or use plan selection
+                $planData = [
+                    'id' => null,
+                    'name' => 'Grower Plan',
+                    'amount' => $request->amount,
+                    'return_percentage' => 0,
+                    'duration_days' => 30,
+                ];
+            } else {
+                $plan = InvestmentPlan::findOrFail($request->plan_id);
+                $planData = [
+                    'id' => $plan->id,
+                    'name' => $plan->name,
+                    'amount' => $plan->amount,
+                    'return_percentage' => $plan->return_percentage,
+                    'duration_days' => $plan->duration_days,
+                ];
+            }
+
             $user = Auth::user();
 
             // Create payment transaction
             $transaction = PaymentTransaction::create([
                 'user_id' => $user->id,
-                'plan_id' => $plan->id,
+                'plan_id' => $planData['id'],
                 'transaction_hash' => $request->transaction_hash,
                 'from_address' => $request->from_address,
-                'to_address' => $this->getAdminWalletAddress(),
+                'to_address' => $request->to_address,
                 'amount' => $request->amount,
                 'currency' => $request->currency,
                 'status' => PaymentTransaction::STATUS_PENDING,
@@ -81,8 +102,8 @@ class PaymentController extends Controller
             // Create user investment record
             $userInvestment = UserInvestment::create([
                 'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'amount' => $plan->amount,
+                'plan_id' => $planData['id'],
+                'amount' => $planData['amount'],
                 'status' => 'pending',
                 'payment_transaction_id' => $transaction->id,
             ]);

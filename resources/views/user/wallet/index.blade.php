@@ -2,58 +2,104 @@
 
 @section('content')
     <style>
-        /* Base Glassy Card */
+        /* Modern Card Design */
         .glassy-card {
-            background: linear-gradient(145deg, #072d42, #061a2a);
-            border: 1px solid rgba(59, 209, 122, 0.2);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
-            color: #e2e8f0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(59, 209, 122, 0.3);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            color: #ffffff;
             height: 100%;
-            /* equal height for all */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glassy-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3bd17a, #00d4ff, #3bd17a);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
         }
 
         .glassy-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(59, 209, 122, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
-        /* Title */
+        /* Modern Title */
         .glassy-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #3bd17a;
-            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #3bd17a, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        /* Wallet Buttons */
+        /* Modern Wallet Buttons */
         .wallet-btn {
-            background: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 16px;
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 110px;
+            height: 120px;
             width: 100%;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .wallet-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 209, 122, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .wallet-btn:hover::before {
+            left: 100%;
         }
 
         .wallet-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(59, 209, 122, 0.3);
+            border-color: #3bd17a;
         }
 
         .wallet-text {
@@ -64,28 +110,284 @@
 
         .wallet-text strong {
             display: block;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #111;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #2d3748;
+            margin-bottom: 4px;
         }
 
         .wallet-text small {
-            font-size: 0.75rem;
-            color: #555;
+            font-size: 0.8rem;
+            color: #718096;
+            font-weight: 500;
         }
 
-        /* Buttons */
-        .btn-custom {
+        /* Balance Value Styling */
+        .balance-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #3bd17a, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+        }
+
+        /* Status Items */
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(59, 209, 122, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .status-item:hover {
+            background: rgba(59, 209, 122, 0.05);
             border-radius: 8px;
-            padding: 8px 16px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-item .label {
+            color: #a0aec0;
             font-weight: 600;
             font-size: 0.9rem;
         }
 
+        .status-item .value {
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        /* Wallet Status Info */
+        .wallet-status-info {
+            margin-top: 1rem;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(59, 209, 122, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-item .label {
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .status-item .value {
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        /* Modern Buttons */
+        .btn-custom {
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-custom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn-custom:hover::before {
+            left: 100%;
+        }
+
         .btn-custom-sm {
-            border-radius: 8px;
-            padding: 6px 12px;
-            font-size: 0.8rem;
+            border-radius: 10px;
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-outline-success {
+            border: 2px solid #3bd17a;
+            color: #3bd17a;
+            background: transparent;
+        }
+
+        .btn-outline-success:hover {
+            background: #3bd17a;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 209, 122, 0.3);
+        }
+
+        .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            background: transparent;
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Wallet Header */
+        .wallet-header {
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .wallet-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3bd17a, #00d4ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 30px rgba(59, 209, 122, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .wallet-icon i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .wallet-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #3bd17a, #00d4ff, #3bd17a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .wallet-subtitle {
+            font-size: 1.2rem;
+            color: #a0aec0;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+
+        .wallet-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(59, 209, 122, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(59, 209, 122, 0.2);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #3bd17a;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .wallet-title {
+                font-size: 2.5rem;
+            }
+            
+            .wallet-stats {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: center;
+            }
+            
+            .stat-item {
+                width: 200px;
+            }
+            
+            .glassy-card {
+                padding: 20px;
+            }
+            
+            .wallet-btn {
+                height: 100px;
+                padding: 15px;
+            }
+            
+            .balance-value {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .wallet-title {
+                font-size: 2rem;
+            }
+            
+            .wallet-icon {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .wallet-icon i {
+                font-size: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
         }
 
         /* Balance Text */
@@ -339,16 +641,44 @@
 
     <div class="main-panel" style="margin-top:6rem;  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);">
         <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="text-center">
+                        <div class="wallet-header">
+                            <div class="wallet-icon">
+                                <i class="fa fa-wallet"></i>
+                            </div>
+                            <h1 class="wallet-title">My Wallet</h1>
+                            <p class="wallet-subtitle">Manage your cryptocurrency wallet and transactions</p>
+                            <div class="wallet-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="totalBalance">0.00</span>
+                                    <span class="stat-label">Total Balance</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="connectedStatus">0</span>
+                                    <span class="stat-label">Connected</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Row 1: Wallet Connection / Status / Wallet Status -->
             <div class="row g-4">
                 <!-- Mobile Wallet Connection -->
                 <div class="col-md-4 col-12 mt-4">
                     <div class="glassy-card">
-                        <h4 class="glassy-title"><i class="fas fa-mobile-alt"></i> Mobile Wallet Connection</h4>
-                        <div class="row g-2">
-                            <div class="col-6 ">
+                        <h4 class="glassy-title">
+                            <i class="fas fa-mobile-alt me-2"></i> Mobile Wallet Connection
+                        </h4>
+                        <p class="text-muted mb-4">Connect your mobile wallet to manage funds</p>
+                        <div class="row g-3">
+                            <div class="col-6">
                                 <button class="wallet-btn" onclick="connectMobileWallet('trust')">
-                                    <i class="fas fa-mobile-alt fa-2x"></i>
+                                    <i class="fas fa-mobile-alt fa-2x mb-2"></i>
                                     <div class="wallet-text">
                                         <strong>Trust Wallet</strong>
                                         <small>Mobile App</small>
@@ -357,7 +687,7 @@
                             </div>
                             <div class="col-6">
                                 <button class="wallet-btn" onclick="connectMobileWallet('metamask')">
-                                    <i class="fab fa-ethereum fa-2x"></i>
+                                    <i class="fab fa-ethereum fa-2x mb-2"></i>
                                     <div class="wallet-text">
                                         <strong>MetaMask</strong>
                                         <small>Mobile App</small>
@@ -365,38 +695,40 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="text-center mt-3">
-                            <button class="btn btn-outline-light btn-sm" onclick="showAlternativeMethods()">
-                                <i class="fas fa-cog"></i> Other Methods
+                        <div class="text-center mt-4">
+                            <button class="btn btn-outline-success btn-sm" onclick="showAlternativeMethods()">
+                                <i class="fas fa-cog me-2"></i> Other Methods
                             </button>
                         </div>
-                        <!-- Alternative Methods (Hidden by default) -->
-                        <div id="alternativeMethods" class="mt-3" style="display: none;">
-                            <div class="row">
-                                <div class="col-4">
-                                    <button class="btn btn-outline-light btn-sm w-100" onclick="simpleConnect()">
-                                        <i class="fas fa-link"></i><br>Direct
-                                    </button>
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-outline-light btn-sm w-100" onclick="testConnection()">
-                                        <i class="fas fa-bug"></i><br>Test
-                                    </button>
-                                </div>
-                                <div class="col-4">
-                                    <button class="btn btn-outline-light btn-sm w-100" onclick="showQRCode()">
-                                        <i class="fas fa-qrcode"></i><br>QR Code
-                                    </button>
+                                        <!-- Alternative Methods (Hidden by default) -->
+                                        <div id="alternativeMethods" class="mt-3" style="display: none;">
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-light btn-sm w-100" onclick="simpleConnect()">
+                                                        <i class="fas fa-link"></i><br>Direct
+                                                    </button>
+                                                </div>
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-light btn-sm w-100" onclick="testConnection()">
+                                                        <i class="fas fa-bug"></i><br>Test
+                                                    </button>
+                                                </div>
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-light btn-sm w-100" onclick="showQRCode()">
+                                                        <i class="fas fa-qrcode"></i><br>QR Code
+                                                    </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Mobile Wallet Status -->
+                        <!-- Mobile Wallet Status -->
                 <div class="col-md-4 col-12 mt-4">
                     <div class="glassy-card">
-                        <h4 class="glassy-title"><i class="fas fa-signal"></i> Mobile Wallet Status</h4>
+                        <h4 class="glassy-title">
+                            <i class="fas fa-signal me-2"></i> Mobile Wallet Status
+                        </h4>
                         <div id="mobileWalletStatus">
                             <div class="alert alert-warning">
                                 <strong>📱 Mobile Wallet Required</strong><br>
@@ -409,13 +741,25 @@
                 <!-- Wallet Status -->
                 <div class="col-md-4 col-12 mt-4">
                     <div class="glassy-card">
-                        <h4 class="glassy-title"><i class="fas fa-wallet"></i> Wallet Status</h4>
-                        <p>Status: <span id="connectionStatus">Not Connected</span></p>
-                        <p>Account: <span id="accountAddress">-</span></p>
-                        <p>Network: <span id="networkName">-</span></p>
+                        <h4 class="glassy-title">
+                            <i class="fas fa-wallet me-2"></i> Wallet Status
+                        </h4>
+                        <div class="wallet-status-info">
+                            <div class="status-item">
+                                <span class="label">Status:</span>
+                                <span id="connectionStatus" class="value text-warning">Not Connected</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="label">Account:</span>
+                                <span id="accountAddress" class="value text-muted">-</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="label">Network:</span>
+                                <span id="networkName" class="value text-muted">-</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
 
             <!-- Row 2: BNB & Token Balance -->
@@ -423,11 +767,14 @@
                 <!-- BNB Balance -->
                 <div class="col-md-6 col-12">
                     <div class="glassy-card">
-                        <h4 class="glassy-title"><i class="fas fa-coins"></i> BNB Balance</h4>
-                        <div class="d-flex flex-column align-items-start justify-content-between h-100">
+                        <h4 class="glassy-title">
+                            <i class="fas fa-coins me-2"></i> BNB Balance
+                        </h4>
+                        <div class="balance-container">
                             <h3 id="bnbBalance" class="balance-value mb-3">0.00 BNB</h3>
-                            <button id="refreshBnbBtn" class="btn btn-outline-light btn-custom-sm">
-                                <i class="fas fa-sync-alt"></i> Refresh
+                            <p class="text-muted mb-4">Your BNB wallet balance</p>
+                            <button id="refreshBnbBtn" class="btn btn-outline-success btn-custom-sm">
+                                <i class="fas fa-sync-alt me-2"></i> Refresh
                             </button>
                         </div>
                     </div>
@@ -436,31 +783,34 @@
                 <!-- Token Balance -->
                 <div class="col-md-6 col-12 mt-4">
                     <div class="glassy-card">
-                        <h4 class="glassy-title"><i class="fab fa-ethereum"></i> Token Balance</h4>
-                        <div class="d-flex flex-column justify-content-between h-100">
+                        <h4 class="glassy-title">
+                            <i class="fab fa-ethereum me-2"></i> Token Balance
+                        </h4>
+                        <div class="token-container">
                             <div class="input-group mb-3">
                                 <input type="text" id="tokenAddress" class="form-control"
                                     placeholder="Token Contract Address">
-                                <button id="checkTokenBtn" class="btn btn-outline-light btn-custom-sm">
-                                    <i class="fas fa-search"></i> Check
+                                <button id="checkTokenBtn" class="btn btn-outline-success btn-custom-sm">
+                                    <i class="fas fa-search me-2"></i> Check
                                 </button>
                             </div>
                             <h3 id="tokenBalance" class="balance-value">0.00 Tokens</h3>
+                            <p class="text-muted">Check any ERC-20 token balance</p>
                         </div>
                     </div>
                 </div>
             </div>
 
 
-            <!-- Send Section -->
+                            <!-- Send Section -->
             <div class="col-12 mt-4">
                 <div class="glassy-card">
-                    <h5 class="card-title">
-                        <i class="fas fa-paper-plane"></i> Send Tokens
-                    </h5>
-                    <div class="row">
+                                        <h5 class="card-title">
+                                            <i class="fas fa-paper-plane"></i> Send Tokens
+                                        </h5>
+                                        <div class="row">
                         <!-- Toggle Buttons -->
-                        <div class="col-12 mb-3">
+                                            <div class="col-12 mb-3">
                             <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap; margin-top:8px;">
 
                                 <!-- Send BNB -->
@@ -470,67 +820,67 @@
                                     style="display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 20px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; border:2px solid #3b82f6; color:#3b82f6; background:transparent; transition:all 0.3s ease;">
                                     <i class="fas fa-coins"></i>
                                     <span>Send BNB</span>
-                                </label>
+                                                    </label>
 
                                 <!-- Send Token -->
-                                <input type="radio" class="btn-check" name="sendType" id="sendToken" value="token">
+                                                    <input type="radio" class="btn-check" name="sendType" id="sendToken" value="token">
                                 <label for="sendToken"
                                     style="display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 20px; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer; border:2px solid #10b981; color:#10b981; background:transparent; transition:all 0.3s ease;">
                                     <i class="fab fa-ethereum"></i>
                                     <span>Send Token</span>
-                                </label>
+                                                    </label>
+                                                </div>
+                                            </div>
+
+
+                                            <!-- BNB Send Form -->
+                        <div class="col-12 mt-4" id="bnbSendForm">
+                                                <form id="sendBnbForm">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Recipient Address</label>
+                                                        <input type="text" id="bnbRecipient" class="form-control" placeholder="0x...">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Amount (BNB)</label>
+                                    <input type="number" id="bnbAmount" class="form-control" step="0.000001"
+                                        placeholder="0.00">
+                                                    </div>
+                                <button type="submit" class="btn btn-success w-100">
+                                                        <i class="fas fa-paper-plane"></i> Send BNB
+                                                    </button>
+                                                </form>
+                                            </div>
+
+                                            <!-- Token Send Form -->
+                                            <div class="col-12" id="tokenSendForm" style="display: none;">
+                                                <form id="sendTokenForm">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Token Contract Address</label>
+                                                        <input type="text" id="tokenContract" class="form-control" placeholder="0x...">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Recipient Address</label>
+                                                        <input type="text" id="tokenRecipient" class="form-control" placeholder="0x...">
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Amount</label>
+                                    <input type="number" id="tokenAmount" class="form-control" step="0.000001"
+                                        placeholder="0.00">
+                                                    </div>
+                                                    <button type="submit" class="btn btn-success w-100">
+                                                        <i class="fas fa-paper-plane"></i> Send Token
+                                                    </button>
+                                                </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
 
-                        <!-- BNB Send Form -->
-                        <div class="col-12 mt-4" id="bnbSendForm">
-                            <form id="sendBnbForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Recipient Address</label>
-                                    <input type="text" id="bnbRecipient" class="form-control" placeholder="0x...">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Amount (BNB)</label>
-                                    <input type="number" id="bnbAmount" class="form-control" step="0.000001"
-                                        placeholder="0.00">
-                                </div>
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="fas fa-paper-plane"></i> Send BNB
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Token Send Form -->
-                        <div class="col-12" id="tokenSendForm" style="display: none;">
-                            <form id="sendTokenForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Token Contract Address</label>
-                                    <input type="text" id="tokenContract" class="form-control" placeholder="0x...">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Recipient Address</label>
-                                    <input type="text" id="tokenRecipient" class="form-control" placeholder="0x...">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Amount</label>
-                                    <input type="number" id="tokenAmount" class="form-control" step="0.000001"
-                                        placeholder="0.00">
-                                </div>
-                                <button type="submit" class="btn btn-success w-100">
-                                    <i class="fas fa-paper-plane"></i> Send Token
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Transaction History -->
+                        <!-- Transaction History -->
             <div class="glassy-card mt-4 mb-4">
                 <h4 class="glassy-title"><i class="fas fa-history"></i> Transaction History</h4>
-                <div id="transactionHistory">
+                                        <div id="transactionHistory">
                     <table class="table table-dark-glassy table-hover align-middle mb-0">
                         <thead>
                             <tr>
@@ -547,62 +897,62 @@
                             </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
+                                        </div>
+                                    </div>
 
-        </div>
     </div>
+</div>
 
 
-    <!-- Transaction Modal -->
-    <div class="modal fade" id="transactionModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Transaction Status</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="transactionStatus">
-                        <div class="text-center">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-2">Processing transaction...</p>
+<!-- Transaction Modal -->
+<div class="modal fade" id="transactionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Transaction Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="transactionStatus">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
+                        <p class="mt-2">Processing transaction...</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
-    <script>
-        // Wait for ethers to load
-        window.addEventListener('load', function() {
-            if (typeof ethers === 'undefined') {
-                console.error('Ethers.js not loaded');
-                return;
-            }
+<script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+<script>
+    // Wait for ethers to load
+    window.addEventListener('load', function() {
+        if (typeof ethers === 'undefined') {
+            console.error('Ethers.js not loaded');
+            return;
+        }
 
-            // Load wallet service after ethers is available
-            const script = document.createElement('script');
-            script.src = "{{ asset('js/wallet-service.js') }}";
-            script.onload = function() {
-                initializeWalletApp();
-            };
-            document.head.appendChild(script);
-        });
+        // Load wallet service after ethers is available
+        const script = document.createElement('script');
+        script.src = "{{ asset('js/wallet-service.js') }}";
+        script.onload = function() {
+            initializeWalletApp();
+        };
+        document.head.appendChild(script);
+    });
 
-        // Test function for debugging
-        function testConnection() {
-            console.log('Test button clicked');
-            console.log('Ethers available:', typeof ethers !== 'undefined');
-            console.log('Wallet service available:', typeof window.walletService !== 'undefined');
-            console.log('Ethereum available:', typeof window.ethereum !== 'undefined');
+    // Test function for debugging
+    function testConnection() {
+        console.log('Test button clicked');
+        console.log('Ethers available:', typeof ethers !== 'undefined');
+        console.log('Wallet service available:', typeof window.walletService !== 'undefined');
+        console.log('Ethereum available:', typeof window.ethereum !== 'undefined');
 
-            // Show test results in UI
-            const testResults = `
+        // Show test results in UI
+        const testResults = `
         <div class="alert alert-info">
             <h6>Test Results:</h6>
             <p>Ethers.js: ${typeof ethers !== 'undefined' ? '✅ Loaded' : '❌ Not Loaded'}</p>
@@ -611,19 +961,19 @@
         </div>
     `;
 
-            // Show results in wallet status area
-            const walletStatus = document.getElementById('walletStatus');
-            walletStatus.innerHTML = testResults;
+        // Show results in wallet status area
+        const walletStatus = document.getElementById('walletStatus');
+        walletStatus.innerHTML = testResults;
 
-            if (typeof window.walletService !== 'undefined') {
-                console.log('Wallet service found, testing connection...');
-                window.walletService.connectWallet().then(result => {
-                    console.log('Connection result:', result);
-                });
-            } else {
-                console.log('Wallet service not loaded yet');
-            }
+        if (typeof window.walletService !== 'undefined') {
+            console.log('Wallet service found, testing connection...');
+            window.walletService.connectWallet().then(result => {
+                console.log('Connection result:', result);
+            });
+        } else {
+            console.log('Wallet service not loaded yet');
         }
+    }
 
         // Wallet state persistence
         function saveWalletState(account, walletType) {
@@ -667,38 +1017,38 @@
             }
         });
 
-        // Mobile wallet connection function
-        window.connectMobileWallet = async function(walletType) {
-            console.log('Mobile wallet connection:', walletType);
+    // Mobile wallet connection function
+    window.connectMobileWallet = async function(walletType) {
+        console.log('Mobile wallet connection:', walletType);
 
-            // Check if we're on mobile
+        // Check if we're on mobile
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator
                 .userAgent);
 
-            if (isMobile) {
-                // Mobile device - direct connection
-                await connectWalletDirect();
-            } else {
-                // Desktop - show QR code or redirect
-                if (walletType === 'trust') {
-                    showTrustWalletInstructions();
-                } else if (walletType === 'metamask') {
-                    showMetaMaskInstructions();
-                }
+        if (isMobile) {
+            // Mobile device - direct connection
+            await connectWalletDirect();
+        } else {
+            // Desktop - show QR code or redirect
+            if (walletType === 'trust') {
+                showTrustWalletInstructions();
+            } else if (walletType === 'metamask') {
+                showMetaMaskInstructions();
             }
-        };
+        }
+    };
 
-        // Show Trust Wallet instructions for desktop users
-        function showTrustWalletInstructions() {
-            document.getElementById('mobileWalletStatus').innerHTML = `
+    // Show Trust Wallet instructions for desktop users
+    function showTrustWalletInstructions() {
+        document.getElementById('mobileWalletStatus').innerHTML = `
     <div class="alert alert-info" style="color:#fff; background:#0b2c44; border-radius:10px; padding:15px;">
-        <h6>📱 Trust Wallet Setup for Desktop</h6>
-        <p class="mb-3">To use Trust Wallet on desktop:</p>
-        <ol class="text-start">
-            <li>Install Trust Wallet mobile app</li>
-            <li>Open Trust Wallet in mobile browser</li>
-            <li>Or install Trust Wallet Chrome extension</li>
-        </ol>
+            <h6>📱 Trust Wallet Setup for Desktop</h6>
+            <p class="mb-3">To use Trust Wallet on desktop:</p>
+            <ol class="text-start">
+                <li>Install Trust Wallet mobile app</li>
+                <li>Open Trust Wallet in mobile browser</li>
+                <li>Or install Trust Wallet Chrome extension</li>
+            </ol>
         <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
             <a href="https://trustwallet.com/" target="_blank"
                style="display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px; color:#fff; background-color:#f59e0b; white-space:nowrap; flex:1; text-align:center;">
@@ -712,22 +1062,22 @@
                 <i class="fab fa-chrome"></i>
                 <span>Chrome Extension</span>
             </a>
+            </div>
         </div>
-    </div>
     `;
-        }
+    }
 
-        // Show MetaMask instructions for desktop users
-        function showMetaMaskInstructions() {
-            document.getElementById('mobileWalletStatus').innerHTML = `
+    // Show MetaMask instructions for desktop users
+    function showMetaMaskInstructions() {
+        document.getElementById('mobileWalletStatus').innerHTML = `
     <div class="alert alert-info" style="color:#fff; background:#0b2c44; border-radius:10px; padding:15px;">
-        <h6>🦊 MetaMask Setup for Desktop</h6>
-        <p class="mb-3">To use MetaMask on desktop:</p>
-        <ol class="text-start">
-            <li>Install MetaMask mobile app</li>
-            <li>Open MetaMask in mobile browser</li>
-            <li>Or install MetaMask Chrome extension</li>
-        </ol>
+            <h6>🦊 MetaMask Setup for Desktop</h6>
+            <p class="mb-3">To use MetaMask on desktop:</p>
+            <ol class="text-start">
+                <li>Install MetaMask mobile app</li>
+                <li>Open MetaMask in mobile browser</li>
+                <li>Or install MetaMask Chrome extension</li>
+            </ol>
         <div style="display:flex; gap:12px; margin-top:12px; flex-wrap:wrap;">
             <a href="https://metamask.io/download/" target="_blank"
                style="display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:10px 16px; border-radius:8px; text-decoration:none; font-weight:600; font-size:14px; color:#fff; background-color:#f59e0b; white-space:nowrap; flex:1; text-align:center;">
@@ -741,25 +1091,25 @@
                 <i class="fab fa-chrome"></i>
                 <span>Chrome Extension</span>
             </a>
+            </div>
         </div>
-    </div>
     `;
-        }
+    }
 
-        // Show alternative methods
-        function showAlternativeMethods() {
-            const methods = document.getElementById('alternativeMethods');
-            methods.style.display = methods.style.display === 'none' ? 'block' : 'none';
-        }
+    // Show alternative methods
+    function showAlternativeMethods() {
+        const methods = document.getElementById('alternativeMethods');
+        methods.style.display = methods.style.display === 'none' ? 'block' : 'none';
+    }
 
-        // Show QR code for mobile connection
-        function showQRCode() {
-            const qrSection = document.getElementById('qrCodeSection');
-            const qrContainer = document.getElementById('qrCodeContainer');
+    // Show QR code for mobile connection
+    function showQRCode() {
+        const qrSection = document.getElementById('qrCodeSection');
+        const qrContainer = document.getElementById('qrCodeContainer');
 
-            // Generate QR code for current page URL
-            const currentUrl = window.location.href;
-            qrContainer.innerHTML = `
+        // Generate QR code for current page URL
+        const currentUrl = window.location.href;
+        qrContainer.innerHTML = `
         <div class="alert alert-light">
             <h6>📱 Scan with Mobile Wallet</h6>
             <p>Open this URL in your mobile wallet browser:</p>
@@ -770,32 +1120,32 @@
         </div>
     `;
 
-            qrSection.style.display = 'block';
+        qrSection.style.display = 'block';
+    }
+
+    // Hide QR code
+    function hideQRCode() {
+        document.getElementById('qrCodeSection').style.display = 'none';
+    }
+
+    // Mobile deposit functions
+    window.openMobileWallet = function(type) {
+        if (!currentAccount) {
+            showErrorMessage('Please connect your wallet first');
+            return;
         }
 
-        // Hide QR code
-        function hideQRCode() {
-            document.getElementById('qrCodeSection').style.display = 'none';
-        }
+        if (type === 'bnb') {
+            // Open mobile wallet to send BNB
+            const depositAddress = currentAccount;
+            const bscScanUrl = `https://bscscan.com/address/${depositAddress}`;
 
-        // Mobile deposit functions
-        window.openMobileWallet = function(type) {
-            if (!currentAccount) {
-                showErrorMessage('Please connect your wallet first');
-                return;
-            }
+            // Try to open in mobile wallet
+            const walletUrl = `trust://wc?uri=${encodeURIComponent(window.location.href)}`;
+            window.open(walletUrl, '_blank');
 
-            if (type === 'bnb') {
-                // Open mobile wallet to send BNB
-                const depositAddress = currentAccount;
-                const bscScanUrl = `https://bscscan.com/address/${depositAddress}`;
-
-                // Try to open in mobile wallet
-                const walletUrl = `trust://wc?uri=${encodeURIComponent(window.location.href)}`;
-                window.open(walletUrl, '_blank');
-
-                // Show instructions
-                document.getElementById('mobileWalletStatus').innerHTML = `
+            // Show instructions
+            document.getElementById('mobileWalletStatus').innerHTML = `
             <div class="alert alert-info">
                 <h6>📱 Deposit BNB Instructions</h6>
                 <p class="mb-2">To deposit BNB:</p>
@@ -817,11 +1167,11 @@
                 </div>
             </div>
         `;
-            } else if (type === 'token') {
-                // Open mobile wallet to send BEP20 token
-                const depositAddress = currentAccount;
+        } else if (type === 'token') {
+            // Open mobile wallet to send BEP20 token
+            const depositAddress = currentAccount;
 
-                document.getElementById('mobileWalletStatus').innerHTML = `
+            document.getElementById('mobileWalletStatus').innerHTML = `
             <div class="alert alert-info">
                 <h6>📱 Deposit BEP20 Token Instructions</h6>
                 <p class="mb-2">To deposit BEP20 tokens:</p>
@@ -842,43 +1192,43 @@
                 </div>
             </div>
         `;
-            }
-        };
-
-        // Copy deposit address
-        window.copyDepositAddress = function() {
-            if (currentAccount) {
-                copyToClipboard(currentAccount);
-                showSuccessMessage('Deposit address copied to clipboard!');
-            } else {
-                showErrorMessage('Please connect your wallet first');
-            }
-        };
-
-        // Copy to clipboard utility
-        function copyToClipboard(text) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    console.log('Copied to clipboard:', text);
-                });
-            } else {
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-            }
         }
+    };
 
-        // Simple connect function that definitely works
-        window.simpleConnect = async function() {
-            console.log('Simple connect called');
+    // Copy deposit address
+    window.copyDepositAddress = function() {
+        if (currentAccount) {
+            copyToClipboard(currentAccount);
+            showSuccessMessage('Deposit address copied to clipboard!');
+        } else {
+            showErrorMessage('Please connect your wallet first');
+        }
+    };
 
-            // Check if any Web3 wallet is installed (MetaMask, TrustWallet, etc.)
-            if (typeof window.ethereum === 'undefined') {
-                document.getElementById('walletStatus').innerHTML = `
+    // Copy to clipboard utility
+    function copyToClipboard(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                console.log('Copied to clipboard:', text);
+            });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+    }
+
+    // Simple connect function that definitely works
+    window.simpleConnect = async function() {
+        console.log('Simple connect called');
+
+        // Check if any Web3 wallet is installed (MetaMask, TrustWallet, etc.)
+        if (typeof window.ethereum === 'undefined') {
+            document.getElementById('walletStatus').innerHTML = `
             <div class="alert alert-danger">
                 <h6>Web3 Wallet Not Found</h6>
                 <p>Please install a Web3 wallet:</p>
@@ -895,68 +1245,68 @@
                 </div>
             </div>
         `;
-                return;
+            return;
+        }
+
+        try {
+            // Detect wallet type
+            let walletType = 'Unknown';
+            if (window.ethereum.isMetaMask) {
+                walletType = 'MetaMask';
+            } else if (window.ethereum.isTrust) {
+                walletType = 'Trust Wallet';
+            } else if (window.ethereum.isCoinbaseWallet) {
+                walletType = 'Coinbase Wallet';
             }
 
-            try {
-                // Detect wallet type
-                let walletType = 'Unknown';
-                if (window.ethereum.isMetaMask) {
-                    walletType = 'MetaMask';
-                } else if (window.ethereum.isTrust) {
-                    walletType = 'Trust Wallet';
-                } else if (window.ethereum.isCoinbaseWallet) {
-                    walletType = 'Coinbase Wallet';
+            console.log('Detected wallet:', walletType);
+
+            // Request account access
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
+
+            if (accounts.length > 0) {
+                // Switch to BSC network
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{
+                            chainId: '0x38'
+                        }], // BSC Mainnet
+                    });
+                } catch (switchError) {
+                    // If BSC network is not added, add it
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: '0x38',
+                                chainName: 'Binance Smart Chain',
+                                nativeCurrency: {
+                                    name: 'BNB',
+                                    symbol: 'BNB',
+                                    decimals: 18,
+                                },
+                                rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                                blockExplorerUrls: ['https://bscscan.com/'],
+                            }],
+                        });
+                    }
                 }
 
-                console.log('Detected wallet:', walletType);
+                // Update UI
+                document.getElementById('connectionStatus').textContent = 'Connected';
+                document.getElementById('accountAddress').textContent = accounts[0];
+                document.getElementById('networkName').textContent = 'BSC Mainnet';
 
-                // Request account access
-                const accounts = await window.ethereum.request({
-                    method: 'eth_requestAccounts'
-                });
+                // Update button
+                const connectBtn = document.getElementById('connectWalletBtn');
+                connectBtn.textContent = 'Disconnect';
+                connectBtn.className = 'btn btn-danger';
 
-                if (accounts.length > 0) {
-                    // Switch to BSC network
-                    try {
-                        await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
-                            params: [{
-                                chainId: '0x38'
-                            }], // BSC Mainnet
-                        });
-                    } catch (switchError) {
-                        // If BSC network is not added, add it
-                        if (switchError.code === 4902) {
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: '0x38',
-                                    chainName: 'Binance Smart Chain',
-                                    nativeCurrency: {
-                                        name: 'BNB',
-                                        symbol: 'BNB',
-                                        decimals: 18,
-                                    },
-                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                                    blockExplorerUrls: ['https://bscscan.com/'],
-                                }],
-                            });
-                        }
-                    }
-
-                    // Update UI
-                    document.getElementById('connectionStatus').textContent = 'Connected';
-                    document.getElementById('accountAddress').textContent = accounts[0];
-                    document.getElementById('networkName').textContent = 'BSC Mainnet';
-
-                    // Update button
-                    const connectBtn = document.getElementById('connectWalletBtn');
-                    connectBtn.textContent = 'Disconnect';
-                    connectBtn.className = 'btn btn-danger';
-
-                    // Show success message
-                    document.getElementById('walletStatus').innerHTML = `
+                // Show success message
+                document.getElementById('walletStatus').innerHTML = `
                 <div class="alert alert-success">
                     <h6>✅ Wallet Connected Successfully!</h6>
                     <p><strong>Wallet:</strong> ${walletType}</p>
@@ -965,26 +1315,26 @@
                 </div>
             `;
 
-                    console.log('Wallet connected:', accounts[0], 'Type:', walletType);
-                }
-            } catch (error) {
-                console.error('Connection error:', error);
-                document.getElementById('walletStatus').innerHTML = `
+                console.log('Wallet connected:', accounts[0], 'Type:', walletType);
+            }
+        } catch (error) {
+            console.error('Connection error:', error);
+            document.getElementById('walletStatus').innerHTML = `
             <div class="alert alert-danger">
                 <h6>❌ Connection Failed</h6>
                 <p>Error: ${error.message}</p>
             </div>
         `;
-            }
-        };
+        }
+    };
 
-        // Trust Wallet specific connection
-        window.connectTrustWallet = async function() {
-            console.log('Trust Wallet connection called');
+    // Trust Wallet specific connection
+    window.connectTrustWallet = async function() {
+        console.log('Trust Wallet connection called');
 
-            // Check if Trust Wallet is available
-            if (typeof window.ethereum === 'undefined') {
-                document.getElementById('walletStatus').innerHTML = `
+        // Check if Trust Wallet is available
+        if (typeof window.ethereum === 'undefined') {
+            document.getElementById('walletStatus').innerHTML = `
             <div class="alert alert-info">
                 <h6>📱 Trust Wallet Setup Required</h6>
                 <p>To use Trust Wallet with this DApp:</p>
@@ -1003,68 +1353,68 @@
                 </div>
             </div>
         `;
-                return;
-            }
+            return;
+        }
 
-            // Check if it's Trust Wallet
-            if (!window.ethereum.isTrust) {
-                document.getElementById('walletStatus').innerHTML = `
+        // Check if it's Trust Wallet
+        if (!window.ethereum.isTrust) {
+            document.getElementById('walletStatus').innerHTML = `
             <div class="alert alert-warning">
                 <h6>⚠️ Trust Wallet Not Detected</h6>
                 <p>Please make sure you're using Trust Wallet browser or have Trust Wallet extension installed.</p>
                 <p>Current wallet: ${window.ethereum.isMetaMask ? 'MetaMask' : 'Other'}</p>
             </div>
         `;
-                return;
-            }
+            return;
+        }
 
-            try {
-                // Connect to Trust Wallet
-                const accounts = await window.ethereum.request({
-                    method: 'eth_requestAccounts'
-                });
+        try {
+            // Connect to Trust Wallet
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
 
-                if (accounts.length > 0) {
-                    // Switch to BSC network
-                    try {
+            if (accounts.length > 0) {
+                // Switch to BSC network
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{
+                            chainId: '0x38'
+                        }], // BSC Mainnet
+                    });
+                } catch (switchError) {
+                    // Add BSC network if not present
+                    if (switchError.code === 4902) {
                         await window.ethereum.request({
-                            method: 'wallet_switchEthereumChain',
+                            method: 'wallet_addEthereumChain',
                             params: [{
-                                chainId: '0x38'
-                            }], // BSC Mainnet
+                                chainId: '0x38',
+                                chainName: 'Binance Smart Chain',
+                                nativeCurrency: {
+                                    name: 'BNB',
+                                    symbol: 'BNB',
+                                    decimals: 18,
+                                },
+                                rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                                blockExplorerUrls: ['https://bscscan.com/'],
+                            }],
                         });
-                    } catch (switchError) {
-                        // Add BSC network if not present
-                        if (switchError.code === 4902) {
-                            await window.ethereum.request({
-                                method: 'wallet_addEthereumChain',
-                                params: [{
-                                    chainId: '0x38',
-                                    chainName: 'Binance Smart Chain',
-                                    nativeCurrency: {
-                                        name: 'BNB',
-                                        symbol: 'BNB',
-                                        decimals: 18,
-                                    },
-                                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
-                                    blockExplorerUrls: ['https://bscscan.com/'],
-                                }],
-                            });
-                        }
                     }
+                }
 
-                    // Update UI
-                    document.getElementById('connectionStatus').textContent = 'Connected';
-                    document.getElementById('accountAddress').textContent = accounts[0];
-                    document.getElementById('networkName').textContent = 'BSC Mainnet';
+                // Update UI
+                document.getElementById('connectionStatus').textContent = 'Connected';
+                document.getElementById('accountAddress').textContent = accounts[0];
+                document.getElementById('networkName').textContent = 'BSC Mainnet';
 
-                    // Update button
-                    const connectBtn = document.getElementById('connectWalletBtn');
-                    connectBtn.textContent = 'Disconnect';
-                    connectBtn.className = 'btn btn-danger';
+                // Update button
+                const connectBtn = document.getElementById('connectWalletBtn');
+                connectBtn.textContent = 'Disconnect';
+                connectBtn.className = 'btn btn-danger';
 
-                    // Show success message
-                    document.getElementById('walletStatus').innerHTML = `
+                // Show success message
+                document.getElementById('walletStatus').innerHTML = `
                 <div class="alert alert-success">
                     <h6>✅ Trust Wallet Connected Successfully!</h6>
                     <p><strong>Wallet:</strong> Trust Wallet</p>
@@ -1074,36 +1424,36 @@
                 </div>
             `;
 
-                    console.log('Trust Wallet connected:', accounts[0]);
-                }
-            } catch (error) {
-                console.error('Trust Wallet connection error:', error);
-                document.getElementById('walletStatus').innerHTML = `
+                console.log('Trust Wallet connected:', accounts[0]);
+            }
+        } catch (error) {
+            console.error('Trust Wallet connection error:', error);
+            document.getElementById('walletStatus').innerHTML = `
             <div class="alert alert-danger">
                 <h6>❌ Trust Wallet Connection Failed</h6>
                 <p>Error: ${error.message}</p>
                 <small class="text-muted">Make sure Trust Wallet is unlocked and try again.</small>
             </div>
         `;
-            }
-        };
+        }
+    };
 
-        function initializeWalletApp() {
-            document.addEventListener('DOMContentLoaded', function() {
-                const connectBtn = document.getElementById('connectWalletBtn');
-                const refreshBnbBtn = document.getElementById('refreshBnbBtn');
-                const checkTokenBtn = document.getElementById('checkTokenBtn');
-                const sendBnbForm = document.getElementById('sendBnbForm');
-                const sendTokenForm = document.getElementById('sendTokenForm');
+    function initializeWalletApp() {
+        document.addEventListener('DOMContentLoaded', function() {
+            const connectBtn = document.getElementById('connectWalletBtn');
+            const refreshBnbBtn = document.getElementById('refreshBnbBtn');
+            const checkTokenBtn = document.getElementById('checkTokenBtn');
+            const sendBnbForm = document.getElementById('sendBnbForm');
+            const sendTokenForm = document.getElementById('sendTokenForm');
 
-                let currentAccount = null;
+            let currentAccount = null;
 
-                // Check wallet availability on page load
-                function checkWalletAvailability() {
-                    if (typeof window.ethereum === 'undefined') {
-                        // Show helpful message
-                        const walletStatus = document.getElementById('walletStatus');
-                        walletStatus.innerHTML = `
+            // Check wallet availability on page load
+            function checkWalletAvailability() {
+                if (typeof window.ethereum === 'undefined') {
+                    // Show helpful message
+                    const walletStatus = document.getElementById('walletStatus');
+                    walletStatus.innerHTML = `
                 <div class="alert alert-warning">
                     <h6>Wallet Not Detected</h6>
                     <p class="mb-2">To use this DApp, please install a Web3 wallet:</p>
@@ -1118,133 +1468,133 @@
                     <small class="text-muted">After installation, refresh this page.</small>
                 </div>
             `;
-                    }
                 }
+            }
 
-                // Run check on page load
-                checkWalletAvailability();
+            // Run check on page load
+            checkWalletAvailability();
 
-                // Mobile form switching
-                document.querySelectorAll('input[name="sendType"]').forEach(radio => {
-                    radio.addEventListener('change', function() {
-                        const bnbForm = document.getElementById('bnbSendForm');
-                        const tokenForm = document.getElementById('tokenSendForm');
+            // Mobile form switching
+            document.querySelectorAll('input[name="sendType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const bnbForm = document.getElementById('bnbSendForm');
+                    const tokenForm = document.getElementById('tokenSendForm');
 
-                        if (this.value === 'bnb') {
-                            bnbForm.style.display = 'block';
-                            tokenForm.style.display = 'none';
-                        } else {
-                            bnbForm.style.display = 'none';
-                            tokenForm.style.display = 'block';
-                        }
-                    });
+                    if (this.value === 'bnb') {
+                        bnbForm.style.display = 'block';
+                        tokenForm.style.display = 'none';
+                    } else {
+                        bnbForm.style.display = 'none';
+                        tokenForm.style.display = 'block';
+                    }
                 });
+            });
 
-                // Add direct connection method as fallback
-                window.connectWalletDirect = async function() {
-                    console.log('Direct wallet connection called');
+            // Add direct connection method as fallback
+            window.connectWalletDirect = async function() {
+                console.log('Direct wallet connection called');
 
-                    if (typeof window.ethereum === 'undefined') {
+                if (typeof window.ethereum === 'undefined') {
                         showErrorMessage(
                             'No Web3 wallet detected. Please install MetaMask or similar wallet.');
-                        return;
-                    }
+                    return;
+                }
 
-                    try {
-                        const accounts = await window.ethereum.request({
-                            method: 'eth_requestAccounts'
-                        });
-                        if (accounts.length > 0) {
-                            currentAccount = accounts[0];
-                            updateWalletStatus();
-                            loadBalances();
-                            showSuccessMessage('Wallet connected successfully!');
-                        }
-                    } catch (error) {
-                        console.error('Direct connection error:', error);
-                        showErrorMessage('Connection failed: ' + error.message);
+                try {
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+                    if (accounts.length > 0) {
+                        currentAccount = accounts[0];
+                        updateWalletStatus();
+                        loadBalances();
+                        showSuccessMessage('Wallet connected successfully!');
                     }
-                };
+                } catch (error) {
+                    console.error('Direct connection error:', error);
+                    showErrorMessage('Connection failed: ' + error.message);
+                }
+            };
 
-                // Utility functions for messages
-                function showSuccessMessage(message) {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
-                    alertDiv.innerHTML = `
+            // Utility functions for messages
+            function showSuccessMessage(message) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                alertDiv.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
                     document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body')
                         .firstChild);
 
-                    // Auto remove after 5 seconds
-                    setTimeout(() => {
-                        if (alertDiv.parentNode) {
-                            alertDiv.remove();
-                        }
-                    }, 5000);
-                }
+                // Auto remove after 5 seconds
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
+            }
 
-                function showErrorMessage(message) {
-                    const alertDiv = document.createElement('div');
-                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-                    alertDiv.innerHTML = `
+            function showErrorMessage(message) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
                     document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body')
                         .firstChild);
 
-                    // Auto remove after 8 seconds
-                    setTimeout(() => {
-                        if (alertDiv.parentNode) {
-                            alertDiv.remove();
-                        }
-                    }, 8000);
+                // Auto remove after 8 seconds
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 8000);
+            }
+
+            // Connect wallet
+            connectBtn.addEventListener('click', async function() {
+                console.log('Connect wallet button clicked');
+
+                // Check if wallet service is available
+                if (typeof window.walletService === 'undefined') {
+                    showErrorMessage('Wallet service not loaded. Please refresh the page.');
+                    return;
                 }
 
-                // Connect wallet
-                connectBtn.addEventListener('click', async function() {
-                    console.log('Connect wallet button clicked');
-
-                    // Check if wallet service is available
-                    if (typeof window.walletService === 'undefined') {
-                        showErrorMessage('Wallet service not loaded. Please refresh the page.');
-                        return;
-                    }
-
-                    try {
-                        const result = await window.walletService.connectWallet();
-                        if (result.success) {
-                            currentAccount = result.account;
+                try {
+                    const result = await window.walletService.connectWallet();
+                    if (result.success) {
+                        currentAccount = result.account;
                             saveWalletState(result.account, 'Web3 Extension');
-                            updateWalletStatus();
-                            loadBalances();
-                            showSuccessMessage('Wallet connected successfully!');
-                        } else {
-                            // Error message already shown in modal
-                            console.log('Connection failed:', result.error);
-                        }
-                    } catch (error) {
-                        console.error('Connection error:', error);
-                        showErrorMessage('Connection failed: ' + error.message);
+                        updateWalletStatus();
+                        loadBalances();
+                        showSuccessMessage('Wallet connected successfully!');
+                    } else {
+                        // Error message already shown in modal
+                        console.log('Connection failed:', result.error);
                     }
-                });
+                } catch (error) {
+                    console.error('Connection error:', error);
+                    showErrorMessage('Connection failed: ' + error.message);
+                }
+            });
 
-                // Update wallet status display
-                function updateWalletStatus() {
-                    if (currentAccount) {
-                        document.getElementById('connectionStatus').textContent = 'Connected';
-                        document.getElementById('accountAddress').textContent = currentAccount;
-                        document.getElementById('networkName').textContent = 'BSC Mainnet';
-                        connectBtn.textContent = 'Disconnect';
-                        connectBtn.className = 'btn btn-danger';
+            // Update wallet status display
+            function updateWalletStatus() {
+                if (currentAccount) {
+                    document.getElementById('connectionStatus').textContent = 'Connected';
+                    document.getElementById('accountAddress').textContent = currentAccount;
+                    document.getElementById('networkName').textContent = 'BSC Mainnet';
+                    connectBtn.textContent = 'Disconnect';
+                    connectBtn.className = 'btn btn-danger';
 
-                        // Update deposit address
-                        document.getElementById('depositAddress').value = currentAccount;
+                    // Update deposit address
+                    document.getElementById('depositAddress').value = currentAccount;
 
-                        // Update mobile wallet status
-                        document.getElementById('mobileWalletStatus').innerHTML = `
+                    // Update mobile wallet status
+                    document.getElementById('mobileWalletStatus').innerHTML = `
                 <div class="alert alert-success">
                     <h6>✅ Mobile Wallet Connected!</h6>
                     <p><strong>Account:</strong> ${currentAccount}</p>
@@ -1252,18 +1602,18 @@
                     <p class="mb-0">You can now deposit and send BSC BEP20 tokens!</p>
                 </div>
             `;
-                    } else {
-                        document.getElementById('connectionStatus').textContent = 'Not Connected';
-                        document.getElementById('accountAddress').textContent = '-';
-                        document.getElementById('networkName').textContent = '-';
-                        connectBtn.textContent = 'Connect Wallet';
-                        connectBtn.className = 'btn btn-light';
+                } else {
+                    document.getElementById('connectionStatus').textContent = 'Not Connected';
+                    document.getElementById('accountAddress').textContent = '-';
+                    document.getElementById('networkName').textContent = '-';
+                    connectBtn.textContent = 'Connect Wallet';
+                    connectBtn.className = 'btn btn-light';
 
-                        // Reset deposit address
-                        document.getElementById('depositAddress').value = 'Connect wallet to get address';
+                    // Reset deposit address
+                    document.getElementById('depositAddress').value = 'Connect wallet to get address';
 
-                        // Reset mobile wallet status
-                        document.getElementById('mobileWalletStatus').innerHTML = `
+                    // Reset mobile wallet status
+                    document.getElementById('mobileWalletStatus').innerHTML = `
                 <div class="alert alert-warning">
                     <h6>📱 Mobile Wallet Required</h6>
                     <p class="mb-2">For the best experience, use a mobile wallet app:</p>
@@ -1281,87 +1631,87 @@
                     </div>
                 </div>
             `;
-                    }
                 }
+            }
 
-                // Load balances
-                async function loadBalances() {
-                    if (!currentAccount) return;
+            // Load balances
+            async function loadBalances() {
+                if (!currentAccount) return;
 
-                    try {
-                        const bnbBalance = await window.walletService.getBalance();
+                try {
+                    const bnbBalance = await window.walletService.getBalance();
                         document.getElementById('bnbBalance').textContent = parseFloat(bnbBalance).toFixed(6) +
                             ' BNB';
-                    } catch (error) {
-                        console.error('Error loading BNB balance:', error);
-                    }
+                } catch (error) {
+                    console.error('Error loading BNB balance:', error);
+                }
+            }
+
+            // Refresh BNB balance
+            refreshBnbBtn.addEventListener('click', loadBalances);
+
+            // Check token balance
+            checkTokenBtn.addEventListener('click', async function() {
+                const tokenAddress = document.getElementById('tokenAddress').value;
+                if (!tokenAddress) {
+                    alert('Please enter token contract address');
+                    return;
                 }
 
-                // Refresh BNB balance
-                refreshBnbBtn.addEventListener('click', loadBalances);
-
-                // Check token balance
-                checkTokenBtn.addEventListener('click', async function() {
-                    const tokenAddress = document.getElementById('tokenAddress').value;
-                    if (!tokenAddress) {
-                        alert('Please enter token contract address');
-                        return;
-                    }
-
-                    try {
-                        const balance = await window.walletService.getBalance(tokenAddress);
+                try {
+                    const balance = await window.walletService.getBalance(tokenAddress);
                         document.getElementById('tokenBalance').textContent = parseFloat(balance)
                             .toFixed(6) + ' Tokens';
-                    } catch (error) {
-                        alert('Error checking token balance: ' + error.message);
-                    }
-                });
+                } catch (error) {
+                    alert('Error checking token balance: ' + error.message);
+                }
+            });
 
-                // Send BNB
-                sendBnbForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const recipient = document.getElementById('bnbRecipient').value;
-                    const amount = document.getElementById('bnbAmount').value;
+            // Send BNB
+            sendBnbForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const recipient = document.getElementById('bnbRecipient').value;
+                const amount = document.getElementById('bnbAmount').value;
 
-                    if (!recipient || !amount) {
-                        alert('Please fill all fields');
-                        return;
-                    }
-
-                    showTransactionModal();
-                    const result = await window.walletService.sendToken(recipient, amount);
-                    handleTransactionResult(result);
-                });
-
-                // Send Token
-                sendTokenForm.addEventListener('submit', async function(e) {
-                    e.preventDefault();
-                    const contract = document.getElementById('tokenContract').value;
-                    const recipient = document.getElementById('tokenRecipient').value;
-                    const amount = document.getElementById('tokenAmount').value;
-
-                    if (!contract || !recipient || !amount) {
-                        alert('Please fill all fields');
-                        return;
-                    }
-
-                    showTransactionModal();
-                    const result = await window.walletService.sendToken(recipient, amount, contract);
-                    handleTransactionResult(result);
-                });
-
-                // Show transaction modal
-                function showTransactionModal() {
-                    const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
-                    modal.show();
+                if (!recipient || !amount) {
+                    alert('Please fill all fields');
+                    return;
                 }
 
-                // Handle transaction result
-                async function handleTransactionResult(result) {
-                    const statusDiv = document.getElementById('transactionStatus');
+                showTransactionModal();
+                const result = await window.walletService.sendToken(recipient, amount);
+                handleTransactionResult(result);
+            });
 
-                    if (result.success) {
-                        statusDiv.innerHTML = `
+            // Send Token
+            sendTokenForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const contract = document.getElementById('tokenContract').value;
+                const recipient = document.getElementById('tokenRecipient').value;
+                const amount = document.getElementById('tokenAmount').value;
+
+                if (!contract || !recipient || !amount) {
+                    alert('Please fill all fields');
+                    return;
+                }
+
+                showTransactionModal();
+                const result = await window.walletService.sendToken(recipient, amount, contract);
+                handleTransactionResult(result);
+            });
+
+            // Show transaction modal
+            function showTransactionModal() {
+                const modal = new bootstrap.Modal(document.getElementById('transactionModal'));
+                modal.show();
+            }
+
+            // Handle transaction result
+            async function handleTransactionResult(result) {
+                const statusDiv = document.getElementById('transactionStatus');
+
+                if (result.success) {
+                    statusDiv.innerHTML = `
                 <div class="alert alert-info">
                     <h6>Transaction Submitted!</h6>
                     <p>Tx Hash: <a href="https://bscscan.com/tx/${result.txHash}" target="_blank">${result.txHash}</a></p>
@@ -1369,35 +1719,35 @@
                 </div>
             `;
 
-                        // Wait for confirmation
-                        const confirmation = await window.walletService.waitForTransaction(result.txHash);
-                        if (confirmation.success) {
-                            statusDiv.innerHTML = `
+                    // Wait for confirmation
+                    const confirmation = await window.walletService.waitForTransaction(result.txHash);
+                    if (confirmation.success) {
+                        statusDiv.innerHTML = `
                     <div class="alert alert-success">
                         <h6>Transaction Confirmed!</h6>
                         <p>Block: ${confirmation.blockNumber}</p>
                         <p>Gas Used: ${confirmation.gasUsed}</p>
                     </div>
                 `;
-                            loadBalances(); // Refresh balances
-                        } else {
-                            statusDiv.innerHTML = `
+                        loadBalances(); // Refresh balances
+                    } else {
+                        statusDiv.innerHTML = `
                     <div class="alert alert-danger">
                         <h6>Transaction Failed!</h6>
                         <p>${confirmation.error}</p>
                     </div>
                 `;
-                        }
-                    } else {
-                        statusDiv.innerHTML = `
+                    }
+                } else {
+                    statusDiv.innerHTML = `
                 <div class="alert alert-danger">
                     <h6>Transaction Failed!</h6>
                     <p>${result.error}</p>
                 </div>
             `;
-                    }
                 }
-            });
-        }
-    </script>
+            }
+        });
+    }
+</script>
 @endsection

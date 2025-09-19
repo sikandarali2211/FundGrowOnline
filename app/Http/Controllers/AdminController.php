@@ -15,7 +15,41 @@ class AdminController extends Controller
         $newUsersToday   = User::whereDate('created_at', today())->count();
         $newUsers7Days   = User::where('created_at', '>=', now()->subDays(7))->count();
 
-        return view('admin.index', compact('totalUsers', 'newUsersToday', 'newUsers7Days'));
+        // Chart data for users
+        $usersChartData = [];
+        $usersChartLabels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $usersChartLabels[] = $date->format('M d');
+            $usersChartData[] = User::whereDate('created_at', $date)->count();
+        }
+
+        // Chart data for sales (using plan selections as proxy)
+        $salesChartData = [];
+        $salesChartLabels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $salesChartLabels[] = $date->format('M d');
+            $salesChartData[] = \App\Models\PlanSelection::whereDate('created_at', $date)->sum('plan_amount') ?? 0;
+        }
+
+        // Debug data
+        \Log::info('Chart Data:', [
+            'usersChartLabels' => $usersChartLabels,
+            'usersChartData' => $usersChartData,
+            'salesChartLabels' => $salesChartLabels,
+            'salesChartData' => $salesChartData
+        ]);
+
+        return view('admin.index', compact(
+            'totalUsers', 
+            'newUsersToday', 
+            'newUsers7Days',
+            'usersChartData',
+            'usersChartLabels',
+            'salesChartData',
+            'salesChartLabels'
+        ));
     }
     public function showUserPlan($userId)
     {

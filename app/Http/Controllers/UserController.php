@@ -46,14 +46,44 @@ class UserController extends Controller
             ->where('created_at', '>=', now()->subDays(7))
             ->count();
 
+        // Calculate wallet balance from user investments
+        $walletBalance = $this->calculateWalletBalance($user->id);
+
         return view('user.index', compact(
             'totalReferrals',
             'directReferrals', 
             'newReferralsToday',
-            'newReferralsWeek'
+            'newReferralsWeek',
+            'walletBalance'
         ));
     }
     
+    /**
+     * Calculate user's wallet balance from investments
+     */
+    private function calculateWalletBalance($userId)
+    {
+        try {
+            // Get user's total investment amount from user_investments table
+            $totalInvestment = \App\Models\UserInvestment::where('user_id', $userId)
+                ->where('status', 'active')
+                ->sum('amount');
+            
+            // Get user's total returns from plan payments
+            $totalReturns = \App\Models\PlanPayment::where('user_id', $userId)
+                ->where('status', 'completed')
+                ->sum('amount');
+            
+            // Calculate wallet balance (investments + returns)
+            $walletBalance = $totalInvestment + $totalReturns;
+            
+            return number_format($walletBalance, 2);
+        } catch (\Exception $e) {
+            // If there's any error, return 0
+            return '0.00';
+        }
+    }
+
     /**
      * Recursively calculate total referrals across all levels - Only Active users
      */
