@@ -124,11 +124,7 @@
             </div>
 
             <div class="navbar-menu-wrapper d-flex align-items-stretch" style="background-color: #072d42;">
-                <!-- Mobile Sidebar Toggle -->
-                {{-- <button class="navbar-toggler navbar-toggler-right d-lg-none" type="button" id="mobileSidebarToggle">
-                    <span style="color: #3bd17a; margin-left:40px;" class="fas fa-bars"></span>
-                </button> --}}
-
+    
                 <!-- Search -->
                 <ul class="navbar-nav">
                     <li class="nav-item nav-search d-none d-md-flex">

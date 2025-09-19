@@ -128,153 +128,163 @@
             display: inline-block;
         }
     </style>
-
-    <div class="payment-container">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <!-- Header -->
-                    <div class="text-center mb-4">
-                        <h2 class="text-success mb-3">
-                            <i class="fa fa-credit-card me-2"></i>Payment for Investment Plan
-                        </h2>
-                        <p class="text-muted">Complete your payment to activate your investment plan</p>
-                    </div>
-
-                    <!-- Plan Information -->
-                    <div class="payment-card mb-4">
-                        <div class="plan-info">
-                            <h4 class="text-success mb-3">
-                                <i class="fa fa-chart-line me-2"></i>{{ $plan['name'] }}
-                            </h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="mb-2"><strong>Investment Amount:</strong></p>
-                                    <h3 class="text-warning">${{ number_format($plan['amount'], 2) }}</h3>
-                                </div>
-                                <div class="col-md-6">
-                                    <p class="mb-2"><strong>Expected Return:</strong></p>
-                                    <h3 class="text-success">${{ number_format($plan['amount'] * (1 + $plan['return_percentage'] / 100), 2) }}</h3>
-                                </div>
-                            </div>
-                            <div class="row mt-3">
-                                <div class="col-md-6">
-                                    <p class="mb-1"><strong>Duration:</strong> {{ $plan['duration_days'] }} days</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p class="mb-1"><strong>Return Rate:</strong> {{ $plan['return_percentage'] }}%</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Wallet Connection Section -->
-                    <div class="payment-card mb-4">
-                        <div class="wallet-connect-section">
-                            <h5 class="text-white mb-4">
-                                <i class="fa fa-wallet me-2"></i>Connect Your Wallet
-                            </h5>
-                            
-                            <div id="walletConnectSection">
-                                <button id="connectWalletBtn" class="btn btn-wallet w-100 mb-3">
-                                    <i class="fa fa-wallet me-2"></i>Connect Wallet
-                                </button>
-                                <p class="text-muted text-center">
-                                    Connect your Trust Wallet or MetaMask to proceed with payment
-                                </p>
-                            </div>
-
-                            <div id="walletInfoSection" class="wallet-info" style="display: none;">
-                                <h6 class="text-success mb-3">
-                                    <i class="fa fa-check-circle me-2"></i>Wallet Connected
-                                </h6>
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <strong>Address:</strong>
-                                        <div id="walletAddress" class="text-muted font-monospace"></div>
-                                    </div>
-                                    <div class="col-md-4 text-end">
-                                        <button id="disconnectWalletBtn" class="btn btn-outline-danger btn-sm">
-                                            <i class="fa fa-times me-1"></i>Disconnect
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Payment Form -->
-                    <div class="payment-card">
-                        <div class="payment-form">
-                            <h5 class="text-white mb-4">
-                                <i class="fa fa-credit-card me-2"></i>Payment Details
-                            </h5>
-
-                            <form id="paymentForm">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="paymentAmount" class="form-label">Amount (BNB)</label>
-                                            <input type="number" class="form-control" id="paymentAmount" 
-                                                   value="{{ $plan['amount'] }}" readonly>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            <label for="currency" class="form-label">Currency</label>
-                                            <select class="form-control" id="currency">
-                                                <option value="BNB">BNB</option>
-                                                <option value="USDT">USDT</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <label for="adminWalletAddress" class="form-label">Admin Wallet Address</label>
-                                    <div class="input-group">
-                                        <input type="text" class="form-control" id="adminWalletAddress" 
-                                               value="0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6" readonly>
-                                        <button type="button" class="btn btn-outline-success" id="copyAddressBtn">
-                                            <i class="fa fa-copy"></i>
-                                        </button>
-                                    </div>
-                                    <small class="form-text text-muted">Send payment to this address</small>
-                                </div>
-
-                                <div class="form-group mb-3">
-                                    <label for="transactionHash" class="form-label">Transaction Hash</label>
-                                    <input type="text" class="form-control" id="transactionHash" 
-                                           placeholder="0x..." required>
-                                    <small class="form-text text-muted">Enter the transaction hash after sending payment</small>
-                                </div>
-
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-payment btn-lg" id="submitPaymentBtn">
-                                        <span class="loading-spinner me-2">
-                                            <i class="fa fa-spinner fa-spin"></i>
-                                        </span>
-                                        <i class="fa fa-paper-plane me-2"></i>Submit Payment
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Payment Status -->
-                    <div id="paymentStatus" class="mt-4" style="display: none;">
-                        <div class="payment-card">
-                            <div class="text-center">
-                                <div id="statusIcon" class="mb-3">
-                                    <i class="fa fa-spinner fa-spin fa-3x text-warning"></i>
-                                </div>
-                                <h4 id="statusTitle" class="text-white mb-3">Processing Payment...</h4>
-                                <p id="statusMessage" class="text-muted mb-3">Please wait while we verify your payment</p>
-                                <div id="statusBadge" class="status-badge status-pending">Pending</div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="main-panel">
+        <div class="payment-container">
+            <div class="container">
+                <!-- Header -->
+                <div class="text-center mb-4">
+                    <h2 class="text-success mb-3">
+                        <i class="fa fa-credit-card me-2"></i> Payment for Investment Plan
+                    </h2>
+                    <p class="text-muted">Complete your payment to activate your investment plan</p>
                 </div>
+
+                <div class="row">
+                    <!-- LEFT SIDE -->
+                    <div class="col-lg-6 col-md-12">
+                        <!-- Plan Information -->
+                        <div class="payment-card mb-4">
+                            <div class="plan-info">
+                                <h4 class="text-success mb-3">
+                                    <i class="fa fa-chart-line me-2"></i>{{ $plan['name'] }}
+                                </h4>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Investment Amount:</strong></p>
+                                        <h3 class="text-warning">${{ number_format($plan['amount'], 2) }}</h3>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Expected Return:</strong></p>
+                                        <h3 class="text-success">
+                                            ${{ number_format($plan['amount'] * (1 + $plan['return_percentage'] / 100), 2) }}
+                                        </h3>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Duration:</strong> {{ $plan['duration_days'] }} days</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-1"><strong>Return Rate:</strong> {{ $plan['return_percentage'] }}%
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wallet Connection Section -->
+                        <div class="payment-card mb-4">
+                            <div class="wallet-connect-section">
+                                <h5 class="text-white mb-4">
+                                    <i class="fa fa-wallet me-2"></i>Connect Your Wallet
+                                </h5>
+
+                                <div id="walletConnectSection">
+                                    <button id="connectWalletBtn" class="btn btn-wallet w-100 mb-3">
+                                        <i class="fa fa-wallet me-2"></i>Connect Wallet
+                                    </button>
+                                    <p class="text-muted text-center">
+                                        Connect your Trust Wallet or MetaMask to proceed with payment
+                                    </p>
+                                </div>
+
+                                <div id="walletInfoSection" class="wallet-info" style="display: none;">
+                                    <h6 class="text-success mb-3">
+                                        <i class="fa fa-check-circle me-2"></i>Wallet Connected
+                                    </h6>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <strong>Address:</strong>
+                                            <div id="walletAddress" class="text-muted font-monospace"></div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <button id="disconnectWalletBtn" class="btn btn-outline-danger btn-sm">
+                                                <i class="fa fa-times me-1"></i>Disconnect
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT SIDE -->
+                    <div class="col-lg-6 col-md-12">
+                        <!-- Payment Form -->
+                        <div class="payment-card">
+                            <div class="payment-form">
+                                <h5 class="text-white mb-4">
+                                    <i class="fa fa-credit-card me-2"></i>Payment Details
+                                </h5>
+
+                                <form id="paymentForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="paymentAmount" class="form-label">Amount (BNB)</label>
+                                                <input type="number" class="form-control" id="paymentAmount"
+                                                    value="{{ $plan['amount'] }}" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="currency" class="form-label">Currency</label>
+                                                <select class="form-control" id="currency">
+                                                    <option value="BNB">BNB</option>
+                                                    <option value="USDT">USDT</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="adminWalletAddress" class="form-label">Admin Wallet Address</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="adminWalletAddress"
+                                                value="0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6" readonly>
+                                            <button type="button" class="btn btn-outline-success" id="copyAddressBtn">
+                                                <i class="fa fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <small class="form-text text-muted">Send payment to this address</small>
+                                    </div>
+
+                                    <div class="form-group mb-3">
+                                        <label for="transactionHash" class="form-label">Transaction Hash</label>
+                                        <input type="text" class="form-control" id="transactionHash" placeholder="0x..."
+                                            required>
+                                        <small class="form-text text-muted">Enter the transaction hash after sending
+                                            payment</small>
+                                    </div>
+
+                                    <div class="text-center">
+                                        <button type="submit" class="btn btn-payment btn-lg" id="submitPaymentBtn">
+                                            <span class="loading-spinner me-2">
+                                                <i class="fa fa-spinner fa-spin"></i>
+                                            </span>
+                                            <i class="fa fa-paper-plane me-2"></i>Submit Payment
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Payment Status -->
+                        <div id="paymentStatus" class="mt-4" style="display: none;">
+                            <div class="payment-card">
+                                <div class="text-center">
+                                    <div id="statusIcon" class="mb-3">
+                                        <i class="fa fa-spinner fa-spin fa-3x text-warning"></i>
+                                    </div>
+                                    <h4 id="statusTitle" class="text-white mb-3">Processing Payment...</h4>
+                                    <p id="statusMessage" class="text-muted mb-3">Please wait while we verify your payment
+                                    </p>
+                                    <div id="statusBadge" class="status-badge status-pending">Pending</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- row end -->
             </div>
         </div>
     </div>
@@ -312,22 +322,22 @@
         async function connectWallet() {
             const connectBtn = document.getElementById('connectWalletBtn');
             const originalText = connectBtn.innerHTML;
-            
+
             try {
                 connectBtn.disabled = true;
                 connectBtn.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Connecting...';
-                
+
                 const result = await walletService.connectWallet();
-                
+
                 if (result.success) {
                     walletAddress = result.account;
                     isWalletConnected = true;
-                    
+
                     // Update UI
                     document.getElementById('walletAddress').textContent = walletAddress;
                     document.getElementById('walletConnectSection').style.display = 'none';
                     document.getElementById('walletInfoSection').style.display = 'block';
-                    
+
                     showStatus('success', 'Wallet connected successfully!');
                 } else {
                     showStatus('error', result.error || 'Failed to connect wallet');
@@ -344,14 +354,14 @@
             if (walletService) {
                 walletService.disconnect();
             }
-            
+
             isWalletConnected = false;
             walletAddress = null;
-            
+
             // Reset UI
             document.getElementById('walletConnectSection').style.display = 'block';
             document.getElementById('walletInfoSection').style.display = 'none';
-            
+
             showStatus('info', 'Wallet disconnected');
         }
 
@@ -364,39 +374,39 @@
 
         async function submitPayment(event) {
             event.preventDefault();
-            
+
             if (!isWalletConnected) {
                 showStatus('error', 'Please connect your wallet first');
                 return;
             }
-            
+
             const transactionHash = document.getElementById('transactionHash').value.trim();
             const amount = document.getElementById('paymentAmount').value;
             const currency = document.getElementById('currency').value;
-            
+
             if (!transactionHash) {
                 showStatus('error', 'Please enter transaction hash');
                 return;
             }
-            
+
             if (!transactionHash.startsWith('0x') || transactionHash.length !== 66) {
                 showStatus('error', 'Please enter a valid transaction hash');
                 return;
             }
-            
+
             try {
                 const submitBtn = document.getElementById('submitPaymentBtn');
                 const spinner = submitBtn.querySelector('.loading-spinner');
-                
+
                 submitBtn.disabled = true;
                 spinner.classList.add('show');
-                
+
                 // Show payment status
                 document.getElementById('paymentStatus').style.display = 'block';
                 updatePaymentStatus('processing', 'Processing Payment...', 'Please wait while we verify your payment');
-                
+
                 // Submit payment
-                const response = await fetch('{{ route("payment.process") }}', {
+                const response = await fetch('{{ route('payment.process') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -410,24 +420,25 @@
                         currency: currency
                     })
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    updatePaymentStatus('success', 'Payment Submitted!', 'Your payment has been submitted and is pending verification');
+                    updatePaymentStatus('success', 'Payment Submitted!',
+                        'Your payment has been submitted and is pending verification');
                     showStatus('success', 'Payment submitted successfully!');
                 } else {
                     updatePaymentStatus('error', 'Payment Failed', result.message);
                     showStatus('error', result.message);
                 }
-                
+
             } catch (error) {
                 updatePaymentStatus('error', 'Payment Failed', 'An error occurred while processing payment');
                 showStatus('error', 'Payment failed: ' + error.message);
             } finally {
                 const submitBtn = document.getElementById('submitPaymentBtn');
                 const spinner = submitBtn.querySelector('.loading-spinner');
-                
+
                 submitBtn.disabled = false;
                 spinner.classList.remove('show');
             }
@@ -438,10 +449,10 @@
             const statusTitle = document.getElementById('statusTitle');
             const statusMessage = document.getElementById('statusMessage');
             const statusBadge = document.getElementById('statusBadge');
-            
+
             statusTitle.textContent = title;
             statusMessage.textContent = message;
-            
+
             if (type === 'success') {
                 statusIcon.innerHTML = '<i class="fa fa-check-circle fa-3x text-success"></i>';
                 statusBadge.className = 'status-badge status-success';
@@ -462,7 +473,7 @@
             if (typeof window.ethereum !== 'undefined' && window.ethereum.selectedAddress) {
                 walletAddress = window.ethereum.selectedAddress;
                 isWalletConnected = true;
-                
+
                 // Update UI
                 document.getElementById('walletAddress').textContent = walletAddress;
                 document.getElementById('walletConnectSection').style.display = 'none';
@@ -473,21 +484,22 @@
         function showStatus(type, message) {
             // Create status message
             const statusDiv = document.createElement('div');
-            statusDiv.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
+            statusDiv.className =
+                `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show`;
             statusDiv.style.position = 'fixed';
             statusDiv.style.top = '20px';
             statusDiv.style.right = '20px';
             statusDiv.style.zIndex = '9999';
             statusDiv.style.minWidth = '300px';
-            
+
             statusDiv.innerHTML = `
                 <i class="fa fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             `;
-            
+
             document.body.appendChild(statusDiv);
-            
+
             // Auto remove after 5 seconds
             setTimeout(() => {
                 if (statusDiv.parentNode) {

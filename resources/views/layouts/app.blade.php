@@ -12,6 +12,14 @@
     <link rel="stylesheet" href="{{ asset('assets/css/line-awesome.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/main.css') }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.theme.default.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+
 
     <style>
         html,
@@ -161,7 +169,7 @@
     <nav class="navbar navbar-expand-lg d-lg-none">
         <div class="container-fluid">
             <a class="navbar-brand text-white" href="/">
-                <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="40">
+                <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="87">
             </a>
             <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false"
@@ -209,61 +217,38 @@
                                     <img src="assets/images/logo/FundGrow-logo.png" alt="footer">
                                 </a>
                             </div>
-                            <ul class="footer__links">
-                                <!-- <li>
-                                    <a href="Mailto:info@yourdomain.com">info@yourdomain.com</a>
-                                </li>
-                                <li>
-                                    <h5 class="m-0 fw--semibold">
-                                        <a href="Tel:+0015481592491" class="text-white">+001 548 159 2491</a>
-                                    </h5>
-                                </li> -->
-                            </ul>
+
                             <ul class="social-icons-2 mt-3">
                                 <li>
-                                    <a href="#">
+                                    <a href=" https://www.facebook.com/share/1FQpXZA1nf/?mibextid=wwXIfr">
                                         <i class="fab fa-facebook-f"></i>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#">
-                                        <i class="fab fa-twitter"></i>
+                                    <a href="https://x.com/FundGrowOnline">
+                                        <i class="fa-brands fa-x-twitter"></i>
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#">
+                                    <a href="https://www.instagram.com/fundgrowonline?igsh=MTF2YzBndWp3bGluYg%3D%3D&utm_source=qr">
                                         <i class="fab fa-instagram"></i>
                                     </a>
                                 </li>
+                                 <li>
+                                    <a href="https://www.tiktok.com/@fundgrowonline?is_from_webapp=1&sender_device=pc">
+                                        <i class="fab fa-tiktok"></i>
+                                    </a>
+                                </li>
                                 <li>
-                                    <a href="#">
-                                        <i class="fab fa-pinterest"></i>
+                                    <a href=" https://www.youtube.com/channel/UCEVvRqXZksgc0cOSwNj1yJg">
+                                        <i class="fab fa-youtube"></i>
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <div class="col-lg-3 col-sm-6">
-                        <!-- <div class="text-start footer-widget social-border-color-1">
-                            <h6 class="footer__title text-white">About Company</h6>
-                            <ul class="footer__links">
-                                <li>
-                                    <a href="#">Web Design</a>
-                                </li>
-                                <li>
-                                    <a href="#">Development</a>
-                                </li>
-                                <li>
-                                    <a href="#">Graphic Design</a>
-                                </li>
-                                <li>
-                                    <a href="#">Branding</a>
-                                </li>
-                                <li>
-                                    <a href="#">Creative Solution</a>
-                                </li>
-                            </ul>
-                        </div> -->
+
                     </div>
                     <div class="col-lg-3 col-sm-6">
                         <div class="text-start footer-widget social-border-color-1">
@@ -284,10 +269,7 @@
                                     <a href="#">
                                         Contact Us</a>
                                 </li>
-                                <!-- <li>
-                                    <a href="#">
-                                        Terms Conditions</a>
-                                </li> -->
+
                             </ul>
                         </div>
                     </div>
@@ -319,25 +301,7 @@
                             resurved.
                         </div>
                     </div>
-                    <!-- <div class="col-lg-6">
-                        <ul class="quick-links justify-content-center justify-content-lg-end">
-                            <li>
-                                <a href="#">Home</a>
-                            </li>
-                            <li>
-                                <a href="#">Buy or Sell</a>
-                            </li>
-                            <li>
-                                <a href="#">Privacy Policy</a>
-                            </li>
-                            <li>
-                                <a href="#">Faq</a>
-                            </li>
-                            <li>
-                                <a href="#">Contact</a>
-                            </li>
-                        </ul>
-                    </div> -->
+
                 </div>
             </div>
         </div>
@@ -346,7 +310,6 @@
 
 
     <!-- Scripts -->
-    <script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>

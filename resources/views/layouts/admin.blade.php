@@ -117,18 +117,13 @@
                     <img src="{{ asset('assets/images/favicon.png') }}" alt="FundGrow Online"
                         style="height: 100px; width: auto; max-width: 500px;" />
                 </a>
-                <a class="navbar-brand brand-logo-mini" href="/">
+                <a class="navbar-brand brand-logo-mini" href="javascript:void(0);" id="mobileSidebarToggle">
                     <img src="{{ asset('assets/images/favicon.png') }}" alt="FundGrow Online"
                         style="height: 100px; width: auto; max-width: 500px;" />
                 </a>
             </div>
 
             <div class="navbar-menu-wrapper d-flex align-items-stretch" style="background-color: #072d42;">
-                <!-- Mobile Sidebar Toggle -->
-                <button class="navbar-toggler navbar-toggler-right d-lg-none" type="button" id="mobileSidebarToggle">
-                    <span style="color: #3bd17a; margin-left:40px;" class="fas fa-bars"></span>
-                </button>
-
                 <!-- Search -->
                 <ul class="navbar-nav">
                     <li class="nav-item nav-search d-none d-md-flex">
@@ -240,16 +235,15 @@
                         <i class="fa fa-clipboard-list menu-icon mr-2" style="color: #3bd17a;"></i>
                         <span class="menu-title" style="color: #3bd17a;">Plan Selections</span>
                         @php
-                        $pendingCount = \App\Models\PlanSelection::where('status', 'pending')->count();
+                            $pendingCount = \App\Models\PlanSelection::where('status', 'pending')->count();
                         @endphp
                         @if ($pendingCount > 0)
-                        <span class="badge badge-warning badge-pill ml-auto">{{ $pendingCount }}</span>
+                            <span class="badge badge-warning badge-pill ml-auto">{{ $pendingCount }}</span>
                         @endif
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center px-3 py-2"
-                        href="{{ route('admin.wallet.index') }}">
+                    <a class="nav-link d-flex align-items-center px-3 py-2" href="{{ route('admin.wallet.index') }}">
                         <i class="fa fa-wallet menu-icon mr-2" style="color: #3bd17a;"></i>
                         <span class="menu-title" style="color: #3bd17a;">Wallet Connect</span>
                     </a>
