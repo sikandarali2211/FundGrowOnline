@@ -117,7 +117,7 @@
                     <img src="{{ asset('assets/images/favicon.png') }}" alt="FundGrow Online"
                         style="height: 100px; width: auto; max-width: 500px;" />
                 </a>
-                <a class="navbar-brand brand-logo-mini" href="/">
+                <a class="navbar-brand brand-logo-mini" href="javascript:void(0);" id="mobileSidebarToggle">
                     <img src="{{ asset('assets/images/favicon.png') }}" alt="FundGrow Online"
                         style="height: 100px; width: auto; max-width: 500px;" />
                 </a>
@@ -125,9 +125,9 @@
 
             <div class="navbar-menu-wrapper d-flex align-items-stretch" style="background-color: #072d42;">
                 <!-- Mobile Sidebar Toggle -->
-                <button class="navbar-toggler navbar-toggler-right d-lg-none" type="button" id="mobileSidebarToggle">
+                {{-- <button class="navbar-toggler navbar-toggler-right d-lg-none" type="button" id="mobileSidebarToggle">
                     <span style="color: #3bd17a; margin-left:40px;" class="fas fa-bars"></span>
-                </button>
+                </button> --}}
 
                 <!-- Search -->
                 <ul class="navbar-nav">
@@ -157,7 +157,7 @@
                         </a>
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown"
                             aria-labelledby="profileDropdown">
-                            <a class="dropdown-item" href="{{ route('user.settings.index') }}" >
+                            <a class="dropdown-item" href="{{ route('user.settings.index') }}">
                                 <i style="color: #3bd17a;" class="fas fa-cog text-primary"></i> Settings
                             </a>
                             <div class="dropdown-divider"></div>

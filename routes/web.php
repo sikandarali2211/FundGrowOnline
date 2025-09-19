@@ -19,6 +19,7 @@ use App\Http\Controllers\ReferralPlanController;   // ← NEW
 use App\Http\Controllers\PlanSelectionController;   // ← NEW
 use App\Http\Controllers\AdminInvestmentPlanController;   // ← NEW
 use App\Http\Controllers\AdminWalletController;   // ← NEW
+use App\Http\Controllers\PaymentController;   // ← NEW
 
 Route::view('/', 'index');
 
@@ -88,7 +89,15 @@ Route::middleware(['auth'])->prefix('User-dashboard')->name('user.')->group(func
     Route::get('/wallet/transactions', [TransactionController::class, 'getTransactionHistory'])->name('wallet.transactions');
     Route::post('/wallet/transactions', [TransactionController::class, 'storeTransaction'])->name('wallet.store');
     Route::patch('/wallet/transactions/{txHash}', [TransactionController::class, 'updateTransactionStatus'])->name('wallet.update');
+
+    // Payment Routes
+    Route::post('/payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');
+    Route::get('/payment/history', [PaymentController::class, 'getPaymentHistory'])->name('payment.history');
 });
+
+// Public Payment Routes (accessible without authentication)
+Route::get('/payment/{planId}', [PaymentController::class, 'showPaymentForm'])->name('payment.form');
+Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');
 
 
 // Main User Dashboard Route
@@ -117,6 +126,11 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
     Route::post('/admin/wallet/balance', [AdminWalletController::class, 'getBalance'])->name('admin.wallet.balance');
     Route::post('/admin/wallet/send', [AdminWalletController::class, 'sendTransaction'])->name('admin.wallet.send');
     Route::get('/admin/wallet/transactions', [AdminWalletController::class, 'getTransactionHistory'])->name('admin.wallet.transactions');
+
+    // Admin Payment Routes
+    Route::get('/admin/payments', [PaymentController::class, 'getPendingPayments'])->name('admin.payments.index');
+    Route::post('/admin/payments/{transaction_id}/confirm', [PaymentController::class, 'confirmPayment'])->name('admin.payments.confirm');
+    Route::post('/admin/payments/{transaction_id}/reject', [PaymentController::class, 'rejectPayment'])->name('admin.payments.reject');
     Route::patch('/admin/user-plan/{planId}/status', [AdminController::class, 'updatePlanStatus'])->name('admin.user-plan.update-status');
 
     // Investment Plans Management

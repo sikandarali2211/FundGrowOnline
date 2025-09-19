@@ -9,13 +9,15 @@ class UserInvestment extends Model
     protected $fillable = [
         'user_id',
         'investment_plan_id',
+        'plan_id',
         'amount',
         'status',
         'invested_at',
         'activated_at',
         'maturity_date',
         'return_amount',
-        'payment_status'
+        'payment_status',
+        'payment_transaction_id'
     ];
 
     protected $casts = [
@@ -34,6 +36,16 @@ class UserInvestment extends Model
     public function investmentPlan()
     {
         return $this->belongsTo(InvestmentPlan::class);
+    }
+
+    public function plan()
+    {
+        return $this->belongsTo(InvestmentPlan::class, 'plan_id');
+    }
+
+    public function paymentTransaction()
+    {
+        return $this->belongsTo(PaymentTransaction::class);
     }
 
 
