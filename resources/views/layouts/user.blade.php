@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Fund Grow Online</title>
 
     <!-- Plugins CSS -->
@@ -203,6 +204,16 @@
                                 style="color: #3bd17a; font-weight: 600; font-size: 15px; white-space: normal; word-break: break-word; line-height: 1.3;">
                                 Welcome, {{ Auth::user()->full_name ?? Auth::user()->name }}
                             </p>
+                            <!-- Security PIN Status -->
+                            @if(Auth::user()->hasCompletedPINSetup())
+                                <small class="text-success">
+                                    <i class="fas fa-shield-alt"></i> PIN Secured
+                                </small>
+                            @else
+                                <small class="text-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> PIN Required
+                                </small>
+                            @endif
                         </div>
                     </div>
                 </li>
@@ -251,6 +262,12 @@
                     <a class="nav-link " href="{{ route('user.settings.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-cog menu-icon"></i>
                         <span class="menu-title" style="color: #3bd17a !important;">Setting</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('security.pin.change') }}">
+                        <i style="color: #3bd17a !important;" class="fa fa-shield-alt menu-icon"></i>
+                        <span class="menu-title" style="color: #3bd17a !important;">Security</span>
                     </a>
                 </li>
             </ul>

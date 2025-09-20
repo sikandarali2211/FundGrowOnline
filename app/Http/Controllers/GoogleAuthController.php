@@ -83,6 +83,12 @@ class GoogleAuthController extends Controller
             }
 
             Auth::login($user);
+            
+            // Check if user needs to setup PIN (new user or existing user without PIN)
+            if (!$user->hasCompletedPINSetup()) {
+                return redirect('/security/pin/setup');
+            }
+            
             return redirect()->intended('/User-dashboard');
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Failed to login with Google: ' . $e->getMessage());

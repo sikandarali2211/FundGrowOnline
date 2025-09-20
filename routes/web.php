@@ -20,6 +20,7 @@ use App\Http\Controllers\PlanSelectionController;   // ← NEW
 use App\Http\Controllers\AdminInvestmentPlanController;   // ← NEW
 use App\Http\Controllers\AdminWalletController;   // ← NEW
 use App\Http\Controllers\PaymentController;   // ← NEW
+use App\Http\Controllers\SecurityController;   // ← NEW
 
 Route::view('/', 'index');
 
@@ -27,6 +28,20 @@ Route::view('/', 'index');
 Route::get('/test-plan-selections', function () {
     $selections = \App\Models\PlanSelection::with(['user'])->get();
     return view('admin.plan-selections.index', compact('selections'));
+});
+
+// Test route for email OTP (remove in production)
+Route::get('/test-email-otp', function () {
+    $user = \App\Models\User::first();
+    if ($user) {
+        $results = $user->sendOTP(['email']);
+        return response()->json([
+            'user' => $user->name . ' (' . $user->email . ')',
+            'email_result' => $results['email'] ? 'Success' : 'Failed',
+            'message' => $results['email'] ? 'OTP sent to email successfully!' : 'Failed to send email OTP'
+        ]);
+    }
+    return response()->json(['error' => 'No users found']);
 });
 
 
@@ -41,7 +56,22 @@ Route::get('/register', fn () => view('auth.register'))->name('register');
 
 */
 
-Route::middleware(['auth'])->prefix('User-dashboard')->name('user.')->group(function () {
+// Security PIN routes
+Route::middleware(['auth'])->prefix('security')->name('security.')->group(function () {
+    Route::get('/pin/setup', [SecurityController::class, 'showPINSetup'])->name('pin.setup');
+    Route::post('/pin/setup', [SecurityController::class, 'setupPIN'])->name('pin.setup.store');
+    Route::post('/pin/send-otp', [SecurityController::class, 'sendOTPForPINSetup'])->name('pin.send-otp');
+    
+    Route::get('/pin/verify', [SecurityController::class, 'showPINVerification'])->name('pin.verify');
+    Route::post('/pin/verify', [SecurityController::class, 'verifyPIN'])->name('pin.verify.store');
+    
+    Route::get('/pin/change', [SecurityController::class, 'showPINChange'])->name('pin.change');
+    Route::post('/pin/change', [SecurityController::class, 'changePIN'])->name('pin.change.store');
+    
+    Route::post('/pin/clear-verification', [SecurityController::class, 'clearPINVerification'])->name('pin.clear-verification');
+});
+
+Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name('user.')->group(function () {
     Route::get('/', [UserController::class, 'index'])->name('index');
 
     // Referral link page 
@@ -82,16 +112,22 @@ Route::middleware(['auth'])->prefix('User-dashboard')->name('user.')->group(func
     Route::post('/plan-selections', [PlanSelectionController::class, 'store'])->name('plan-selections.store');
     Route::get('/plan-selections/success', [PlanSelectionController::class, 'success'])->name('plan-selections.success');
 
-    // Wallet and Transaction Routes
-    Route::post('/wallet/verify-transaction', [TransactionController::class, 'verifyTransaction'])->name('wallet.verify');
+    // Wallet and Transaction Routes (require PIN verification)
+    Route::middleware(['require.pin.verification'])->group(function () {
+        Route::post('/wallet/verify-transaction', [TransactionController::class, 'verifyTransaction'])->name('wallet.verify');
+        Route::post('/wallet/transactions', [TransactionController::class, 'storeTransaction'])->name('wallet.store');
+        Route::patch('/wallet/transactions/{txHash}', [TransactionController::class, 'updateTransactionStatus'])->name('wallet.update');
+    });
+    
     Route::get('/wallet/transaction-status/{txHash}', [TransactionController::class, 'getTransactionStatus'])->name('wallet.status');
     Route::get('/wallet/balance/{address}', [TransactionController::class, 'getBSCBalance'])->name('wallet.balance');
     Route::get('/wallet/transactions', [TransactionController::class, 'getTransactionHistory'])->name('wallet.transactions');
-    Route::post('/wallet/transactions', [TransactionController::class, 'storeTransaction'])->name('wallet.store');
-    Route::patch('/wallet/transactions/{txHash}', [TransactionController::class, 'updateTransactionStatus'])->name('wallet.update');
 
-    // Payment Routes
-    Route::post('/payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');
+    // Payment Routes (require PIN verification for sensitive operations)
+    Route::middleware(['require.pin.verification'])->group(function () {
+        Route::post('/payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');
+    });
+    
     Route::get('/payment/history', [PaymentController::class, 'getPaymentHistory'])->name('payment.history');
 });
 

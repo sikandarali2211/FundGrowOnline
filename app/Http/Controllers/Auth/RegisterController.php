@@ -14,7 +14,7 @@ class RegisterController extends Controller
 {
     use RegistersUsers;
 
-    protected $redirectTo = '/User-dashboard';
+    protected $redirectTo = '/security/pin/setup';
 
     public function __construct()
     {

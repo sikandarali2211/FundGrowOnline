@@ -79,6 +79,10 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         .wallet-btn::before {
@@ -362,12 +366,34 @@
             }
             
             .wallet-btn {
-                height: 100px;
-                padding: 15px;
+                height: 120px;
+                padding: 20px;
+                min-height: 60px;
+                font-size: 1rem;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .wallet-btn:active {
+                transform: scale(0.95);
+                background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
             }
             
             .balance-value {
                 font-size: 2rem;
+            }
+            
+            /* Mobile button improvements */
+            .btn {
+                min-height: 44px;
+                padding: 12px 20px;
+                font-size: 1rem;
+                touch-action: manipulation;
+                -webkit-tap-highlight-color: transparent;
+            }
+            
+            .btn:active {
+                transform: scale(0.95);
             }
         }
 
@@ -636,6 +662,77 @@
                 margin-bottom: 0;
                 /* default Bootstrap ka negative margin hatao */
             }
+
+            /* Mobile touch improvements */
+            .wallet-btn, .btn {
+                -webkit-tap-highlight-color: rgba(59, 209, 122, 0.3);
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+
+            .wallet-btn:active, .btn:active {
+                transform: scale(0.95);
+                transition: transform 0.1s ease;
+            }
+
+            /* Better mobile button spacing */
+            .col-6 {
+                padding: 5px;
+            }
+
+            /* Mobile form improvements */
+            .form-control {
+                font-size: 16px; /* Prevents zoom on iOS */
+                padding: 12px;
+                min-height: 44px;
+            }
+
+            /* Mobile toggle buttons */
+            .btn-group .btn {
+                min-height: 44px;
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            /* Mobile-specific improvements */
+            .mobile-device .wallet-btn {
+                min-height: 60px;
+                padding: 15px;
+                font-size: 16px;
+            }
+
+            .mobile-device .wallet-btn i {
+                font-size: 1.5rem;
+            }
+
+            .touch-device .wallet-btn:active {
+                background: linear-gradient(135deg, #e8f5e8, #f0f8f0);
+                transform: scale(0.95);
+            }
+
+            /* Better mobile spacing */
+            .mobile-device .col-6 {
+                margin-bottom: 10px;
+            }
+
+            /* Mobile form improvements */
+            .mobile-device .form-control {
+                font-size: 16px;
+                padding: 15px;
+                border-radius: 8px;
+            }
+
+            /* Mobile button improvements */
+            .mobile-device .btn {
+                min-height: 48px;
+                padding: 12px 20px;
+                font-size: 16px;
+                border-radius: 8px;
+            }
         }
     </style>
 
@@ -677,7 +774,7 @@
                         <p class="text-muted mb-4">Connect your mobile wallet to manage funds</p>
                         <div class="row g-3">
                             <div class="col-6">
-                                <button class="wallet-btn" onclick="connectMobileWallet('trust')">
+                                <button class="wallet-btn" id="trustWalletBtn" data-wallet="trust">
                                     <i class="fas fa-mobile-alt fa-2x mb-2"></i>
                                     <div class="wallet-text">
                                         <strong>Trust Wallet</strong>
@@ -686,7 +783,7 @@
                                 </button>
                             </div>
                             <div class="col-6">
-                                <button class="wallet-btn" onclick="connectMobileWallet('metamask')">
+                                <button class="wallet-btn" id="metamaskBtn" data-wallet="metamask">
                                     <i class="fab fa-ethereum fa-2x mb-2"></i>
                                     <div class="wallet-text">
                                         <strong>MetaMask</strong>
@@ -928,8 +1025,36 @@
 
 <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
 <script>
+    // Mobile detection and debugging
+    function detectMobileAndDebug() {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        console.log('Mobile Detection:', {
+            isMobile: isMobile,
+            isTouch: isTouch,
+            userAgent: navigator.userAgent,
+            screenWidth: window.screen.width,
+            screenHeight: window.screen.height,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight
+        });
+
+        // Add mobile class to body for CSS targeting
+        if (isMobile) {
+            document.body.classList.add('mobile-device');
+        }
+        
+        if (isTouch) {
+            document.body.classList.add('touch-device');
+        }
+    }
+
     // Wait for ethers to load
     window.addEventListener('load', function() {
+        // Run mobile detection first
+        detectMobileAndDebug();
+        
         if (typeof ethers === 'undefined') {
             console.error('Ethers.js not loaded');
             return;
@@ -1022,8 +1147,7 @@
         console.log('Mobile wallet connection:', walletType);
 
         // Check if we're on mobile
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator
-                .userAgent);
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
         if (isMobile) {
             // Mobile device - direct connection
@@ -1037,6 +1161,75 @@
             }
         }
     };
+
+    // Enhanced mobile wallet connection with proper event handling
+    function setupMobileWalletButtons() {
+        const trustBtn = document.getElementById('trustWalletBtn');
+        const metamaskBtn = document.getElementById('metamaskBtn');
+
+        if (trustBtn) {
+            // Add both click and touch events for better mobile support
+            trustBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Trust Wallet button clicked');
+                // Add visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                connectMobileWallet('trust');
+            });
+
+            trustBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Trust Wallet button touched');
+                // Add visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                connectMobileWallet('trust');
+            });
+
+            // Prevent double-tap zoom on mobile
+            trustBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+            });
+        }
+
+        if (metamaskBtn) {
+            metamaskBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('MetaMask button clicked');
+                // Add visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                connectMobileWallet('metamask');
+            });
+
+            metamaskBtn.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('MetaMask button touched');
+                // Add visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+                connectMobileWallet('metamask');
+            });
+
+            // Prevent double-tap zoom on mobile
+            metamaskBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+            });
+        }
+    }
 
     // Show Trust Wallet instructions for desktop users
     function showTrustWalletInstructions() {
@@ -1447,6 +1640,9 @@
             const sendTokenForm = document.getElementById('sendTokenForm');
 
             let currentAccount = null;
+
+            // Setup mobile wallet buttons
+            setupMobileWalletButtons();
 
             // Check wallet availability on page load
             function checkWalletAvailability() {

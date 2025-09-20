@@ -37,5 +37,11 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'twilio' => [
+        'account_sid' => env('TWILIO_ACCOUNT_SID'),
+        'auth_token' => env('TWILIO_AUTH_TOKEN'),
+        'whatsapp_number' => env('TWILIO_WHATSAPP_NUMBER'),
+        'sms_number' => env('TWILIO_SMS_NUMBER'),
+    ],
 
 ];
