@@ -48,9 +48,17 @@ class RoleController extends Controller
             $user = User::findOrFail($request->user_id);
             $oldRole = $user->role;
             
-            // Update user role
+            // Update user role and utype
             $user->role = $request->role;
             $user->role_updated_at = now();
+            
+            // Set utype based on role
+            if (in_array($request->role, ['admin', 'manager', 'moderator'])) {
+                $user->utype = 'ADM';
+            } else {
+                $user->utype = 'USR';
+            }
+            
             $user->save();
 
             // Log the role assignment
@@ -97,9 +105,17 @@ class RoleController extends Controller
             $user = User::findOrFail($userId);
             $oldRole = $user->role;
             
-            // Update user role
+            // Update user role and utype
             $user->role = $request->role;
             $user->role_updated_at = now();
+            
+            // Set utype based on role
+            if (in_array($request->role, ['admin', 'manager', 'moderator'])) {
+                $user->utype = 'ADM';
+            } else {
+                $user->utype = 'USR';
+            }
+            
             $user->save();
 
             // Log the role update
@@ -141,9 +157,10 @@ class RoleController extends Controller
             $user = User::findOrFail($userId);
             $oldRole = $user->role;
             
-            // Remove user role
+            // Remove user role and set utype to USR
             $user->role = null;
             $user->role_updated_at = now();
+            $user->utype = 'USR';
             $user->save();
 
             // Log the role removal

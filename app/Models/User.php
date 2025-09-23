@@ -20,6 +20,7 @@ class User extends Authenticatable
         'password',
         'role',
         'role_updated_at',
+        'utype',             // User type: ADM for admin/moderator, USR for user
         'referral',          // legacy raw code (optional)
         'referral_code',     // user ka apna unique code
         'referred_by',       // jis user ne refer kiya (users.id)
