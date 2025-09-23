@@ -215,6 +215,7 @@
                         <span class="menu-title" style="color: #3bd17a;">Dashboard</span>
                     </a>
                 </li>
+                <!-- User Details - Visible to Admin and Moderator -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.userdetails.index') }}">
@@ -222,6 +223,17 @@
                         <span class="menu-title" style="color: #3bd17a;">User Details</span>
                     </a>
                 </li>
+                
+                @if(Auth::user()->role === 'admin')
+                <!-- Role Management - Only for Admin -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.role.index') }}">
+                        <i class="fa fa-users-cog menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Role Management</span>
+                    </a>
+                </li>
+                <!-- Investment Plans - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.investmentplans.index') }}">
@@ -229,6 +241,7 @@
                         <span class="menu-title" style="color: #3bd17a;">Investment Plans</span>
                     </a>
                 </li>
+                <!-- Plan Selections - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.plan-selections.index') }}">
@@ -242,12 +255,14 @@
                         @endif
                     </a>
                 </li>
+                <!-- Wallet Connect - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2" href="{{ route('admin.wallet.index') }}">
                         <i class="fa fa-wallet menu-icon mr-2" style="color: #3bd17a;"></i>
                         <span class="menu-title" style="color: #3bd17a;">Wallet Connect</span>
                     </a>
                 </li>
+                <!-- Payments - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.payments.index') }}">
@@ -255,6 +270,7 @@
                         <span class="menu-title" style="color: #3bd17a;">Payments</span>
                     </a>
                 </li>
+                <!-- Settings - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.setting.index') }}">
@@ -262,6 +278,7 @@
                         <span class="menu-title" style="color: #3bd17a;">Setting</span>
                     </a>
                 </li>
+                @endif
             </ul>
         </nav>
 

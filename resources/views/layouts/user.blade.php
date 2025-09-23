@@ -143,6 +143,19 @@
                     </li>
                 </ul>
 
+                <!-- Admin Restore Login Button (if admin is logged in as user) -->
+                @if(session('admin_user_id'))
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.restore.login') }}" class="nav-link" 
+                               style="background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: white; border-radius: 8px; margin-right: 10px;"
+                               title="Restore Admin Login">
+                                <i class="fas fa-user-shield me-2"></i>Restore Admin
+                            </a>
+                        </li>
+                    </ul>
+                @endif
+
                 <!-- Profile -->
                 <ul class="navbar-nav navbar-nav-right ml-auto">
                     <li class="nav-item nav-profile dropdown">
@@ -212,6 +225,17 @@
                             @else
                                 <small class="text-warning">
                                     <i class="fas fa-exclamation-triangle"></i> PIN Required
+                                </small>
+                            @endif
+                            
+                            <!-- Wallet Connection Status -->
+                            @if(Auth::user()->wallet_address)
+                                <small class="text-success d-block mt-1">
+                                    <i class="fas fa-wallet"></i> Wallet Connected
+                                </small>
+                            @else
+                                <small class="text-warning d-block mt-1">
+                                    <i class="fas fa-wallet"></i> Wallet Not Connected
                                 </small>
                             @endif
                         </div>

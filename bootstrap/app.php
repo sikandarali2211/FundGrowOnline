@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'require.pin.setup' => \App\Http\Middleware\RequirePINSetup::class,
             'require.pin.verification' => \App\Http\Middleware\RequirePINVerification::class,
+            'role' => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

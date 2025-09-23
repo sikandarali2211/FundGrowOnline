@@ -19,6 +19,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'role_updated_at',
         'referral',          // legacy raw code (optional)
         'referral_code',     // user ka apna unique code
         'referred_by',       // jis user ne refer kiya (users.id)
@@ -43,6 +44,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'otp_expires_at' => 'datetime',
             'pin_setup_completed_at' => 'datetime',
+            'role_updated_at' => 'datetime',
             'pin_setup_required' => 'boolean',
         ];
     }
@@ -117,7 +119,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Send OTP to user via email only
+     * Send OTP to user via multiple channels (email, WhatsApp, SMS)
      */
     public function sendOTP(array $channels = ['email']): array
     {

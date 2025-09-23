@@ -332,11 +332,12 @@
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th>User</th>
-                                <th>Contact</th>
-                                <th>Referral</th>
+                                <th>User Info</th>
+                                <th>Contact Details</th>
+                                <th>Referral Info</th>
                                 <th>Status</th>
                                 <th>Last Activity</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -359,6 +360,9 @@
                                             <div class="user-details">
                                                 <h6>{{ $user->name }}</h6>
                                                 <small>ID: {{ $user->id }}</small>
+                                                @if($user->referral_code)
+                                                    <br><small class="text-info">Referral ID: {{ $user->referral_code }}</small>
+                                                @endif
                                             </div>
                                         </div>
                                     </td>
@@ -366,6 +370,29 @@
                                         <div>
                                             <div class="fw-semibold">{{ $user->email }}</div>
                                             <small class="text-muted">{{ $user->phone ?? 'No phone' }}</small>
+                                            @if($user->wallet_address)
+                                                <br>
+                                                <div class="wallet-info mt-2">
+                                                    <small class="text-success">
+                                                        <i class="fas fa-wallet me-1"></i>
+                                                        <strong>Trust Wallet:</strong>
+                                                    </small>
+                                                    <br>
+                                                    <small class="text-info font-monospace" style="font-size: 0.75rem;">
+                                                        {{ $user->wallet_address }}
+                                                    </small>
+                                                    <button class="btn btn-sm btn-outline-info ms-2" 
+                                                            onclick="copyToClipboard('{{ $user->wallet_address }}')"
+                                                            title="Copy Wallet Address">
+                                                        <i class="fas fa-copy"></i>
+                                                    </button>
+                                                </div>
+                                            @else
+                                                <br><small class="text-muted">
+                                                    <i class="fas fa-wallet me-1"></i>
+                                                    No wallet connected
+                                                </small>
+                                            @endif
                                         </div>
                                     </td>
                                     <td>
@@ -373,10 +400,14 @@
                                             <div class="fw-semibold">{{ $referredByText }}</div>
                                             @if (isset($user->referrer))
                                                 <small class="text-muted">{{ $user->referrer->email }}</small>
+                                                <br><small class="text-info">Referred ID: {{ $user->referred_by }}</small>
+                                            @else
+                                                <small class="text-muted">Direct Registration</small>
                                             @endif
                                         </div>
                                     </td>
                                     <td>
+                                        @if(Auth::user()->role === 'admin')
                                         <form method="POST"
                                             action="{{ url('/admin/user-details/' . $user->id . '/status') }}">
                                             @csrf @method('PATCH')
@@ -397,6 +428,14 @@
                                                 </select>
                                             </div>
                                         </form>
+                                        @else
+                                        <!-- Moderator can only view status, not change it -->
+                                        <div class="status-display">
+                                            <span class="badge badge-{{ $statusLower === 'active' ? 'success' : ($statusLower === 'blocked' ? 'danger' : ($statusLower === 'rejected' ? 'warning' : 'secondary')) }}">
+                                                {{ ucfirst($statusLower) }}
+                                            </span>
+                                        </div>
+                                        @endif
                                     </td>
                                     <td>
                                         <div>
@@ -405,12 +444,47 @@
                                                 <small
                                                     class="text-muted">{{ \Illuminate\Support\Carbon::parse($user->last_login_at)->format('M d, Y') }}</small>
                                             @endif
+                                            @if($user->pin_setup_completed_at)
+                                                <br><small class="text-success">PIN Secured</small>
+                                            @else
+                                                <br><small class="text-warning">PIN Not Set</small>
+                                            @endif
                                         </div>
+                                    </td>
+                                    <td>
+                                        @if(Auth::user()->role === 'admin')
+                                        <div class="d-flex gap-2">
+                                            <!-- User Login Button -->
+                                            <form method="POST" action="{{ url('/admin/user-details/' . $user->id . '/login') }}" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-outline-primary" 
+                                                        onclick="return confirm('Login as {{ $user->name }}?')"
+                                                        title="Login as User">
+                                                    <i class="fas fa-sign-in-alt"></i>
+                                                </button>
+                                            </form>
+                                            
+                                            <!-- Delete Button -->
+                                            <form method="POST" action="{{ url('/admin/user-details/' . $user->id . '/delete') }}" 
+                                                  style="display: inline;" onsubmit="return confirmDelete('{{ $user->name }}')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        title="Delete User">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        @else
+                                        <!-- Moderator can only view, no actions -->
+                                        <div class="text-muted">
+                                            <i class="fas fa-eye"></i> View Only
+                                        </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="empty-state">
+                                    <td colspan="6" class="empty-state">
                                         <i class="fas fa-users"></i>
                                         <h4>No users found</h4>
                                         <p>Try adjusting your search criteria or check back later.</p>
@@ -432,4 +506,59 @@
             @endif
         </main>
     </div>
+
+    <script>
+        // Delete confirmation function
+        function confirmDelete(userName) {
+            return confirm(`Are you sure you want to delete user "${userName}"?\n\nThis action cannot be undone and will permanently remove:\n- User account\n- All associated data\n- Referral relationships\n- Investment history\n\nType "DELETE" to confirm:`) && 
+                   prompt('Type "DELETE" to confirm:') === 'DELETE';
+        }
+
+        // Auto-refresh status updates
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add success message handling
+            @if(session('success'))
+                showNotification('{{ session('success') }}', 'success');
+            @endif
+            
+            @if(session('error'))
+                showNotification('{{ session('error') }}', 'error');
+            @endif
+        });
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Copy wallet address to clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                showNotification('Wallet address copied to clipboard!', 'success');
+            }).catch(function(err) {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('Wallet address copied to clipboard!', 'success');
+            });
+        }
+    </script>
 @endsection

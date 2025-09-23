@@ -11,8 +11,13 @@ class WalletService {
 
     async connectWallet() {
         try {
+            // Check for mobile Trust Wallet first
+            if (this.isMobile() && typeof window.ethereum !== 'undefined') {
+                return await this.connectMobileWallet();
+            }
+            
             if (typeof window.ethereum !== 'undefined') {
-                // MetaMask or other Web3 wallet
+                // Desktop MetaMask or other Web3 wallet
                 this.provider = new ethers.BrowserProvider(window.ethereum);
                 await this.provider.send("eth_requestAccounts", []);
                 this.signer = await this.provider.getSigner();
@@ -26,7 +31,7 @@ class WalletService {
                 const installMessage = `
                     <div style="text-align: center; padding: 20px;">
                         <h4>Web3 Wallet Required</h4>
-                        <p>To use this DApp, you need to install a Web3 wallet like MetaMask.</p>
+                        <p>To use this DApp, you need to install a Web3 wallet like MetaMask or Trust Wallet.</p>
                         <div style="margin: 20px 0;">
                             <a href="https://metamask.io/download/" target="_blank" 
                                style="background: #f6851b; color: white; padding: 10px 20px; 
@@ -51,6 +56,100 @@ class WalletService {
             }
         } catch (error) {
             console.error('Wallet connection failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    async connectMobileWallet() {
+        try {
+            console.log('Attempting mobile wallet connection...');
+            
+            // Check if Trust Wallet is available
+            if (window.ethereum && window.ethereum.isTrust) {
+                console.log('Trust Wallet detected');
+                return await this.connectTrustWallet();
+            }
+            
+            // Check if MetaMask Mobile is available
+            if (window.ethereum && window.ethereum.isMetaMask) {
+                console.log('MetaMask Mobile detected');
+                return await this.connectMetaMaskMobile();
+            }
+            
+            // Generic mobile wallet connection
+            console.log('Generic mobile wallet connection');
+            this.provider = new ethers.BrowserProvider(window.ethereum);
+            await this.provider.send("eth_requestAccounts", []);
+            this.signer = await this.provider.getSigner();
+            this.account = await this.signer.getAddress();
+            
+            // Switch to BSC network
+            await this.switchToBSC();
+            return { success: true, account: this.account, walletType: 'mobile' };
+            
+        } catch (error) {
+            console.error('Mobile wallet connection failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async connectTrustWallet() {
+        try {
+            console.log('Connecting to Trust Wallet...');
+            
+            // Request account access
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
+            
+            if (accounts.length === 0) {
+                throw new Error('No accounts found');
+            }
+            
+            this.provider = new ethers.BrowserProvider(window.ethereum);
+            this.signer = await this.provider.getSigner();
+            this.account = await this.signer.getAddress();
+            
+            // Switch to BSC network
+            await this.switchToBSC();
+            
+            console.log('Trust Wallet connected successfully:', this.account);
+            return { success: true, account: this.account, walletType: 'trust' };
+            
+        } catch (error) {
+            console.error('Trust Wallet connection failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async connectMetaMaskMobile() {
+        try {
+            console.log('Connecting to MetaMask Mobile...');
+            
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
+            
+            if (accounts.length === 0) {
+                throw new Error('No accounts found');
+            }
+            
+            this.provider = new ethers.BrowserProvider(window.ethereum);
+            this.signer = await this.provider.getSigner();
+            this.account = await this.signer.getAddress();
+            
+            // Switch to BSC network
+            await this.switchToBSC();
+            
+            console.log('MetaMask Mobile connected successfully:', this.account);
+            return { success: true, account: this.account, walletType: 'metamask' };
+            
+        } catch (error) {
+            console.error('MetaMask Mobile connection failed:', error);
             return { success: false, error: error.message };
         }
     }
@@ -87,17 +186,28 @@ class WalletService {
 
     async switchToBSC() {
         try {
+            console.log('Checking current network...');
             const network = await this.provider.getNetwork();
+            console.log('Current network:', network);
+            
             if (Number(network.chainId) !== this.chainId) {
+                console.log('Switching to BSC network...');
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: '0x38' }], // BSC Mainnet
                 });
+                console.log('Successfully switched to BSC network');
+            } else {
+                console.log('Already on BSC network');
             }
         } catch (switchError) {
+            console.error('Network switch error:', switchError);
             // If BSC network is not added, add it
             if (switchError.code === 4902) {
+                console.log('Adding BSC network...');
                 await this.addBSCNetwork();
+            } else {
+                throw switchError;
             }
         }
     }
@@ -187,6 +297,102 @@ class WalletService {
         this.signer = null;
         this.account = null;
     }
+
+    // Enhanced wallet detection for mobile
+    detectWalletType() {
+        if (typeof window.ethereum === 'undefined') {
+            return 'none';
+        }
+
+        // Check for Trust Wallet
+        if (window.ethereum.isTrust) {
+            return 'trust';
+        }
+
+        // Check for MetaMask
+        if (window.ethereum.isMetaMask) {
+            return 'metamask';
+        }
+
+        // Check for other wallets
+        if (window.ethereum.isCoinbaseWallet) {
+            return 'coinbase';
+        }
+
+        // Generic Web3 provider
+        return 'generic';
+    }
+
+    // Show specific mobile wallet instructions
+    showMobileWalletInstructions(walletType) {
+        let instructions = '';
+        
+        switch (walletType) {
+            case 'trust':
+                instructions = `
+                    <div style="text-align: center; padding: 20px;">
+                        <h4>Connect Trust Wallet</h4>
+                        <p>To connect your Trust Wallet on mobile:</p>
+                        <ol style="text-align: left; max-width: 300px; margin: 0 auto;">
+                            <li>Make sure Trust Wallet app is installed and unlocked</li>
+                            <li>Open this website in Trust Wallet's built-in browser</li>
+                            <li>Or use the "Connect Wallet" button below</li>
+                        </ol>
+                        <div style="margin: 20px 0;">
+                            <button class="btn btn-primary" onclick="window.walletService.connectWallet()">
+                                Connect Trust Wallet
+                            </button>
+                        </div>
+                        <p style="font-size: 12px; color: #666;">
+                            If you don't have Trust Wallet, 
+                            <a href="https://trustwallet.com/" target="_blank">download it here</a>
+                        </p>
+                    </div>
+                `;
+                break;
+            case 'metamask':
+                instructions = `
+                    <div style="text-align: center; padding: 20px;">
+                        <h4>Connect MetaMask Mobile</h4>
+                        <p>To connect your MetaMask on mobile:</p>
+                        <ol style="text-align: left; max-width: 300px; margin: 0 auto;">
+                            <li>Make sure MetaMask app is installed and unlocked</li>
+                            <li>Open this website in MetaMask's built-in browser</li>
+                            <li>Or use the "Connect Wallet" button below</li>
+                        </ol>
+                        <div style="margin: 20px 0;">
+                            <button class="btn btn-primary" onclick="window.walletService.connectWallet()">
+                                Connect MetaMask
+                            </button>
+                        </div>
+                        <p style="font-size: 12px; color: #666;">
+                            If you don't have MetaMask, 
+                            <a href="https://metamask.io/download/" target="_blank">download it here</a>
+                        </p>
+                    </div>
+                `;
+                break;
+            default:
+                instructions = `
+                    <div style="text-align: center; padding: 20px;">
+                        <h4>Mobile Wallet Connection</h4>
+                        <p>To connect your wallet on mobile:</p>
+                        <ol style="text-align: left; max-width: 300px; margin: 0 auto;">
+                            <li>Make sure your wallet app is installed and unlocked</li>
+                            <li>Open this website in your wallet's built-in browser</li>
+                            <li>Or use the "Connect Wallet" button below</li>
+                        </ol>
+                        <div style="margin: 20px 0;">
+                            <button class="btn btn-primary" onclick="window.walletService.connectWallet()">
+                                Connect Wallet
+                            </button>
+                        </div>
+                    </div>
+                `;
+        }
+
+        this.showWalletInstallModal(instructions);
+    }
 }
 
 // BEP20 Token ABI (minimal)
@@ -201,3 +407,60 @@ const BEP20_ABI = [
 
 // Initialize wallet service
 window.walletService = new WalletService();
+
+// Add global helper functions for mobile wallet connection
+window.connectTrustWallet = async function() {
+    console.log('Global Trust Wallet connection called');
+    try {
+        const result = await window.walletService.connectWallet();
+        if (result.success) {
+            console.log('Trust Wallet connected:', result.account);
+            // Trigger a custom event for the UI to update
+            window.dispatchEvent(new CustomEvent('walletConnected', {
+                detail: { account: result.account, walletType: 'trust' }
+            }));
+        } else {
+            console.error('Trust Wallet connection failed:', result.error);
+            window.dispatchEvent(new CustomEvent('walletConnectionFailed', {
+                detail: { error: result.error }
+            }));
+        }
+    } catch (error) {
+        console.error('Trust Wallet connection error:', error);
+    }
+};
+
+window.connectMobileWallet = async function() {
+    console.log('Global mobile wallet connection called');
+    try {
+        const result = await window.walletService.connectWallet();
+        if (result.success) {
+            console.log('Mobile wallet connected:', result.account);
+            window.dispatchEvent(new CustomEvent('walletConnected', {
+                detail: { account: result.account, walletType: result.walletType || 'mobile' }
+            }));
+        } else {
+            console.error('Mobile wallet connection failed:', result.error);
+            window.dispatchEvent(new CustomEvent('walletConnectionFailed', {
+                detail: { error: result.error }
+            }));
+        }
+    } catch (error) {
+        console.error('Mobile wallet connection error:', error);
+    }
+};
+
+// Add debugging information on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Wallet Service Debug Info:');
+    console.log('- User Agent:', navigator.userAgent);
+    console.log('- Is Mobile:', window.walletService.isMobile());
+    console.log('- Wallet Type:', window.walletService.detectWalletType());
+    console.log('- Ethereum Available:', typeof window.ethereum !== 'undefined');
+    
+    if (window.ethereum) {
+        console.log('- Ethereum Provider:', window.ethereum);
+        console.log('- Is Trust Wallet:', window.ethereum.isTrust);
+        console.log('- Is MetaMask:', window.ethereum.isMetaMask);
+    }
+});

@@ -291,4 +291,49 @@ class TransactionController extends Controller
             'transaction' => $transaction
         ]);
     }
+
+    // Save wallet address to user profile
+    public function saveWalletAddress(Request $request)
+    {
+        try {
+            $request->validate([
+                'wallet_address' => 'required|string|min:42|max:42'
+            ]);
+
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Update user's wallet address
+            $user->wallet_address = $request->wallet_address;
+            $user->save();
+
+            Log::info("Wallet address saved for user {$user->id}: {$request->wallet_address}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Wallet address saved successfully',
+                'wallet_address' => $request->wallet_address
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid wallet address format',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to save wallet address: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save wallet address'
+            ], 500);
+        }
+    }
 }

@@ -182,7 +182,8 @@
                             <h2 style="color: #3bd17a" class="font-weight-bold mb-0">$5.20</h2>
                         </div>
 
-                        <!-- Right: Buttons -->
+                        <!-- Right: Buttons - Only for Admin -->
+                        @if(Auth::user()->role === 'admin')
                         <div class="d-flex flex-column">
                             <button class="btn btn-light btn-sm mb-2" style="border-radius: 20px; min-width: 120px;"
                                 data-toggle="modal" data-target="#topUpModal">
@@ -192,6 +193,7 @@
                                 <i class="fas fa-arrow-up mr-1"></i> Cash Out
                             </button>
                         </div>
+                        @endif
                     </div>
                 </div>
 
@@ -370,8 +372,10 @@
                         <div class="p-3 d-flex justify-content-between align-items-center">
                             <h4 class="table-title"> <i class="fas fa-clipboard-list me-2"></i> Recent Plan Selections
                             </h4>
+                            @if(Auth::user()->role === 'admin')
                             <a href="{{ route('admin.plan-selections.index') }}" class="btn btn-sm btn-primary">View
                                 All</a>
+                            @endif
                         </div>
                         <div class="table-responsive">
                             <table class="table modern-table">
@@ -414,9 +418,13 @@
                                             </td>
                                             <td>{{ $selection->created_at->format('M d, Y g:i A') }}</td>
                                             <td>
+                                                @if(Auth::user()->role === 'admin')
                                                 <a href="{{ route('admin.plan-selections.show', $selection->id) }}"
                                                     class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i>
                                                     View</a>
+                                                @else
+                                                <span class="text-muted">View Only</span>
+                                                @endif
                                             </td>
                                         </tr>
                                     @empty

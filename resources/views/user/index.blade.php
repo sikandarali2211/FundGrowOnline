@@ -258,6 +258,46 @@
 
                 <!-- Right Side Wallet Cards -->
                 <div class="col-md-6 col-lg-7">
+                    <!-- Wallet Connection Status -->
+                    @if(auth()->user()->wallet_address)
+                        <div class="card mb-3" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                            <div class="card-body text-center">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="fas fa-check-circle text-success fa-2x me-2"></i>
+                                    <h5 class="mb-0 text-success">Wallet Connected</h5>
+                                </div>
+                                <div class="wallet-address-display">
+                                    <small class="text-muted">Connected Address:</small><br>
+                                    <code class="wallet-address-text text-info" style="font-size: 0.8rem; word-break: break-all;">
+                                        {{ auth()->user()->wallet_address }}
+                                    </code>
+                                    <button class="btn btn-sm btn-outline-info ms-2" onclick="copyWalletAddressToClipboard('{{ auth()->user()->wallet_address }}')" title="Copy Address">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success">
+                                        <i class="fas fa-shield-alt me-1"></i>
+                                        Your wallet is securely connected
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="card mb-3" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #ffc107;">
+                            <div class="card-body text-center">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="fas fa-exclamation-triangle text-warning fa-2x me-2"></i>
+                                    <h5 class="mb-0 text-warning">Wallet Not Connected</h5>
+                                </div>
+                                <p class="text-muted mb-3">Connect your crypto wallet to manage your funds</p>
+                                <a href="{{ route('user.wallet.index') }}" class="btn btn-warning">
+                                    <i class="fas fa-link me-2"></i>Connect Wallet
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="row">
                         <div class="col-sm-6 mb-3">
                             <a href="{{ url('balance-wallet') }}" class="text-decoration-none">
@@ -927,6 +967,38 @@
                 showToast("Wallet address copied!");
             });
         }
+
+        // Copy wallet address from dashboard
+        function copyWalletAddressToClipboard(walletAddress) {
+            navigator.clipboard.writeText(walletAddress).then(function() {
+                showToast("Wallet address copied to clipboard!");
+            }).catch(function(err) {
+                console.error('Failed to copy wallet address: ', err);
+                showToast("Failed to copy wallet address", "error");
+            });
+        }
+
+        // Auto-restore wallet connection on dashboard load
+        function autoRestoreWalletConnection() {
+            // Check if user has a saved wallet address
+            @if(auth()->user()->wallet_address)
+                console.log('✅ User has saved wallet address:', '{{ auth()->user()->wallet_address }}');
+                
+                // Save to localStorage for consistency
+                localStorage.setItem('walletAccount', '{{ auth()->user()->wallet_address }}');
+                localStorage.setItem('isWalletConnected', 'true');
+                localStorage.setItem('walletType', 'trust'); // Assume Trust Wallet
+                
+                console.log('✅ Wallet connection state restored from database');
+            @else
+                console.log('ℹ️ No wallet address saved for user');
+            @endif
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            autoRestoreWalletConnection();
+        });
 
         // Simple toast function
         function showToast(message) {

@@ -21,6 +21,7 @@ use App\Http\Controllers\AdminInvestmentPlanController;   // ← NEW
 use App\Http\Controllers\AdminWalletController;   // ← NEW
 use App\Http\Controllers\PaymentController;   // ← NEW
 use App\Http\Controllers\SecurityController;   // ← NEW
+use App\Http\Controllers\Admin\RoleController;   // ← NEW
 
 Route::view('/', 'index');
 
@@ -71,6 +72,44 @@ Route::middleware(['auth'])->prefix('security')->name('security.')->group(functi
     Route::post('/pin/clear-verification', [SecurityController::class, 'clearPINVerification'])->name('pin.clear-verification');
 });
 
+// Wallet save route (only auth required, no PIN setup required)
+Route::middleware(['auth'])->prefix('User-dashboard')->group(function () {
+    Route::post('/wallet/save-address', [TransactionController::class, 'saveWalletAddress'])->name('wallet.save.address');
+    
+    // Test route for wallet address saving (remove in production)
+    Route::get('/test-wallet-save', function() {
+        $user = Auth::user();
+        if ($user) {
+            return response()->json([
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'current_wallet_address' => $user->wallet_address,
+                'message' => 'User authenticated, ready to save wallet address'
+            ]);
+        }
+        return response()->json(['error' => 'User not authenticated']);
+    });
+});
+
+// Fallback wallet save route (without prefix for DApp browser compatibility)
+Route::middleware(['auth'])->group(function () {
+    Route::post('/wallet/save-address', [TransactionController::class, 'saveWalletAddress'])->name('wallet.save.address.fallback');
+    
+    // Test route without prefix
+    Route::get('/test-wallet-save', function() {
+        $user = Auth::user();
+        if ($user) {
+            return response()->json([
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'current_wallet_address' => $user->wallet_address,
+                'message' => 'User authenticated, ready to save wallet address (fallback route)'
+            ]);
+        }
+        return response()->json(['error' => 'User not authenticated']);
+    });
+});
+
 Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name('user.')->group(function () {
     Route::get('/', [UserController::class, 'index'])->name('index');
 
@@ -112,12 +151,14 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::post('/plan-selections', [PlanSelectionController::class, 'store'])->name('plan-selections.store');
     Route::get('/plan-selections/success', [PlanSelectionController::class, 'success'])->name('plan-selections.success');
 
+
     // Wallet and Transaction Routes (require PIN verification)
     Route::middleware(['require.pin.verification'])->group(function () {
-        Route::post('/wallet/verify-transaction', [TransactionController::class, 'verifyTransaction'])->name('wallet.verify');
+    Route::post('/wallet/verify-transaction', [TransactionController::class, 'verifyTransaction'])->name('wallet.verify');
         Route::post('/wallet/transactions', [TransactionController::class, 'storeTransaction'])->name('wallet.store');
         Route::patch('/wallet/transactions/{txHash}', [TransactionController::class, 'updateTransactionStatus'])->name('wallet.update');
     });
+    
     
     Route::get('/wallet/transaction-status/{txHash}', [TransactionController::class, 'getTransactionStatus'])->name('wallet.status');
     Route::get('/wallet/balance/{address}', [TransactionController::class, 'getBSCBalance'])->name('wallet.balance');
@@ -125,7 +166,7 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
 
     // Payment Routes (require PIN verification for sensitive operations)
     Route::middleware(['require.pin.verification'])->group(function () {
-        Route::post('/payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');
+    Route::post('/payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');
     });
     
     Route::get('/payment/history', [PaymentController::class, 'getPaymentHistory'])->name('payment.history');
@@ -150,40 +191,69 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
         ->name('admin.userdetails.index');
     Route::get('/user-details', [AdminUserDetailController::class, 'index']);
 
+    // User action routes - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
     // Status update (POST ya PATCH dono chalenge)
     Route::match(['post', 'patch'], '/admin/user-details/{user}/status', [AdminUserDetailController::class, 'updateStatus']);
+    
+    // User login as admin functionality
+    Route::post('/admin/user-details/{user}/login', [AdminUserDetailController::class, 'loginAsUser'])->name('admin.user.login');
+    Route::get('/admin/restore-login', [AdminUserDetailController::class, 'restoreAdminLogin'])->name('admin.restore.login');
+    
+    // User delete functionality
+    Route::delete('/admin/user-details/{user}/delete', [AdminUserDetailController::class, 'deleteUser'])->name('admin.user.delete');
+    });
 
     // User Plan Details
     Route::get('/admin/user-plan/{userId}', [AdminController::class, 'showUserPlan'])->name('admin.user-plan.show');
 
-    // Admin Wallet Routes
+    // Admin Wallet Routes - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/wallet', [AdminWalletController::class, 'index'])->name('admin.wallet.index');
     Route::post('/admin/wallet/connect', [AdminWalletController::class, 'connectWallet'])->name('admin.wallet.connect');
     Route::post('/admin/wallet/save-address', [AdminWalletController::class, 'saveWalletAddress'])->name('admin.wallet.save-address');
     Route::post('/admin/wallet/balance', [AdminWalletController::class, 'getBalance'])->name('admin.wallet.balance');
     Route::post('/admin/wallet/send', [AdminWalletController::class, 'sendTransaction'])->name('admin.wallet.send');
     Route::get('/admin/wallet/transactions', [AdminWalletController::class, 'getTransactionHistory'])->name('admin.wallet.transactions');
+    });
 
-    // Admin Payment Routes
+    // Admin Payment Routes - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/payments', [PaymentController::class, 'getPendingPayments'])->name('admin.payments.index');
     Route::post('/admin/payments/{transaction_id}/confirm', [PaymentController::class, 'confirmPayment'])->name('admin.payments.confirm');
     Route::post('/admin/payments/{transaction_id}/reject', [PaymentController::class, 'rejectPayment'])->name('admin.payments.reject');
     Route::patch('/admin/user-plan/{planId}/status', [AdminController::class, 'updatePlanStatus'])->name('admin.user-plan.update-status');
+    });
 
-    // Investment Plans Management
+    // Investment Plans Management - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/investment-plans', [AdminInvestmentPlanController::class, 'index'])->name('admin.investmentplans.index');
     Route::post('/admin/investment-plans/{userInvestment}/status', [AdminInvestmentPlanController::class, 'updateUserInvestmentStatus'])->name('admin.investmentplans.updateStatus');
     Route::post('/admin/investment-plans/{userInvestment}/plan', [AdminInvestmentPlanController::class, 'updateUserPlan'])->name('admin.investmentplans.updatePlan');
+    });
 
-    // Plan Selection Management
+    // Plan Selection Management - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/plan-selections', [PlanSelectionController::class, 'adminIndex'])->name('admin.plan-selections.index');
     Route::get('/admin/plan-selections/{planSelection}', [PlanSelectionController::class, 'adminShow'])->name('admin.plan-selections.show');
     Route::patch('/admin/plan-selections/{planSelection}/status', [PlanSelectionController::class, 'updateStatus'])->name('admin.plan-selections.update-status');
+    });
 
-
-    // Admin Setting
+    // Admin Setting - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
     Route::get('/admin/setting', [AdminProfileController::class, 'edit'])->name('admin.setting.index');
     Route::post('/admin/setting', [AdminProfileController::class, 'update'])->name('admin.setting.update');
+    });
+
+    // Role Management Routes - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
+    Route::get('/admin/role', [RoleController::class, 'index'])->name('admin.role.index');
+    Route::post('/admin/role/assign', [RoleController::class, 'assignRole'])->name('admin.role.assign');
+    Route::put('/admin/role/{user}', [RoleController::class, 'updateRole'])->name('admin.role.update');
+    Route::delete('/admin/role/{user}', [RoleController::class, 'removeRole'])->name('admin.role.remove');
+    Route::get('/admin/role/users-by-role', [RoleController::class, 'getUsersByRole'])->name('admin.role.users-by-role');
+    Route::get('/admin/role/stats', [RoleController::class, 'getRoleStats'])->name('admin.role.stats');
+    });
 
 
     // Debug route for plan selections
