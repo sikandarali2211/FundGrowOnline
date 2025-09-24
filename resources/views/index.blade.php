@@ -144,28 +144,100 @@
             height: 700px;
         }
 
+        /* Hero Section Styling */
+        .hero-section-10 {
+            position: relative;
+            padding: 100px 0;
+            color: #fff;
+            /* White text for readability */
+        }
+
+        /* Left Text Styling */
+        .hero-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .hero-button-group a {
+            margin-right: 10px;
+        }
+     
+
+        /* Right Image Styling */
         .hero-img {
-            max-width: 1120px;
-            width: 100%;
+            max-width: 100%;
             height: auto;
         }
 
-        @media (max-width: 1326px) {
+        /* Mobile View Adjustments */
+        @media (max-width: 767px) {
+            .hero-section-10 {
+                min-height: 100vh;
+                padding: 100px 15px 20px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                text-align: center;
+            }
+
+            .hero-content {
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+
+            .hero-title {
+                font-size: 8px;
+                font-weight: 150px;
+                line-height: 1.3;
+                margin-bottom: 10px;
+            }
+
+            .hero-txt {
+                font-size: 14px;
+                line-height: 1.5;
+                margin-bottom: 15px;
+                padding: 0 10px;
+            }
+
+            .hero-button-group {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+
+            .cmn--btn {
+                flex: 1;
+                max-width: 160px;
+                padding: 10px 0;
+                font-size: 12px;
+                text-align: center;
+            }
+
+
             .hero-img {
-                margin-right: -170px;
+                width: 100%;
+                max-width: 350px;
+                height: auto;
+                margin: 20px auto 0;
+                display: block;
+            }
+
+            .row {
+                flex-direction: column-reverse;
+                align-items: center;
             }
         }
 
-        .hero-title {
-            font-size: 42px;
-            font-weight: 700;
-            line-height: 1.3;
-        }
 
-        .hero-txt {
-            font-size: 18px;
-            margin: 20px 0;
-        }
+
 
         .sponsor-thumb {
             padding: 15px;
@@ -865,18 +937,16 @@
                 /* height kam kar do mobile pe */
             }
         }
- @media (max-width: 768px) {
-    .faqs-section
- {
-    margin-top: -200px;
- }
- }
 
+        @media (max-width: 768px) {
+            .faqs-section {
+                margin-top: -200px;
+            }
+        }
     </style>
-
     <!-- Hero Section -->
-
-    <section class="hero-section-10 gradient-2 overflow-hidden">
+    <section class="hero-section-10 overflow-hidden"
+        style="background-image: url('assets/images/hero-10bg.png'); background-size: cover; background-position: center;">
         <div class="bottom-shape d-none d-lg-block">
             <img src="assets/images/hero/hero-shape-10.png" alt="hero">
         </div>
@@ -893,11 +963,12 @@
                         Join a global crowdfunding ecosystem designed for financial freedom, transparency, and growth.
                     </p>
                     <div class="hero-button-group">
-                        <a href="{{ route('register') }}" class="cmn--btn btn--white">Get Started</a>
-                        <a href="{{ asset('assets/pdf.pdf') }}" class="cmn--btn btn--white  ">Read Document</a>
+                        <a href="{{ route('register') }}" class="cmn--btn ">Get Started</a>
+                        <a href="{{ asset('assets/pdf.pdf') }}" class="cmn--btn ">Read Document</a>
                     </div>
                 </div>
 
+                <!-- Right Side Image -->
                 <div class="col-lg-6 col-md-12 text-center wow animate__animated animate__fadeInRight">
                     <img src="assets/images/hero/hero-10.png" alt="hero" class="hero-img img-fluid">
                 </div>
@@ -906,10 +977,6 @@
         </div>
     </section>
     <!-- Hero Section -->
-
-
-
-
 
     <!-- Feature Section -->
     <section class="feature-section pt-120 pb-60">

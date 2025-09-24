@@ -91,6 +91,7 @@ Route::middleware(['auth'])->prefix('User-dashboard')->group(function () {
     });
 });
 
+
 // Fallback wallet save route (without prefix for DApp browser compatibility)
 Route::middleware(['auth'])->group(function () {
     Route::post('/wallet/save-address', [TransactionController::class, 'saveWalletAddress'])->name('wallet.save.address.fallback');

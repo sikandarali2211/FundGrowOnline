@@ -6,41 +6,41 @@
     <title>Setup Security PIN - FundGrow Online</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
+  <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .security-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: #072d42;
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid #3bd17a;
         }
         .security-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3bd17a;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 3rem;
+            font-size: 3.75rem;
         }
         .form-control {
             border-radius: 10px;
-            border: 2px solid #e9ecef;
+            border: 2px solid #3bd17a;
             padding: 12px 15px;
             font-size: 1.1rem;
             transition: all 0.3s ease;
         }
         .form-control:focus {
-            border-color: #667eea;
+            border-color: #3bd17a;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3bd17a 0%, #072d42 100%);
             border: none;
             border-radius: 10px;
             padding: 12px 30px;
@@ -51,40 +51,15 @@
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
-        .btn-outline-primary {
-            border: 2px solid #667eea;
-            color: #667eea;
+        .btn-outline-secondary {
+            border: 2px solid #6c757d;
+            color: #6c757d;
             border-radius: 10px;
             padding: 10px 20px;
             transition: all 0.3s ease;
         }
-        .btn-outline-primary:hover {
-            background: #667eea;
-            color: white;
-        }
-        .step-indicator {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 2rem;
-        }
-        .step {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 10px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-        }
-        .step.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        .step.completed {
-            background: #28a745;
+        .btn-outline-secondary:hover {
+            background: #6c757d;
             color: white;
         }
         .alert {
@@ -92,14 +67,21 @@
             border: none;
         }
         .input-group-text {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: #071d33;
+            border: 2px solid #3bd17a;
             border-right: none;
-            border-radius: 10px 0 0 10px;
+            border-radius: 20px 0 0 20px;
+            width: 3.75rem;
+            height: 3rem;
+        }
+        .input-group-text i {
+         margin-left: 0.75rem;
         }
         .form-control {
             border-left: none;
-            border-radius: 0 10px 10px 0;
+            border-radius: 0 20px 20px 0;
+             height: 3rem;
+             background :#101b1f;
         }
         .pin-input {
             text-align: center;
@@ -107,6 +89,60 @@
             letter-spacing: 0.5rem;
             font-family: 'Courier New', monospace;
         }
+        .security-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        /* Step Indicator Container */
+.step-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+}
+
+/* Individual Steps */
+.step {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #ddd;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    margin: 0 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+/* Active Step */
+.step.active {
+    background-color: #3bd17a; /* Green */
+    color: #fff;
+}
+
+/* Inactive Step */
+.step:not(.active) {
+    background-color: #bbb;
+}
+
+/* Optional: Adding a line between steps */
+.step:not(:last-child)::after {
+    content: '';
+    width: 20px;
+    height: 2px;
+    background-color: #bbb;
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
     </style>
 </head>
 <body>
@@ -116,7 +152,7 @@
                 <div class="security-card p-4">
                     <div class="text-center mb-4">
                         <i class="fas fa-shield-alt security-icon"></i>
-                        <h2 class="mt-3 mb-2">Security PIN Setup</h2>
+                        <h2 class="mt-3 mb-2"  style="color: #3bd17a">Security PIN Setup</h2>
                         <p class="text-muted">Secure your account with a 6-digit PIN</p>
                     </div>
 
@@ -148,7 +184,7 @@
                         <!-- Step 1: OTP Verification -->
                         <div id="otpStep" class="step-content">
                             <div class="mb-4">
-                                <h5 class="text-center mb-3">Step 1: Verify Your Email Address</h5>
+                                <h5 class="text-center mb-3" style="color: #3bd17a">Step 1: Verify Your Email Address</h5>
                                 <p class="text-muted text-center small">
                                     We'll send a 6-digit OTP to your registered email address to verify your identity.
                                 </p>
@@ -157,16 +193,16 @@
                             <div class="mb-3">
                                 <div class="input-group">
                                     <span class="input-group-text">
-                                        <i class="fas fa-envelope"></i>
+                                        <i style="color: #3bd17a" class="fas fa-envelope"></i>
                                     </span>
                                     <input type="text" class="form-control" value="{{ auth()->user()->email }}" readonly>
                                 </div>
                             </div>
 
-                            <div class="mb-3">
+                            <div  class="mb-3">
                                 <div class="text-center">
-                                    <div class="d-inline-flex align-items-center bg-light rounded p-3">
-                                        <i class="fas fa-envelope text-primary me-2"></i>
+                                    <div  class="d-inline-flex align-items-center bg-light rounded p-3">
+                                        <i style="color: #3bd17a" class="fas fa-envelope text-primary me-2"></i>
                                         <span class="text-muted">OTP will be sent to your email address</span>
                                     </div>
                                 </div>
@@ -174,16 +210,16 @@
 
                             <div class="text-center mb-4">
                                 <button type="button" class="btn btn-outline-primary" id="sendOTPBtn">
-                                    <i class="fas fa-paper-plane me-2"></i>Send OTP
+                                    <i style="color: #3bd17a" class="fas fa-paper-plane me-2"></i>Send OTP
                                 </button>
                                 <div id="otpStatus" class="mt-2 small"></div>
                             </div>
 
                             <div class="mb-3" id="otpInputGroup" style="display: none;">
-                                <label for="otp_code" class="form-label">Enter OTP Code</label>
+                                <label for="otp_code" class="form-label text-white">Enter OTP Code</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
-                                        <i class="fas fa-key"></i>
+                                        <i style="color: #3bd17a" class="fas fa-key"></i>
                                     </span>
                                     <input type="text" 
                                            class="form-control pin-input" 
@@ -206,17 +242,17 @@
                         <!-- Step 2: PIN Setup -->
                         <div id="pinStep" class="step-content" style="display: none;">
                             <div class="mb-4">
-                                <h5 class="text-center mb-3">Step 2: Set Your Security PIN</h5>
+                                <h5 class="text-center mb-3"  style="color: #3bd17a">Step 2: Set Your Security PIN</h5>
                                 <p class="text-muted text-center small">
                                     Create a 6-digit PIN that you'll use for sensitive operations.
                                 </p>
                             </div>
 
                             <div class="mb-3">
-                                <label for="security_pin" class="form-label">Security PIN</label>
+                                <label for="security_pin" class="form-label text-white">Security PIN</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
-                                        <i class="fas fa-lock"></i>
+                                        <i  style="color: #3bd17a" class="fas fa-lock"></i>
                                     </span>
                                     <input type="password" 
                                            class="form-control pin-input" 
@@ -230,10 +266,10 @@
                             </div>
 
                             <div class="mb-4">
-                                <label for="security_pin_confirmation" class="form-label">Confirm Security PIN</label>
+                                <label for="security_pin_confirmation" class="form-label text-white">Confirm Security PIN</label>
                                 <div class="input-group">
                                     <span class="input-group-text">
-                                        <i class="fas fa-lock"></i>
+                                        <i  style="color: #3bd17a" class="fas fa-lock"></i>
                                     </span>
                                     <input type="password" 
                                            class="form-control pin-input" 

@@ -8,39 +8,39 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
         }
         .security-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: #072d42;
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid #3bd17a;
         }
         .security-icon {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3bd17a;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 3rem;
+            font-size: 3.75rem;
         }
         .form-control {
             border-radius: 10px;
-            border: 2px solid #e9ecef;
+            border: 2px solid #3bd17a;
             padding: 12px 15px;
             font-size: 1.1rem;
             transition: all 0.3s ease;
         }
         .form-control:focus {
-            border-color: #667eea;
+            border-color: #3bd17a;
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3bd17a 0%, #072d42 100%);
             border: none;
             border-radius: 10px;
             padding: 12px 30px;
@@ -67,14 +67,21 @@
             border: none;
         }
         .input-group-text {
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
+            background: #071d33;
+            border: 2px solid #3bd17a;
             border-right: none;
-            border-radius: 10px 0 0 10px;
+            border-radius: 20px 0 0 20px;
+            width: 3.75rem;
+            height: 3rem;
+        }
+        .input-group-text i {
+         margin-left: 0.75rem;
         }
         .form-control {
             border-left: none;
-            border-radius: 0 10px 10px 0;
+            border-radius: 0 20px 20px 0;
+             height: 3rem;
+             background :#101b1f;
         }
         .pin-input {
             text-align: center;
@@ -92,14 +99,14 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container mb-3 mt-3">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
                 <div class="security-card p-4">
                     <div class="text-center mb-4">
                         <i class="fas fa-key security-icon"></i>
-                        <h2 class="mt-3 mb-2">Change Security PIN</h2>
-                        <p class="text-muted">Update your security PIN for better protection</p>
+                        <h2 style="color:#3bd17a " class="mt-3 mb-2">Change Security PIN</h2>
+                        <p class="text-white">Update your security PIN for better protection</p>
                     </div>
 
                     <div class="security-notice">
@@ -131,10 +138,10 @@
                         @csrf
                         
                         <div class="mb-3">
-                            <label for="current_pin" class="form-label">Current Security PIN</label>
+                            <label for="current_pin" class="form-label text-white">Current Security PIN</label>
                             <div class="input-group">
                                 <span class="input-group-text">
-                                    <i class="fas fa-lock"></i>
+                                    <i class="fas fa-lock" style="color: #3bd17a"></i>
                                 </span>
                                 <input type="password" 
                                        class="form-control pin-input" 
@@ -149,10 +156,10 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="new_pin" class="form-label">New Security PIN</label>
+                            <label for="new_pin" class="form-label text-white">New Security PIN</label>
                             <div class="input-group">
                                 <span class="input-group-text">
-                                    <i class="fas fa-key"></i>
+                                    <i class="fas fa-key" style="color: #3bd17a"></i>
                                 </span>
                                 <input type="password" 
                                        class="form-control pin-input" 
@@ -166,10 +173,10 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="new_pin_confirmation" class="form-label">Confirm New Security PIN</label>
+                            <label for="new_pin_confirmation" class="form-label text-white">Confirm New Security PIN</label>
                             <div class="input-group">
                                 <span class="input-group-text">
-                                    <i class="fas fa-key"></i>
+                                    <i class="fas fa-key" style="color: #3bd17a"></i>
                                 </span>
                                 <input type="password" 
                                        class="form-control pin-input" 
