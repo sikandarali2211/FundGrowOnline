@@ -336,4 +336,95 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Send USDT transaction
+     */
+    public function sendTransaction(Request $request)
+    {
+        try {
+            $request->validate([
+                'recipient_address' => 'required|string|min:42|max:42',
+                'amount' => 'required|numeric|min:0.01',
+                'tx_hash' => 'required|string|unique:transactions'
+            ]);
+
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Check if user has sufficient balance
+            $walletBalance = $this->calculateWalletBalance($user->id);
+            if ($request->amount > $walletBalance) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Insufficient balance'
+                ], 400);
+            }
+
+            // Create transaction record
+            $transaction = Transaction::create([
+                'user_id' => $user->id,
+                'tx_hash' => $request->tx_hash,
+                'from_address' => $user->wallet_address,
+                'to_address' => $request->recipient_address,
+                'amount' => $request->amount,
+                'token_address' => '0x55d398326f99059fF775485246999027B3197955', // USDT BEP20
+                'token_symbol' => 'USDT',
+                'status' => 'pending',
+                'type' => 'send'
+            ]);
+
+            Log::info("Send transaction created for user {$user->id}: {$request->tx_hash}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction recorded successfully',
+                'transaction' => $transaction
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to record send transaction: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to record transaction'
+            ], 500);
+        }
+    }
+
+    /**
+     * Calculate user's wallet balance from investments
+     */
+    private function calculateWalletBalance($userId)
+    {
+        try {
+            // Get user's total investments
+            $totalInvestment = \App\Models\PlanSelection::where('user_id', $userId)
+                ->where('status', 'active')
+                ->sum('amount');
+
+            // Get user's total returns (this would be calculated based on your business logic)
+            $totalReturns = 0; // Implement your returns calculation logic here
+
+            // Calculate wallet balance (investments + returns)
+            $walletBalance = $totalInvestment + $totalReturns;
+
+            return number_format($walletBalance, 2);
+        } catch (\Exception $e) {
+            Log::error("Failed to calculate wallet balance: " . $e->getMessage());
+            return 0;
+        }
+    }
 }

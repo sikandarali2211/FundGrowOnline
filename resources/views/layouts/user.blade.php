@@ -314,6 +314,9 @@
     <script src="{{ asset('assets/dashboard/js/todolist.js') }}"></script>
 
     <script src="js/dashboard.js"></script>
+    
+    <!-- Web3.js for blockchain interactions -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
 
     <script>
         const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');

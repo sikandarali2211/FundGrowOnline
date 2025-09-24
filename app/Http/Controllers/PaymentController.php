@@ -62,16 +62,36 @@ class PaymentController extends Controller
 
         try {
             DB::beginTransaction();
+            
+            // Debug: Log the incoming request
+            \Log::info('Payment Request Data:', [
+                'plan_id' => $request->plan_id,
+                'amount' => $request->amount,
+                'currency' => $request->currency,
+                'from_address' => $request->from_address,
+                'to_address' => $request->to_address,
+            ]);
 
             // Handle temporary plan data
             if (strpos($request->plan_id, 'temp') === 0) {
-                // For temporary plans, we'll create a basic plan record or use plan selection
+                // For temporary plans, find or create a default plan
+                $defaultPlan = InvestmentPlan::where('name', 'Grower Plan')->first();
+                if (!$defaultPlan) {
+                    // Create a default plan if it doesn't exist
+                    $defaultPlan = InvestmentPlan::create([
+                        'name' => 'Grower Plan',
+                        'amount' => $request->amount,
+                        'return_percentage' => 0,
+                        'duration_days' => 30,
+                        'is_active' => true,
+                    ]);
+                }
                 $planData = [
-                    'id' => null,
-                    'name' => 'Grower Plan',
+                    'id' => $defaultPlan->id,
+                    'name' => $defaultPlan->name,
                     'amount' => $request->amount,
-                    'return_percentage' => 0,
-                    'duration_days' => 30,
+                    'return_percentage' => $defaultPlan->return_percentage,
+                    'duration_days' => $defaultPlan->duration_days,
                 ];
             } else {
                 $plan = InvestmentPlan::findOrFail($request->plan_id);
@@ -102,7 +122,7 @@ class PaymentController extends Controller
             // Create user investment record
             $userInvestment = UserInvestment::create([
                 'user_id' => $user->id,
-                'plan_id' => $planData['id'],
+                'plan_id' => $planData['id'] ?? 1, // Fallback to plan ID 1 if null
                 'amount' => $planData['amount'],
                 'status' => 'pending',
                 'payment_transaction_id' => $transaction->id,

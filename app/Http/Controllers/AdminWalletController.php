@@ -12,7 +12,8 @@ class AdminWalletController extends Controller
      */
     public function index()
     {
-        $admin = \App\Models\User::where('utype', 'ADM')->first();
+        // Get the current authenticated admin user
+        $admin = Auth::user();
         $adminWalletAddress = $admin ? $admin->wallet_address : null;
         
         return view('admin.wallet.index', compact('adminWalletAddress'));
@@ -44,11 +45,14 @@ class AdminWalletController extends Controller
     public function saveWalletAddress(Request $request)
     {
         try {
-            $request->validate([
-                'wallet_address' => 'required|string|min:42|max:42'
-            ]);
+            // Allow null wallet_address for clearing
+            if ($request->wallet_address !== null) {
+                $request->validate([
+                    'wallet_address' => 'required|string|min:42|max:42'
+                ]);
+            }
 
-            $admin = \App\Models\User::where('utype', 'ADM')->first();
+            $admin = Auth::user();
             if (!$admin) {
                 return response()->json([
                     'success' => false,
@@ -62,7 +66,7 @@ class AdminWalletController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Wallet address saved successfully',
+                'message' => $request->wallet_address ? 'Wallet address saved successfully' : 'Wallet address cleared successfully',
                 'wallet_address' => $request->wallet_address
             ]);
         } catch (\Exception $e) {

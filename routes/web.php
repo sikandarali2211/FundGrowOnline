@@ -157,6 +157,7 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::post('/wallet/verify-transaction', [TransactionController::class, 'verifyTransaction'])->name('wallet.verify');
         Route::post('/wallet/transactions', [TransactionController::class, 'storeTransaction'])->name('wallet.store');
         Route::patch('/wallet/transactions/{txHash}', [TransactionController::class, 'updateTransactionStatus'])->name('wallet.update');
+        Route::post('/wallet/send', [TransactionController::class, 'sendTransaction'])->name('wallet.send');
     });
     
     

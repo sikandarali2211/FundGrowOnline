@@ -249,6 +249,10 @@
                                 data-toggle="modal" data-target="#topUpModal">
                                 <i class="fas fa-arrow-down mr-1"></i> Top Up
                             </button>
+                            <button class="btn btn-light btn-sm mb-2" style="border-radius: 20px; min-width: 120px;"
+                                data-toggle="modal" data-target="#sendModal">
+                                <i class="fas fa-paper-plane mr-1"></i> Send
+                            </button>
                             <button class="btn btn-light btn-sm" style="border-radius: 20px; min-width: 120px;">
                                 <i class="fas fa-arrow-up mr-1"></i> Cash Out
                             </button>
@@ -385,6 +389,92 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Send Modal -->
+            <div class="modal fade" id="sendModal" tabindex="-1" role="dialog" aria-labelledby="sendModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content" style="background: #072d42; color: #fff; border-radius: 15px;">
+
+                        <!-- Header -->
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title" id="sendModalLabel" style="color:#3bd17a;">Send USDT</h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+
+                        <!-- Body -->
+                        <div class="modal-body">
+                            <form id="sendForm">
+                                @csrf
+                                <!-- Recipient Address -->
+                                <div class="form-group mb-3">
+                                    <label for="recipientAddress" class="form-label" style="color: #3bd17a;">Recipient Address</label>
+                                    <input type="text" class="form-control" id="recipientAddress" 
+                                           placeholder="Enter recipient wallet address" 
+                                           style="background: rgba(255,255,255,0.1); border: 1px solid #3bd17a; color: #fff;"
+                                           required>
+                                    <small class="form-text text-muted">Enter the BEP20 wallet address to send USDT to</small>
+                                </div>
+
+                                <!-- Amount -->
+                                <div class="form-group mb-3">
+                                    <label for="sendAmount" class="form-label" style="color: #3bd17a;">Amount (USDT)</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" id="sendAmount" 
+                                               placeholder="0.00" step="0.01" min="0.01"
+                                               style="background: rgba(255,255,255,0.1); border: 1px solid #3bd17a; color: #fff;"
+                                               required>
+                                        <div class="input-group-append">
+                                            <span class="input-group-text" style="background: rgba(255,255,255,0.1); border: 1px solid #3bd17a; color: #3bd17a;">USDT</span>
+                                        </div>
+                                    </div>
+                                    <small class="form-text text-muted">Available Balance: ${{ $walletBalance ?? '0.00' }}</small>
+                                </div>
+
+                                <!-- Network Fee Info -->
+                                <div class="alert alert-info" style="background: rgba(59, 209, 122, 0.1); border: 1px solid #3bd17a; color: #3bd17a;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Network Fee:</strong> Estimated fee will be calculated when you confirm the transaction.
+                                </div>
+
+                                <!-- Transaction Summary -->
+                                <div id="transactionSummary" class="d-none">
+                                    <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid #3bd17a;">
+                                        <div class="card-body">
+                                            <h6 style="color: #3bd17a;">Transaction Summary</h6>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Amount:</span>
+                                                <span id="summaryAmount">0 USDT</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Network Fee:</span>
+                                                <span id="summaryFee">~0.001 USDT</span>
+                                            </div>
+                                            <hr style="border-color: #3bd17a;">
+                                            <div class="d-flex justify-content-between font-weight-bold">
+                                                <span>Total:</span>
+                                                <span id="summaryTotal">0 USDT</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="modal-footer border-0">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-success" id="sendButton" onclick="initiateSend()">
+                                <i class="fas fa-paper-plane me-2"></i>Send USDT
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
             <div class="row grid-margin">
                 <div class="col-12">
                     <div class="card card-statistics">
@@ -1029,5 +1119,207 @@
             document.body.style.paddingRight = '0px';
             document.body.style.marginRight = '0px';
         });
+
+        // Send Modal Event Handlers
+        $('#sendModal').on('shown.bs.modal', function() {
+            document.body.style.overflow = 'hidden';
+            document.body.style.paddingRight = '0px';
+            document.body.style.marginRight = '0px';
+        });
+
+        $('#sendModal').on('hidden.bs.modal', function() {
+            document.body.style.overflow = 'auto';
+            document.body.style.paddingRight = '0px';
+            document.body.style.marginRight = '0px';
+            // Reset form
+            document.getElementById('sendForm').reset();
+            document.getElementById('transactionSummary').classList.add('d-none');
+        });
+
+        // Real-time validation and summary update
+        document.getElementById('sendAmount').addEventListener('input', function() {
+            updateTransactionSummary();
+        });
+
+        document.getElementById('recipientAddress').addEventListener('input', function() {
+            validateAddress();
+        });
+
+        function updateTransactionSummary() {
+            const amount = parseFloat(document.getElementById('sendAmount').value) || 0;
+            const fee = 0.001; // Estimated BSC fee
+            const total = amount + fee;
+            
+            if (amount > 0) {
+                document.getElementById('summaryAmount').textContent = amount.toFixed(2) + ' USDT';
+                document.getElementById('summaryFee').textContent = '~' + fee.toFixed(3) + ' USDT';
+                document.getElementById('summaryTotal').textContent = total.toFixed(3) + ' USDT';
+                document.getElementById('transactionSummary').classList.remove('d-none');
+            } else {
+                document.getElementById('transactionSummary').classList.add('d-none');
+            }
+        }
+
+        function validateAddress() {
+            const address = document.getElementById('recipientAddress').value;
+            const isValid = /^0x[a-fA-F0-9]{40}$/.test(address);
+            
+            if (address.length > 0) {
+                if (isValid) {
+                    document.getElementById('recipientAddress').style.borderColor = '#3bd17a';
+                } else {
+                    document.getElementById('recipientAddress').style.borderColor = '#dc3545';
+                }
+            } else {
+                document.getElementById('recipientAddress').style.borderColor = '#3bd17a';
+            }
+        }
+
+        function initiateSend() {
+            const recipientAddress = document.getElementById('recipientAddress').value;
+            const amount = document.getElementById('sendAmount').value;
+            
+            // Validate inputs
+            if (!recipientAddress || !amount) {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            if (!/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)) {
+                showToast('Please enter a valid wallet address', 'error');
+                return;
+            }
+            
+            if (parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount', 'error');
+                return;
+            }
+            
+            // Check if user has wallet connected
+            if (!window.ethereum) {
+                showToast('Please install MetaMask or connect your wallet', 'error');
+                return;
+            }
+            
+            // Check if user has sufficient balance
+            const availableBalance = {{ $walletBalance ?? 0 }};
+            if (parseFloat(amount) > availableBalance) {
+                showToast('Insufficient balance', 'error');
+                return;
+            }
+            
+            // Show loading state
+            const sendButton = document.getElementById('sendButton');
+            const originalText = sendButton.innerHTML;
+            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+            sendButton.disabled = true;
+            
+            // Call the send function
+            sendUSDT(recipientAddress, amount)
+                .then((result) => {
+                    // Record transaction in backend
+                    return recordTransaction(recipientAddress, amount, result.txHash);
+                })
+                .then((backendResult) => {
+                    showToast('Transaction sent and recorded successfully!', 'success');
+                    $('#sendModal').modal('hide');
+                    // Optionally refresh the page or update balance
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                })
+                .catch((error) => {
+                    showToast('Transaction failed: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    sendButton.innerHTML = originalText;
+                    sendButton.disabled = false;
+                });
+        }
+
+        async function sendUSDT(recipientAddress, amount) {
+            try {
+                // Check if wallet is connected
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length === 0) {
+                    throw new Error('Please connect your wallet first');
+                }
+                
+                // USDT contract address on BSC (BEP20)
+                const usdtContractAddress = '0x55d398326f99059fF775485246999027B3197955';
+                
+                // Get the USDT contract ABI (simplified for transfer function)
+                const usdtABI = [
+                    {
+                        "constant": false,
+                        "inputs": [
+                            {"name": "_to", "type": "address"},
+                            {"name": "_value", "type": "uint256"}
+                        ],
+                        "name": "transfer",
+                        "outputs": [{"name": "", "type": "bool"}],
+                        "type": "function"
+                    }
+                ];
+                
+                // Create contract instance
+                const web3 = new Web3(window.ethereum);
+                const usdtContract = new web3.eth.Contract(usdtABI, usdtContractAddress);
+                
+                // Convert amount to wei (USDT has 18 decimals)
+                const amountInWei = web3.utils.toWei(amount.toString(), 'ether');
+                
+                // Get current account
+                const fromAddress = accounts[0];
+                
+                // Estimate gas
+                const gasEstimate = await usdtContract.methods.transfer(recipientAddress, amountInWei).estimateGas({
+                    from: fromAddress
+                });
+                
+                // Send transaction
+                const transaction = await usdtContract.methods.transfer(recipientAddress, amountInWei).send({
+                    from: fromAddress,
+                    gas: gasEstimate
+                });
+                
+                return {
+                    success: true,
+                    txHash: transaction.transactionHash
+                };
+                
+            } catch (error) {
+                console.error('Send USDT error:', error);
+                throw error;
+            }
+        }
+
+        async function recordTransaction(recipientAddress, amount, txHash) {
+            try {
+                const response = await fetch('{{ route("user.wallet.send") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        recipient_address: recipientAddress,
+                        amount: parseFloat(amount),
+                        tx_hash: txHash
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to record transaction');
+                }
+
+                return result;
+            } catch (error) {
+                console.error('Record transaction error:', error);
+                throw error;
+            }
+        }
     </script>
 @endsection

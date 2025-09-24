@@ -3,7 +3,7 @@
 @section('content')
 @php
 $planOrder = [
-['name' => 'grower', 'label' => 'Grower', 'amount' => 10, 'return' => 0, 'duration' => 30],
+['name' => 'grower', 'label' => 'Grower', 'amount' => 1, 'return' => 0, 'duration' => 30],
 [
 'name' => 'builder',
 'label' => 'Builder',
