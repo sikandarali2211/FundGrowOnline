@@ -77,6 +77,7 @@ Route::middleware(['auth'])->prefix('security')->name('security.')->group(functi
 // Wallet save route (only auth required, no PIN setup required)
 Route::middleware(['auth'])->prefix('User-dashboard')->group(function () {
     Route::post('/wallet/save-address', [TransactionController::class, 'saveWalletAddress'])->name('wallet.save.address');
+    Route::post('/wallet/disconnect', [TransactionController::class, 'disconnectWallet'])->name('wallet.disconnect');
 
     // Test route for wallet address saving (remove in production)
     Route::get('/test-wallet-save', function () {

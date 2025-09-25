@@ -775,4 +775,47 @@ class TransactionController extends Controller
             return 0;
         }
     }
+
+    /**
+     * Disconnect wallet and remove wallet address from database
+     */
+    public function disconnectWallet(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not authenticated'
+                ], 401);
+            }
+
+            // Clear wallet address from database
+            $user->wallet_address = null;
+            $user->wallet_type = null;
+            $user->save();
+
+            Log::info("Wallet disconnected for user: {$user->id}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Wallet disconnected successfully!',
+                'data' => [
+                    'user_id' => $user->id,
+                    'wallet_address' => null,
+                    'wallet_type' => null
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Failed to disconnect wallet: " . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to disconnect wallet. Please try again.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

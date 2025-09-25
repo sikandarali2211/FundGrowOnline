@@ -829,6 +829,11 @@
                             </div>
                         </div>
                     </div>
+                     <div class="text-center mt-3">
+            <button id="disconnectWalletBtn" class="btn btn-outline-danger btn-sm" onclick="disconnectWallet()">
+                <i class="fas fa-unlink me-2"></i> Disconnect Wallet
+            </button>
+        </div>
                 </div>
             </div>
 
@@ -1263,11 +1268,180 @@
 
         // Disconnect wallet function
         window.disconnectWallet = function() {
-            currentAccount = null;
-            clearWalletState();
-            updateWalletStatus();
-            showSuccessMessage('Wallet disconnected successfully!');
+            console.log("🔴 Disconnecting wallet...");
+            
+            // Show loading state
+            const disconnectBtn = document.getElementById('disconnectWalletBtn');
+            if (disconnectBtn) {
+                disconnectBtn.disabled = true;
+                disconnectBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Disconnecting...';
+            }
+
+            // First, try to disconnect from Trust Wallet
+            disconnectFromTrustWallet()
+                .then(() => {
+                    console.log('✅ Trust Wallet disconnected successfully');
+                    
+                    // Then call backend API to remove wallet from database
+                    return fetch('/User-dashboard/wallet/disconnect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Disconnect response:', data);
+                    
+                    if (data.success) {
+                        // Clear current account
+                        currentAccount = null;
+
+                        // Clear local storage
+                        clearWalletState();
+
+                        // Reset UI elements
+                        const connectionStatus = document.getElementById('connectionStatus');
+                        const accountAddress = document.getElementById('accountAddress');
+                        const networkName = document.getElementById('networkName');
+                        const tokenBalance = document.getElementById('tokenBalance');
+
+                        if (connectionStatus) {
+                            connectionStatus.textContent = 'Not Connected';
+                            connectionStatus.className = 'value text-warning';
+                        }
+                        if (accountAddress) accountAddress.textContent = '-';
+                        if (networkName) networkName.textContent = '-';
+                        if (tokenBalance) tokenBalance.textContent = 'Connect Trust Wallet';
+
+                        // Hide disconnect button
+                        if (disconnectBtn) disconnectBtn.style.display = 'none';
+
+                        // Reset mobile wallet status
+                        const mobileWalletStatus = document.getElementById('mobileWalletStatus');
+                        if (mobileWalletStatus) {
+                            mobileWalletStatus.innerHTML = `
+                                <div class="alert alert-warning">
+                                    <strong>📱 Mobile Wallet Required</strong><br>
+                                    Please connect your mobile wallet to manage funds.
+                                </div>
+                            `;
+                        }
+
+                        // Success notification
+                        showSuccessMessage('Wallet disconnected successfully! Trust Wallet and database updated.');
+                        
+                        console.log('✅ Wallet disconnected from Trust Wallet and database updated');
+                    } else {
+                        throw new Error(data.message || 'Failed to disconnect wallet');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Disconnect error:', error);
+                    showErrorMessage('Error disconnecting wallet: ' + error.message);
+                    
+                    // Reset button state
+                    if (disconnectBtn) {
+                        disconnectBtn.disabled = false;
+                        disconnectBtn.innerHTML = '<i class="fas fa-unlink me-2"></i>Disconnect Wallet';
+                    }
+                });
         };
+
+        // Function to disconnect from Trust Wallet
+        async function disconnectFromTrustWallet() {
+            try {
+                console.log('🔴 Disconnecting from Trust Wallet...');
+                
+                // Check if Trust Wallet is available
+                if (typeof window.ethereum !== 'undefined') {
+                    // Try different disconnection methods
+                    try {
+                        // Method 1: Standard disconnect
+                        if (window.ethereum.disconnect) {
+                            await window.ethereum.disconnect();
+                            console.log('✅ Trust Wallet disconnected via disconnect method');
+                        }
+                    } catch (e) {
+                        console.log('⚠️ Disconnect method failed, trying alternative...');
+                    }
+                    
+                    try {
+                        // Method 2: Close method
+                        if (window.ethereum.close) {
+                            await window.ethereum.close();
+                            console.log('✅ Trust Wallet disconnected via close method');
+                        }
+                    } catch (e) {
+                        console.log('⚠️ Close method failed, trying alternative...');
+                    }
+                    
+                    try {
+                        // Method 3: Request disconnect (some wallets support this)
+                        if (window.ethereum.request) {
+                            await window.ethereum.request({
+                                method: 'wallet_revokePermissions',
+                                params: [{
+                                    eth_accounts: {}
+                                }]
+                            });
+                            console.log('✅ Trust Wallet disconnected via revoke permissions');
+                        }
+                    } catch (e) {
+                        console.log('⚠️ Revoke permissions failed, clearing state manually...');
+                    }
+                    
+                    // Method 4: Manual state clearing
+                    console.log('🔧 Manually clearing wallet state...');
+                    
+                    // Clear any wallet-related event listeners
+                    if (window.ethereum.removeAllListeners) {
+                        window.ethereum.removeAllListeners();
+                        console.log('✅ Wallet event listeners removed');
+                    }
+                    
+                    // Reset wallet provider state
+                    if (window.ethereum) {
+                        window.ethereum.selectedAddress = null;
+                        window.ethereum.isConnected = false;
+                        window.ethereum._state = { accounts: [], isConnected: false, isUnlocked: false };
+                        console.log('✅ Wallet provider state reset');
+                    }
+                    
+                } else {
+                    console.log('⚠️ Trust Wallet not detected, skipping wallet disconnect');
+                }
+                
+                // Additional cleanup for Trust Wallet specific properties
+                if (window.trustwallet) {
+                    try {
+                        window.trustwallet = null;
+                        console.log('✅ Trust Wallet object cleared');
+                    } catch (e) {
+                        console.log('⚠️ Could not clear Trust Wallet object');
+                    }
+                }
+                
+                // Clear any cached wallet data
+                if (window.web3) {
+                    try {
+                        window.web3 = null;
+                        console.log('✅ Web3 object cleared');
+                    } catch (e) {
+                        console.log('⚠️ Could not clear Web3 object');
+                    }
+                }
+                
+                console.log('✅ Trust Wallet disconnection process completed');
+                
+            } catch (error) {
+                console.warn('⚠️ Error disconnecting from Trust Wallet:', error);
+                // Don't throw error, just log it and continue
+                // The database disconnect should still proceed
+            }
+        }
 
         // Check wallet connection on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -1581,7 +1755,9 @@
             
             // Update UI to show connected status from database
             updateWalletConnectionStatus(dbWalletAddress, 'trust', 'BSC Mainnet');
-            
+            // Show disconnect button when connected
+const disconnectBtn = document.getElementById('disconnectWalletBtn');
+if (disconnectBtn) disconnectBtn.style.display = 'inline-block';
             // Save to localStorage for consistency
             localStorage.setItem('walletAccount', dbWalletAddress);
             localStorage.setItem('isWalletConnected', 'true');
