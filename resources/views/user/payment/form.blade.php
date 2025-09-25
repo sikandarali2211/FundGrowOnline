@@ -53,6 +53,12 @@
             padding: 25px;
             margin-bottom: 30px;
         }
+        
+        /* Hide mobile connect button when wallet is connected */
+        .wallet-connected #mobileConnectBtn {
+            display: none !important;
+            visibility: hidden !important;
+        }
 
         .payment-form {
             background: rgba(0, 0, 0, 0.2);
@@ -319,77 +325,77 @@
                                         </button>
                                         
                                         <!-- Debug Button -->
-                                        <button type="button" class="btn btn-warning btn-sm mt-2" onclick="debugWalletState()">
+                                        <button type="button" hidden class="btn btn-warning btn-sm mt-2" onclick="debugWalletState()">
                                             <i class="fa fa-bug me-1"></i>Debug Wallet State
                                         </button>
                                         
                                         <!-- Force Connect Button -->
-                                        <button type="button" class="btn btn-info btn-sm mt-2" onclick="forceWalletConnection()">
+                                        <button type="button" hidden class="btn btn-info btn-sm mt-2" onclick="forceWalletConnection()">
                                             <i class="fa fa-plug me-1"></i>Force Connect Wallet
                                         </button>
                                         
                                         <!-- Reset Transaction Button -->
-                                        <button type="button" class="btn btn-danger btn-sm mt-2" onclick="resetStuckTransaction()">
+                                        <button type="button" hidden class="btn btn-danger btn-sm mt-2" onclick="resetStuckTransaction()">
                                             <i class="fa fa-refresh me-1"></i>Reset Transaction
                                         </button>
                                         
                                         <!-- Simple Connect Button -->
-                                        <button type="button" class="btn btn-success btn-sm mt-2" onclick="connectWalletSimple()">
+                                        <button type="button" hidden class="btn btn-success btn-sm mt-2" onclick="connectWalletSimple()">
                                             <i class="fa fa-wallet me-1"></i>Simple Connect
                                         </button>
                                         
                                         <!-- Force Transaction Button -->
-                                        <button type="button" class="btn btn-warning btn-sm mt-2" onclick="forceTransaction()">
+                                        <button type="button" hidden class="btn btn-warning btn-sm mt-2" onclick="forceTransaction()">
                                             <i class="fa fa-bolt me-1"></i>Force Transaction
                                         </button>
                                         
                                         <!-- Trust Wallet Instructions Button -->
-                                        <button type="button" class="btn btn-info btn-sm mt-2" onclick="showTrustWalletInstructions()">
+                                        <button type="button" hidden class="btn btn-info btn-sm mt-2" onclick="showTrustWalletInstructions()">
                                             <i class="fa fa-question-circle me-1"></i>Trust Wallet Help
                                         </button>
                                         
                                         <!-- Check Trust Wallet Status Button -->
-                                        <button type="button" class="btn btn-success btn-sm mt-2" onclick="checkTrustWalletStatus()">
+                                        <button type="button" hidden class="btn btn-success btn-sm mt-2" onclick="checkTrustWalletStatus()">
                                             <i class="fa fa-check-circle me-1"></i>Check Status
                                         </button>
                                         
                                         <!-- Test Wallet Button -->
-                                        <button type="button" class="btn btn-primary btn-sm mt-2" onclick="testWalletFunctionality()">
+                                        <button type="button" hidden class="btn btn-primary btn-sm mt-2" onclick="testWalletFunctionality()">
                                             <i class="fa fa-cog me-1"></i>Test Wallet
                                         </button>
                                         
                                         <!-- Remove MetaMask Button -->
-                                        <button type="button" class="btn btn-danger btn-sm mt-2" onclick="showMetaMaskRemovalInstructions()">
+                                        <button type="button" hidden class="btn btn-danger btn-sm mt-2" onclick="showMetaMaskRemovalInstructions()">
                                             <i class="fa fa-times-circle me-1"></i>Remove MetaMask
                                         </button>
                                         
                                         <!-- Detect Wallet Button -->
-                                        <button type="button" class="btn btn-info btn-sm mt-2" onclick="detectAndConnectTrustWallet()">
+                                        <button type="button" hidden class="btn btn-info btn-sm mt-2" onclick="detectAndConnectTrustWallet()">
                                             <i class="fa fa-search me-1"></i>Detect Wallet
                                         </button>
                                         
-                                        <!-- Mobile Connect Button -->
-                                        <button type="button" class="btn btn-success btn-sm mt-2" onclick="connectMobileTrustWallet()">
+                                        <!-- Mobile Connect Button - Hidden when wallet connected -->
+                                        <button type="button" id="mobileConnectBtn" class="btn btn-success btn-sm mt-2" onclick="connectMobileTrustWallet()">
                                             <i class="fa fa-mobile me-1"></i>Mobile Connect
                                         </button>
                                         
                                         <!-- Force Check Wallet Button -->
-                                        <button type="button" class="btn btn-warning btn-sm mt-2" onclick="forceCheckWallet()">
+                                        <button type="button" hidden class="btn btn-warning btn-sm mt-2" onclick="forceCheckWallet()">
                                             <i class="fa fa-refresh me-1"></i>Force Check Wallet
                                         </button>
                                         
                         <!-- Check Ethers Button -->
-                        <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="checkEthersCompatibility()">
+                        <button type="button" hidden class="btn btn-secondary btn-sm mt-2" onclick="checkEthersCompatibility()">
                             <i class="fa fa-code me-1"></i>Check Ethers
                         </button>
                         
                         <!-- Test USDT BEP20 Contract Button -->
-                        <button type="button" class="btn btn-info btn-sm mt-2" onclick="testUsdtContract()">
+                        <button type="button" hidden class="btn btn-info btn-sm mt-2" onclick="testUsdtContract()">
                             <i class="fa fa-coins me-1"></i>Test USDT BEP20
                         </button>
                         
                         <!-- Switch to BSC Button -->
-                        <button type="button" class="btn btn-warning btn-sm mt-2" onclick="switchToBSCNetwork()">
+                        <button type="button" hidden class="btn btn-warning btn-sm mt-2" onclick="switchToBSCNetwork()">
                             <i class="fa fa-exchange-alt me-1"></i>Switch to BSC
                         </button>
                                         
@@ -483,6 +489,70 @@
         let walletService = null;
         let userBalance = 0;
         let planAmount = {{ $plan['amount'] }}; // This is in dollars, we need to convert to USDT
+        
+        // Auto-fill payment amount function
+        function autoFillPaymentAmount() {
+            try {
+                const amountInput = document.getElementById('paymentAmount') || document.getElementById('amount');
+                
+                if (amountInput) {
+                    amountInput.value = planAmount;
+                    console.log('✅ Auto-filled payment amount:', planAmount);
+                    showStatus('info', 'Payment amount auto-filled: $' + planAmount);
+                }
+            } catch (error) {
+                console.error('Error auto-filling payment amount:', error);
+            }
+        }
+        
+        // Update UI when wallet connects/disconnects
+        function updateWalletUI(isConnected) {
+            console.log('=== Updating Wallet UI ===');
+            console.log('Wallet connected:', isConnected);
+            
+            const mobileConnectBtn = document.getElementById('mobileConnectBtn');
+            const connectWalletBtn = document.getElementById('connectWalletBtn');
+            const walletConnectSection = document.getElementById('walletConnectSection');
+            
+            console.log('Mobile connect button found:', !!mobileConnectBtn);
+            console.log('Connect wallet button found:', !!connectWalletBtn);
+            console.log('Wallet connect section found:', !!walletConnectSection);
+            
+            if (isConnected) {
+                // Add CSS class to hide mobile connect button
+                if (walletConnectSection) {
+                    walletConnectSection.classList.add('wallet-connected');
+                    console.log('✅ Added wallet-connected class');
+                }
+                
+                // Hide mobile connect button when wallet is connected
+                if (mobileConnectBtn) {
+                    mobileConnectBtn.style.display = 'none';
+                    mobileConnectBtn.style.visibility = 'hidden';
+                    mobileConnectBtn.hidden = true;
+                    console.log('✅ Mobile connect button hidden');
+                }
+                // Show connect wallet button for reconnection if needed
+                if (connectWalletBtn) {
+                    connectWalletBtn.style.display = 'block';
+                    console.log('✅ Connect wallet button shown');
+                }
+            } else {
+                // Remove CSS class to show mobile connect button
+                if (walletConnectSection) {
+                    walletConnectSection.classList.remove('wallet-connected');
+                    console.log('✅ Removed wallet-connected class');
+                }
+                
+                // Show mobile connect button when wallet is disconnected
+                if (mobileConnectBtn) {
+                    mobileConnectBtn.style.display = 'block';
+                    mobileConnectBtn.style.visibility = 'visible';
+                    mobileConnectBtn.hidden = false;
+                    console.log('✅ Mobile connect button shown');
+                }
+            }
+        }
 
         // Check ethers version and compatibility
         function checkEthersCompatibility() {
@@ -753,6 +823,12 @@
                         // Check balance
                         await checkBalanceAndEnablePurchase();
                         
+                        // Auto-fill payment amount with plan amount
+                        autoFillPaymentAmount();
+                        
+                        // Update UI to hide mobile connect button
+                        updateWalletUI(true);
+                        
                         showStatus('success', 'Wallet connected on page load! Address: ' + walletAddress);
                         return;
                     }
@@ -796,6 +872,9 @@
             
             // Check wallet status first
             checkWalletStatusOnLoad();
+            
+            // Update UI based on current wallet state
+            updateWalletUI(isWalletConnected);
             
             // Wait for wallet service to load
             let serviceWaitCount = 0;
@@ -868,6 +947,12 @@
 
                     // Check balance and enable purchase
                     await checkBalanceAndEnablePurchase();
+                    
+                    // Auto-fill payment amount
+                    autoFillPaymentAmount();
+                    
+                    // Update UI to hide mobile connect button
+                    updateWalletUI(true);
 
                     showStatus('success', 'Wallet connected successfully!');
                 } else {

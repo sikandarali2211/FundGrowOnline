@@ -48,16 +48,61 @@ class UserController extends Controller
 
         // Calculate wallet balance from user investments
         $walletBalance = $this->calculateWalletBalance($user->id);
+        
+        // Get admin wallet address from database
+        $adminWalletAddress = $this->getAdminWalletAddress();
 
         return view('user.index', compact(
             'totalReferrals',
             'directReferrals', 
             'newReferralsToday',
             'newReferralsWeek',
-            'walletBalance'
+            'walletBalance',
+            'adminWalletAddress'
         ));
     }
     
+    /**
+     * Get admin wallet address from database
+     */
+    private function getAdminWalletAddress()
+    {
+        try {
+            // Find admin user by utype = 'ADM' and get their wallet address
+            $admin = User::where('utype', 'ADM')
+                ->whereNotNull('wallet_address')
+                ->first();
+            
+            return $admin ? $admin->wallet_address : '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'; // Fallback address
+        } catch (\Exception $e) {
+            // If there's any error, return fallback address
+            return '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6';
+        }
+    }
+
+    /**
+     * Get admin wallet address via AJAX
+     */
+    public function getAdminWalletAddressAjax()
+    {
+        try {
+            $adminWalletAddress = $this->getAdminWalletAddress();
+            
+            return response()->json([
+                'success' => true,
+                'admin_wallet_address' => $adminWalletAddress,
+                'is_live' => $adminWalletAddress !== '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get admin wallet address',
+                'admin_wallet_address' => '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+                'is_live' => false
+            ]);
+        }
+    }
+
     /**
      * Calculate user's wallet balance from investments
      */

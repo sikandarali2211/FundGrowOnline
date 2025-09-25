@@ -4,6 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Fund Grow Online</title>
 
     <!-- Plugins CSS -->
@@ -298,11 +301,11 @@
     <script src="{{ asset('assets/dashboard/js/settings.js') }}"></script>
     <script src="{{ asset('assets/dashboard/js/todolist.js') }}"></script>
 
-    <!-- Ethers.js for Web3 functionality -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <!-- Ethers.js for Web3 functionality - Using alternative CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     <!-- Wallet Service -->
     <script src="{{ asset('js/wallet-service.js') }}"></script>
-    <script src="js/dashboard.js"></script>
+    <!-- <script src="js/dashboard.js"></script> -->
 
     <script>
         const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');

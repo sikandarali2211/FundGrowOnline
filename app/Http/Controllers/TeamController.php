@@ -43,6 +43,45 @@ class TeamController extends Controller
 
         $directCount = $level1->count();
 
+        // Build nodes array for the org chart
+        $nodes = [];
+        
+        // Add current user as root
+        $nodes[] = [
+            'id' => $me->id,
+            'name' => $me->name,
+            'code' => $me->referral_code,
+            'joined' => $me->created_at->format('M d, Y'),
+            'type' => 'me',
+            'parentId' => null
+        ];
+        
+        // Add Level 1 users
+        foreach ($level1 as $user) {
+            $nodes[] = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'code' => $user->referral_code,
+                'joined' => $user->created_at->format('M d, Y'),
+                'type' => 'l1',
+                'parentId' => $me->id
+            ];
+        }
+        
+        // Add Level 2 users
+        foreach ($level2 as $parentId => $children) {
+            foreach ($children as $user) {
+                $nodes[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'code' => $user->referral_code,
+                    'joined' => $user->created_at->format('M d, Y'),
+                    'type' => 'l2',
+                    'parentId' => $parentId
+                ];
+            }
+        }
+
         return view('user.team.index', compact(
             'me',
             'level1',
@@ -50,7 +89,8 @@ class TeamController extends Controller
             'directCount',
             'toNext',
             'progress',
-            'progressText'
+            'progressText',
+            'nodes'
         ));
     }
 }

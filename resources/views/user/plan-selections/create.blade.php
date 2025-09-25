@@ -125,7 +125,7 @@
                             <input type="hidden" name="return_percentage" value="{{ $plan['return_percentage'] }}">
                             <input type="hidden" name="duration_days" value="{{ $plan['duration_days'] }}">
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success">
+                                <button type="submit" class="btn btn-success" hidden>
                                     <i class="fas fa-paper-plane me-2"></i> Confirm & Submit
                                 </button>
                                 <a href="{{ route('payment.form', 'temp') }}?plan={{ $plan['name'] }}&amount={{ $plan['amount'] }}&return={{ $plan['return_percentage'] }}&duration={{ $plan['duration_days'] }}" class="btn btn-warning">

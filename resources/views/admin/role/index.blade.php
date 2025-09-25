@@ -8,7 +8,7 @@
         border: 1px solid rgba(59, 209, 122, 0.3);
         border-radius: 24px;
         padding: 32px;
-        box-shadow: 
+        box-shadow:
             0 20px 40px rgba(0, 0, 0, 0.4),
             0 0 0 1px rgba(59, 209, 122, 0.1),
             inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -33,13 +33,18 @@
     }
 
     @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
     }
 
     .role-card:hover {
         transform: translateY(-4px);
-        box-shadow: 
+        box-shadow:
             0 25px 50px rgba(0, 0, 0, 0.5),
             0 0 0 1px rgba(59, 209, 122, 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -111,6 +116,48 @@
         box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
         color: white;
     }
+
+    /* Modern Select & Input Fields */
+    .form-control-modern,
+    .form-select {
+        background: rgba(16, 27, 31, 0.85) !important;
+        /* Glassy dark background */
+        color: #ffffff !important;
+        /* White text */
+        border: 2px solid rgba(59, 209, 122, 0.5);
+        border-radius: 12px;
+        padding: 12px 15px;
+        height: 52px;
+        /* same height for alignment */
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .form-control-modern:focus,
+    .form-select:focus {
+        border-color: #3bd17a;
+        box-shadow: 0 0 0 3px rgba(59, 209, 122, 0.25);
+        outline: none;
+    }
+
+    /* Dropdown Options */
+    .form-select option {
+        background: #0a1a2e;
+        color: #ffffff;
+        padding: 10px;
+    }
+
+    /* Label Styling */
+    .form-label {
+        font-weight: 600;
+        color: #e5e7eb;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
 
     /* Table Styling */
     .table-modern {
@@ -240,11 +287,11 @@
             padding: 20px;
             margin-bottom: 1rem;
         }
-        
+
         .table-modern {
             font-size: 0.9rem;
         }
-        
+
         .btn-gradient-primary,
         .btn-gradient-secondary,
         .btn-gradient-danger {
@@ -254,309 +301,314 @@
     }
 </style>
 
-<div class="container-fluid">
-    <!-- Page Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="role-card">
-                <h1 class="role-title">
-                    <i class="fas fa-users-cog me-3"></i>
-                    User Role Management
-                </h1>
-                <p class="text-muted mb-0">Manage user roles and permissions for your platform</p>
-            </div>
-        </div>
-    </div>
+<div class="main-panel mb-4" style="margin-top:6rem; ">
+    <div class="container-fluid">
 
-    <!-- Success/Error Messages -->
-    @if(session('success'))
+        <!-- Success/Error Messages -->
+        @if (session('success'))
         <div class="alert alert-success-modern alert-modern">
             <i class="fas fa-check-circle me-2"></i>
             {{ session('success') }}
         </div>
-    @endif
+        @endif
 
-    @if(session('error'))
+        @if (session('error'))
         <div class="alert alert-danger-modern alert-modern">
             <i class="fas fa-exclamation-circle me-2"></i>
             {{ session('error') }}
         </div>
-    @endif
+        @endif
 
-    <!-- Role Assignment Form -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="role-card">
-                <h3 class="role-title">
-                    <i class="fas fa-user-plus me-2"></i>
-                    Assign Role to User
-                </h3>
-                
-                <form method="POST" action="{{ route('admin.role.assign') }}">
-                    @csrf
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="user_id" class="form-label text-white">
-                                <i class="fas fa-user me-2"></i>Select User
-                            </label>
-                            <select class="form-control-modern form-select" id="user_id" name="user_id" required>
-                                <option value="">Choose a user...</option>
-                                @foreach($users as $user)
-                                    <option value="{{ $user->id }}" 
-                                        @if(old('user_id') == $user->id) selected @endif>
+        <!-- Role Assignment Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="role-card">
+                    <h3 class="role-title">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Assign Role to User
+                    </h3>
+
+                    <form method="POST" action="{{ route('admin.role.assign') }}">
+                        @csrf
+                        <div class="row  align-items-end" style="gap:2rem;">
+                            <!-- User Select -->
+                            <div class="col-md-6">
+                                <label for="user_id" class="form-label text-white">
+                                    <i class="fas fa-user me-2"></i>Select User
+                                </label>
+                                <select class="form-control-modern form-select" id="user_id" name="user_id" required>
+                                    <option value="">Choose a user...</option>
+                                    @foreach ($users as $user)
+                                    <option value="{{ $user->id }}"
+                                        @if (old('user_id')==$user->id) selected @endif>
                                         {{ $user->name }} ({{ $user->email }})
-                                        @if($user->role)
-                                            - Current: {{ ucfirst($user->role) }}
+                                        @if ($user->role)
+                                        - Current: {{ ucfirst($user->role) }}
                                         @endif
                                     </option>
-                                @endforeach
-                            </select>
-                            @error('user_id')
+                                    @endforeach
+                                </select>
+                                @error('user_id')
                                 <div class="text-danger mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        
-                        <div class="col-md-6">
-                            <label for="role" class="form-label text-white">
-                                <i class="fas fa-user-tag me-2"></i>Select Role
-                            </label>
-                            <select class="form-control-modern form-select" id="role" name="role" required>
-                                <option value="">Choose a role...</option>
-                                <option value="admin" @if(old('role') == 'admin') selected @endif>
-                                    <i class="fas fa-crown me-2"></i>Admin
-                                </option>
-                                <option value="manager" @if(old('role') == 'manager') selected @endif>
-                                    <i class="fas fa-user-tie me-2"></i>Manager
-                                </option>
-                                <option value="moderator" @if(old('role') == 'moderator') selected @endif>
-                                    <i class="fas fa-user-shield me-2"></i>Moderator
-                                </option>
-                                <option value="user" @if(old('role') == 'user') selected @endif>
-                                    <i class="fas fa-user me-2"></i>User
-                                </option>
-                            </select>
-                            @error('role')
+                                @enderror
+                            </div>
+
+                            <!-- Role Select -->
+                            <div class="col-md-3">
+                                <label for="role" class="form-label text-white">
+                                    <i class="fas fa-user-tag me-2"></i>Select Role
+                                </label>
+                                <select class="form-control-modern form-select" id="role" name="role" required>
+                                    <option value="">Choose a role...</option>
+                                    <option value="admin" @if (old('role')=='admin' ) selected @endif>Admin
+                                    </option>
+                                    <option hidden value="manager" @if (old('role')=='manager' ) selected @endif>Manager
+                                    </option>
+                                    <option value="moderator" @if (old('role')=='moderator' ) selected @endif>
+                                        Moderator</option>
+                                    <option value="user" @if (old('role')=='user' ) selected @endif>User
+                                    </option>
+                                </select>
+                                @error('role')
                                 <div class="text-danger mt-1">{{ $message }}</div>
-                            @enderror
+                                @enderror
+                            </div>
                         </div>
-                        
-                        <div class="col-12">
+
+                        <!-- Button -->
+                        <div class="mt-4">
                             <button type="submit" class="btn btn-gradient-primary">
                                 <i class="fas fa-user-plus me-2"></i>
                                 Assign Role
                             </button>
                         </div>
-                    </div>
-                </form>
+                    </form>
+
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Users with Roles Table -->
-    <div class="row">
-        <div class="col-12">
-            <div class="role-card">
-                <h3 class="role-title">
-                    <i class="fas fa-list me-2"></i>
-                    Users with Assigned Roles
-                </h3>
-                
-                @if($usersWithRoles->count() > 0)
+        <!-- Users with Roles Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="role-card">
+                    <h3 class="role-title">
+                        <i class="fas fa-list me-2"></i>
+                        Users with Assigned Roles
+                    </h3>
+
+                    @if ($usersWithRoles->count() > 0)
                     <div class="table-responsive">
                         <table class="table table-modern">
                             <thead>
                                 <tr>
-                                    <th><i class="fas fa-user me-2"></i>User</th>
-                                    <th><i class="fas fa-envelope me-2"></i>Email</th>
-                                    <th><i class="fas fa-user-tag me-2"></i>Current Role</th>
-                                    <th><i class="fas fa-calendar me-2"></i>Role Assigned</th>
-                                    <th><i class="fas fa-calendar me-2"></i>Email Verified</th>
-                                    <th><i class="fas fa-cogs me-2"></i>Actions</th>
+                                    <th><i class="fas fa-user me-2"></i> User</th>
+                                    <th><i class="fas fa-envelope me-2"></i> Email</th>
+                                    <th><i class="fas fa-user-tag me-2"></i> Current Role</th>
+                                    <th><i class="fas fa-calendar me-2"></i> Role Assigned</th>
+                                    <th><i class="fas fa-calendar me-2"></i> Email Verified</th>
+                                    <th><i class="fas fa-cogs me-2"></i> Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($usersWithRoles as $user)
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
-                                                    <i class="fas fa-user text-white"></i>
-                                                </div>
-                                                <div>
-                                                    <strong class="text-white">{{ $user->name }}</strong>
-                                                    <br>
-                                                    <small class="text-muted">ID: {{ $user->id }}</small>
-                                                </div>
+                                @foreach ($usersWithRoles as $user)
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div
+                                                class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                                <i class="fas fa-user text-white"></i>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <span class="text-white">{{ $user->email }}</span>
-                                            @if($user->email_verified_at)
-                                                <br><small class="text-success">
-                                                    <i class="fas fa-check-circle me-1"></i>Verified
-                                                </small>
-                                            @else
-                                                <br><small class="text-warning">
-                                                    <i class="fas fa-exclamation-triangle me-1"></i>Not Verified
-                                                </small>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($user->role)
-                                                <span class="role-badge {{ $user->role }}">
-                                                    @switch($user->role)
-                                                        @case('admin')
-                                                            <i class="fas fa-crown me-1"></i>Admin
-                                                            @break
-                                                        @case('manager')
-                                                            <i class="fas fa-user-tie me-1"></i>Manager
-                                                            @break
-                                                        @case('moderator')
-                                                            <i class="fas fa-user-shield me-1"></i>Moderator
-                                                            @break
-                                                        @default
-                                                            <i class="fas fa-user me-1"></i>User
-                                                    @endswitch
-                                                </span>
-                                            @else
-                                                <span class="role-badge user">
-                                                    <i class="fas fa-user me-1"></i>No Role
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <span class="text-white">
-                                                {{ $user->role_updated_at ? $user->role_updated_at->format('M d, Y') : 'N/A' }}
-                                            </span>
-                                            @if($user->role_updated_at)
-                                                <br><small class="text-muted">
-                                                    {{ $user->role_updated_at->diffForHumans() }}
-                                                </small>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($user->email_verified_at)
-                                                <span class="status-indicator status-active"></span>
-                                                <span class="text-success">Verified</span>
-                                            @else
-                                                <span class="status-indicator status-inactive"></span>
-                                                <span class="text-warning">Not Verified</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="d-flex gap-2">
-                                                <!-- Change Role Button -->
-                                                <button type="button" class="btn btn-gradient-secondary btn-sm" 
-                                                        data-bs-toggle="modal" 
-                                                        data-bs-target="#changeRoleModal{{ $user->id }}"
-                                                        title="Change Role">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                                
-                                                <!-- Remove Role Button -->
-                                                <form method="POST" action="{{ route('admin.role.remove', $user->id) }}" 
-                                                      style="display: inline;"
-                                                      onsubmit="return confirm('Are you sure you want to remove the role from {{ $user->name }}?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-gradient-danger btn-sm" 
-                                                            title="Remove Role">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <!-- Change Role Modal -->
-                                    <div class="modal fade" id="changeRoleModal{{ $user->id }}" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content" style="background: linear-gradient(145deg, #0a1a2e, #16213e); border: 1px solid rgba(59, 209, 122, 0.3);">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title text-white">
-                                                        <i class="fas fa-edit me-2"></i>
-                                                        Change Role for {{ $user->name }}
-                                                    </h5>
-                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form method="POST" action="{{ route('admin.role.update', $user->id) }}">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label for="new_role{{ $user->id }}" class="form-label text-white">New Role</label>
-                                                            <select class="form-control-modern form-select" id="new_role{{ $user->id }}" name="role" required>
-                                                                <option value="">Choose a role...</option>
-                                                                <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>
-                                                                    <i class="fas fa-crown me-2"></i>Admin
-                                                                </option>
-                                                                <option value="manager" {{ $user->role === 'manager' ? 'selected' : '' }}>
-                                                                    <i class="fas fa-user-tie me-2"></i>Manager
-                                                                </option>
-                                                                <option value="moderator" {{ $user->role === 'moderator' ? 'selected' : '' }}>
-                                                                    <i class="fas fa-user-shield me-2"></i>Moderator
-                                                                </option>
-                                                                <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>
-                                                                    <i class="fas fa-user me-2"></i>User
-                                                                </option>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-gradient-primary">
-                                                            <i class="fas fa-save me-2"></i>Update Role
-                                                        </button>
-                                                    </div>
-                                                </form>
+                                            <div>
+                                                <strong class="text-white">{{ $user->name }}</strong>
+                                                <br>
+                                                <small class="text-muted">ID: {{ $user->id }}</small>
                                             </div>
                                         </div>
+                                    </td>
+                                    <td>
+                                        <span class="text-white">{{ $user->email }}</span>
+                                        @if ($user->email_verified_at)
+                                        <br><small class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i>Verified
+                                        </small>
+                                        @else
+                                        <br><small class="text-warning">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Not Verified
+                                        </small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($user->role)
+                                        <span class="role-badge {{ $user->role }}">
+                                            @switch($user->role)
+                                            @case('admin')
+                                            <i class="fas fa-crown me-1"></i>Admin
+                                            @break
+
+                                            @case('manager')
+                                            <i class="fas fa-user-tie me-1"></i>Manager
+                                            @break
+
+                                            @case('moderator')
+                                            <i class="fas fa-user-shield me-1"></i>Moderator
+                                            @break
+
+                                            @default
+                                            <i class="fas fa-user me-1"></i>User
+                                            @endswitch
+                                        </span>
+                                        @else
+                                        <span class="role-badge user">
+                                            <i class="fas fa-user me-1"></i>No Role
+                                        </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="text-white">
+                                            {{ $user->role_updated_at ? $user->role_updated_at->format('M d, Y') : 'N/A' }}
+                                        </span>
+                                        @if ($user->role_updated_at)
+                                        <br><small class="text-muted">
+                                            {{ $user->role_updated_at->diffForHumans() }}
+                                        </small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($user->email_verified_at)
+                                        <span class="status-indicator status-active"></span>
+                                        <span class="text-success">Verified</span>
+                                        @else
+                                        <span class="status-indicator status-inactive"></span>
+                                        <span class="text-warning">Not Verified</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2">
+                                            <!-- Change Role Button -->
+                                            <button type="button" class="btn btn-gradient-secondary btn-sm"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#changeRoleModal{{ $user->id }}"
+                                                title="Change Role">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+
+                                            <!-- Remove Role Button -->
+                                            <form method="POST"
+                                                action="{{ route('admin.role.remove', $user->id) }}"
+                                                style="display: inline;"
+                                                onsubmit="return confirm('Are you sure you want to remove the role from {{ $user->name }}?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-gradient-danger btn-sm"
+                                                    title="Remove Role">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Change Role Modal -->
+                                <div class="modal fade" id="changeRoleModal{{ $user->id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content"
+                                            style="background: linear-gradient(145deg, #0a1a2e, #16213e); border: 1px solid rgba(59, 209, 122, 0.3);">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title text-white">
+                                                    <i class="fas fa-edit me-2"></i>
+                                                    Change Role for {{ $user->name }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form method="POST"
+                                                action="{{ route('admin.role.update', $user->id) }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="new_role{{ $user->id }}"
+                                                            class="form-label text-white">New Role</label>
+                                                        <select class="form-control-modern form-select"
+                                                            id="new_role{{ $user->id }}" name="role"
+                                                            required>
+                                                            <option value="">Choose a role...</option>
+                                                            <option value="admin"
+                                                                {{ $user->role === 'admin' ? 'selected' : '' }}>
+                                                                <i class="fas fa-crown me-2"></i>Admin
+                                                            </option>
+                                                            <option value="manager"
+                                                                {{ $user->role === 'manager' ? 'selected' : '' }}>
+                                                                <i class="fas fa-user-tie me-2"></i>Manager
+                                                            </option>
+                                                            <option value="moderator"
+                                                                {{ $user->role === 'moderator' ? 'selected' : '' }}>
+                                                                <i
+                                                                    class="fas fa-user-shield me-2"></i>Moderator
+                                                            </option>
+                                                            <option value="user"
+                                                                {{ $user->role === 'user' ? 'selected' : '' }}>
+                                                                <i class="fas fa-user me-2"></i>User
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-gradient-primary">
+                                                        <i class="fas fa-save me-2"></i>Update Role
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
                                     </div>
+                                </div>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                @else
+                    @else
                     <div class="text-center py-5">
                         <i class="fas fa-users-slash fa-3x text-muted mb-3"></i>
                         <h5 class="text-muted">No users with assigned roles found</h5>
                         <p class="text-muted">Assign roles to users using the form above</p>
                     </div>
-                @endif
+                    @endif
+                </div>
             </div>
         </div>
     </div>
 </div>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-hide alerts after 5 seconds
-    setTimeout(function() {
-        const alerts = document.querySelectorAll('.alert-modern');
-        alerts.forEach(function(alert) {
-            alert.style.transition = 'opacity 0.5s ease';
-            alert.style.opacity = '0';
-            setTimeout(function() {
-                alert.remove();
-            }, 500);
-        });
-    }, 5000);
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert-modern');
+            alerts.forEach(function(alert) {
+                alert.style.transition = 'opacity 0.5s ease';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    alert.remove();
+                }, 500);
+            });
+        }, 5000);
 
-    // Form validation
-    const roleForm = document.querySelector('form[action*="admin.role.assign"]');
-    if (roleForm) {
-        roleForm.addEventListener('submit', function(e) {
-            const userId = document.getElementById('user_id').value;
-            const role = document.getElementById('role').value;
-            
-            if (!userId || !role) {
-                e.preventDefault();
-                alert('Please select both user and role');
-                return false;
-            }
-        });
-    }
-});
+        // Form validation
+        const roleForm = document.querySelector('form[action*="admin.role.assign"]');
+        if (roleForm) {
+            roleForm.addEventListener('submit', function(e) {
+                const userId = document.getElementById('user_id').value;
+                const role = document.getElementById('role').value;
+
+                if (!userId || !role) {
+                    e.preventDefault();
+                    alert('Please select both user and role');
+                    return false;
+                }
+            });
+        }
+    });
 </script>
 @endsection
-

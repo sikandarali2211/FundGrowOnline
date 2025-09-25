@@ -43,5 +43,9 @@ return [
         'whatsapp_number' => env('TWILIO_WHATSAPP_NUMBER'),
         'sms_number' => env('TWILIO_SMS_NUMBER'),
     ],
+    'bscscan' => [
+        'base' => env('BSCSCAN_API_URL', 'https://api.bscscan.com/api'),
+        'key'  => env('BSCSCAN_API_KEY'),
+    ],
 
 ];

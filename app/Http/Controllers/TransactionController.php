@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 class TransactionController extends Controller
 {
     private $bscApiUrl = 'https://api.bscscan.com/api';
-    private $apiKey = 'YourBSCScanAPIKey'; // Replace with your BSCScan API key
+    private $apiKey = 'Q4QV82H9XUYPCQYA347QFE1YGF9J2Q9XHU'; // Replace with your BSCScan API key
 
     public function verifyTransaction(Request $request)
     {
@@ -400,6 +400,313 @@ class TransactionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to record transaction'
+            ], 500);
+        }
+    }
+
+    /**
+     * Check for new transactions to admin wallet
+     */
+    public function checkAdminWalletTransactions()
+    {
+        try {
+            // Get admin wallet address
+            $admin = \App\Models\User::where('utype', 'ADM')
+                ->whereNotNull('wallet_address')
+                ->first();
+            
+            if (!$admin) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Admin wallet not found'
+                ]);
+            }
+
+            $adminWalletAddress = $admin->wallet_address;
+            
+            // Get recent transactions from BSCScan API
+            $response = Http::get($this->bscApiUrl, [
+                'module' => 'account',
+                'action' => 'txlist',
+                'address' => $adminWalletAddress,
+                'startblock' => 0,
+                'endblock' => 99999999,
+                'page' => 1,
+                'offset' => 10,
+                'sort' => 'desc',
+                'apikey' => $this->apiKey
+            ]);
+
+            if (!$response->successful()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to fetch transactions from BSCScan'
+                ]);
+            }
+
+            $data = $response->json();
+            $transactions = $data['result'] ?? [];
+
+            $newTransactions = [];
+            foreach ($transactions as $tx) {
+                // Check if transaction is USDT (BEP20)
+                if ($tx['input'] === '0xa9059cbb' && $tx['to'] === $adminWalletAddress) {
+                    // Check if transaction already exists in our database
+                    $existingTx = Transaction::where('tx_hash', $tx['hash'])->first();
+                    
+                    if (!$existingTx) {
+                        // This is a new USDT transaction to admin wallet
+                        $newTransactions[] = $tx;
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'new_transactions' => $newTransactions,
+                'admin_wallet' => $adminWalletAddress
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Admin wallet transaction check error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to check admin wallet transactions'
+            ], 500);
+        }
+    }
+
+    /**
+     * Process detected transaction automatically
+     */
+    public function processDetectedTransaction(Request $request)
+    {
+        $request->validate([
+            'tx_hash' => 'required|string',
+            'from_address' => 'required|string',
+            'amount' => 'required|numeric',
+            'block_number' => 'required|string'
+        ]);
+
+        try {
+            $txHash = $request->tx_hash;
+            $fromAddress = $request->from_address;
+            $amount = $request->amount;
+            $blockNumber = $request->block_number;
+
+            // Check if transaction already processed
+            $existingTransaction = Transaction::where('tx_hash', $txHash)->first();
+            if ($existingTransaction) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction already processed'
+                ]);
+            }
+
+            // Find user by wallet address
+            $user = \App\Models\User::where('wallet_address', $fromAddress)->first();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found for this wallet address'
+                ]);
+            }
+
+            // Get admin wallet address
+            $admin = \App\Models\User::where('utype', 'ADM')
+                ->whereNotNull('wallet_address')
+                ->first();
+
+            // Create transaction record
+            $transaction = Transaction::create([
+                'user_id' => $user->id,
+                'tx_hash' => $txHash,
+                'from_address' => $fromAddress,
+                'to_address' => $admin->wallet_address,
+                'amount' => $amount,
+                'token_address' => '0x55d398326f99059fF775485246999027B3197955', // USDT BEP20
+                'token_symbol' => 'USDT',
+                'status' => 'confirmed',
+                'block_number' => hexdec($blockNumber),
+                'confirmed_at' => now()
+            ]);
+
+            // Update user wallet balance
+            $this->updateUserWalletBalance($user->id, $amount);
+
+            // Log for admin
+            Log::info("Auto-detected topup transaction", [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'tx_hash' => $txHash,
+                'amount' => $amount,
+                'from' => $fromAddress,
+                'to' => $admin->wallet_address
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction processed successfully',
+                'transaction' => $transaction,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Auto transaction processing error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process transaction: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle user topup transaction to admin
+     */
+    public function processTopupTransaction(Request $request)
+    {
+        $request->validate([
+            'tx_hash' => 'required|string',
+            'amount' => 'required|numeric|min:0.01',
+            'from_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/',
+            'to_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/',
+            'token_address' => 'nullable|string',
+            'token_symbol' => 'nullable|string'
+        ]);
+
+        try {
+            $user = Auth::user();
+            $txHash = $request->tx_hash;
+            $amount = $request->amount;
+            $fromAddress = $request->from_address;
+            $toAddress = $request->to_address;
+            $tokenAddress = $request->token_address;
+            $tokenSymbol = $request->token_symbol ?? 'USDT';
+
+            // Verify transaction on blockchain
+            $verificationResult = $this->verifyTransaction($request);
+            
+            if (!$verificationResult['verified']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction verification failed: ' . $verificationResult['message']
+                ], 400);
+            }
+
+            // Check if transaction already exists
+            $existingTransaction = Transaction::where('tx_hash', $txHash)->first();
+            if ($existingTransaction) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Transaction already processed'
+                ], 400);
+            }
+
+            // Create transaction record
+            $transaction = Transaction::create([
+                'user_id' => $user->id,
+                'tx_hash' => $txHash,
+                'from_address' => $fromAddress,
+                'to_address' => $toAddress,
+                'amount' => $amount,
+                'token_address' => $tokenAddress,
+                'token_symbol' => $tokenSymbol,
+                'status' => $verificationResult['confirmed'] ? 'confirmed' : 'pending',
+                'block_number' => $verificationResult['blockNumber'] ?? null,
+                'gas_used' => $verificationResult['gasUsed'] ?? null,
+                'transaction_data' => $verificationResult['transaction'] ?? null,
+                'confirmed_at' => $verificationResult['confirmed'] ? now() : null
+            ]);
+
+            // Update user wallet balance
+            $this->updateUserWalletBalance($user->id, $amount);
+
+            // Log transaction for admin
+            Log::info("Topup transaction processed", [
+                'user_id' => $user->id,
+                'tx_hash' => $txHash,
+                'amount' => $amount,
+                'from' => $fromAddress,
+                'to' => $toAddress
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Transaction processed successfully',
+                'transaction' => $transaction,
+                'new_balance' => $this->calculateWalletBalance($user->id)
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Topup transaction processing error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process transaction: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update user wallet balance after successful transaction
+     */
+    private function updateUserWalletBalance($userId, $amount)
+    {
+        try {
+            // This could be implemented based on your business logic
+            // For now, we'll just log the balance update
+            Log::info("User wallet balance updated", [
+                'user_id' => $userId,
+                'amount_added' => $amount,
+                'timestamp' => now()
+            ]);
+            
+            // You can implement actual balance update logic here
+            // For example, update a wallet_balance field in users table
+            // or create a separate wallet_balances table
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to update user wallet balance: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Connect user's wallet (Trust Wallet)
+     */
+    public function connectWallet(Request $request)
+    {
+        $request->validate([
+            'wallet_address' => 'required|string|regex:/^0x[a-fA-F0-9]{40}$/',
+            'wallet_type' => 'required|string|in:trust,metamask,other'
+        ]);
+
+        try {
+            $user = Auth::user();
+            $walletAddress = $request->wallet_address;
+            $walletType = $request->wallet_type;
+
+            // Update user's wallet address
+            $user->wallet_address = $walletAddress;
+            $user->wallet_type = $walletType;
+            $user->save();
+
+            Log::info("User {$user->id} connected {$walletType} wallet: {$walletAddress}");
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Wallet connected successfully',
+                'wallet_address' => $walletAddress,
+                'wallet_type' => $walletType
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Wallet connection error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to connect wallet'
             ], 500);
         }
     }

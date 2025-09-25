@@ -179,6 +179,23 @@
             height: 30px;
         }
 
+        /* Ensure the modal stays centered in the viewport */
+        .modal-dialog {
+            margin: 0 auto;
+            top: -90px;
+            /* Center the modal vertically */
+            transform: translateY(-50%);
+            /* Adjust the modal to be centered */
+        }
+
+        /* Modal body: Add scrolling if content is too long */
+        .modal-body {
+            max-height: calc(100vh - 150px);
+            /* Ensure modal is scrollable but doesn't exceed viewport */
+            overflow-y: auto;
+        }
+
+        /* Remove the margin and padding when modal is open to avoid extra space */
         body.modal-open {
             overflow: hidden !important;
             padding-right: 0px !important;
@@ -187,14 +204,15 @@
 
         .modal {
             overflow-y: auto !important;
-            /* modal content scrollable ho agar content bada ho */
+            /* Make the modal content scrollable if it's too long */
         }
 
         .modal-open .modal {
             overflow-x: hidden !important;
-            overflow-y: hidden !important;
-            /* content chhota ho to scroll bilkul na aaye */
+            overflow-y: auto !important;
+            /* Ensure vertical scrolling when content exceeds screen height */
         }
+
 
         .toast-message {
             position: fixed;
@@ -215,6 +233,43 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Trust Wallet Connection Styles */
+        #trustWalletStatus .alert {
+            border-radius: 10px;
+            margin-bottom: 0;
+        }
+
+        #adminWalletAddress {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid #3bd17a;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        #userWalletAddress {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+        }
+
+        .wallet-connection-btn {
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .wallet-connection-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 209, 122, 0.3);
+        }
+
+        #transactionStatus .alert {
+            border-radius: 10px;
+            margin-bottom: 0;
+        }
     </style>
 
 
@@ -228,22 +283,62 @@
                 </h3>
             </div>
             <div class="row mb-4">
+                <!-- Wallet Connection Status (Full Width) -->
+                <div class="col-lg-12">
+                    @if (auth()->user()->wallet_address)
+                        <div class="card mb-3"
+                            style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                            <div class="card-body text-center">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="fas fa-check-circle text-success fa-2x me-2"></i>
+                                    <h5 class="mb-0 text-success">Wallet Connected</h5>
+                                </div>
+                                <div class="wallet-address-display">
+                                    <small class="text-muted">Connected Address:</small><br>
+                                    <code class="wallet-address-text text-info"
+                                        style="font-size: 0.8rem; word-break: break-all;">
+                                        {{ auth()->user()->wallet_address }}
+                                    </code>
+                                    <button class="btn btn-sm btn-outline-info ms-2"
+                                        onclick="copyWalletAddressToClipboard('{{ auth()->user()->wallet_address }}')"
+                                        title="Copy Address">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-success">
+                                        <i class="fas fa-shield-alt me-1"></i>Your wallet is securely connected
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="card mb-3"
+                            style="background: linear-gradient(145deg, #072d42, #22384e); border: 2px solid #3bd17a;">
+                            <div class="card-body text-center">
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="fas fa-exclamation-triangle fa-2x me-2" style="color: #3bd17a"></i>
+                                    <h5 class="mb-0 "style="color: #3bd17a">Wallet Not Connected</h5>
+                                </div>
+                                <p class="text-muted mb-3">Connect your crypto wallet to manage your funds</p>
+                                <a href="{{ route('user.wallet.index') }}" class="btn btn-warning">
+                                    <i class="fas fa-link me-2"></i> Connect Wallet
+                                </a>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 <!-- Left Side Main Balance Card -->
-                <div class="col-md-6 col-lg-5">
+                <div class="col-md-6 col-lg-6">
                     <div class="main-card p-4 text-white position-relative d-flex justify-content-between align-items-center"
-                        style="background: url('{{ asset('assets/images/bg-balance.png') }}') no-repeat center/cover; 
-                             border-radius: 15px; 
-                             min-height: 220px; ">
-                        <!-- Logo Top Right -->
+                        style="background: url('{{ asset('assets/images/bg-balance.png') }}') no-repeat center/cover; border-radius: 15px; min-height: 220px;">
                         <img src="{{ asset('assets/images/favicon.png') }}" alt="Logo"
                             style="position: absolute; top: 5px; left: 15px; height: 60px;">
-                        <!-- Left: Balance -->
                         <div style="margin-top:70px;">
                             <h5 style="color: #3bd17a;">Total Balance</h5>
                             <h2 style="color: #3bd17a" class="font-weight-bold mb-0">${{ $walletBalance ?? '0.00' }}</h2>
                         </div>
-
-                        <!-- Right: Buttons -->
                         <div class="d-flex flex-column">
                             <button class="btn btn-light btn-sm mb-2" style="border-radius: 20px; min-width: 120px;"
                                 data-toggle="modal" data-target="#topUpModal">
@@ -261,51 +356,11 @@
                 </div>
 
                 <!-- Right Side Wallet Cards -->
-                <div class="col-md-6 col-lg-7">
-                    <!-- Wallet Connection Status -->
-                    @if(auth()->user()->wallet_address)
-                        <div class="card mb-3" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
-                            <div class="card-body text-center">
-                                <div class="d-flex align-items-center justify-content-center mb-2">
-                                    <i class="fas fa-check-circle text-success fa-2x me-2"></i>
-                                    <h5 class="mb-0 text-success">Wallet Connected</h5>
-                                </div>
-                                <div class="wallet-address-display">
-                                    <small class="text-muted">Connected Address:</small><br>
-                                    <code class="wallet-address-text text-info" style="font-size: 0.8rem; word-break: break-all;">
-                                        {{ auth()->user()->wallet_address }}
-                                    </code>
-                                    <button class="btn btn-sm btn-outline-info ms-2" onclick="copyWalletAddressToClipboard('{{ auth()->user()->wallet_address }}')" title="Copy Address">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                </div>
-                                <div class="mt-2">
-                                    <small class="text-success">
-                                        <i class="fas fa-shield-alt me-1"></i>
-                                        Your wallet is securely connected
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <div class="card mb-3" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #ffc107;">
-                            <div class="card-body text-center">
-                                <div class="d-flex align-items-center justify-content-center mb-2">
-                                    <i class="fas fa-exclamation-triangle text-warning fa-2x me-2"></i>
-                                    <h5 class="mb-0 text-warning">Wallet Not Connected</h5>
-                                </div>
-                                <p class="text-muted mb-3">Connect your crypto wallet to manage your funds</p>
-                                <a href="{{ route('user.wallet.index') }}" class="btn btn-warning">
-                                    <i class="fas fa-link me-2"></i>Connect Wallet
-                                </a>
-                            </div>
-                        </div>
-                    @endif
-
+                <div class="col-md-6 col-lg-6">
                     <div class="row">
                         <div class="col-sm-6 mb-3">
                             <a href="{{ url('balance-wallet') }}" class="text-decoration-none">
-                                <div class="card text-center p-3 shadow-sm h-100 clickable-card">
+                                <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-wallet fa-2x text-info mb-2"></i>
                                     <h6 class="mb-1">Balance Wallet</h6>
                                     <span class="font-weight-bold">${{ $walletBalance ?? '0.00' }}</span>
@@ -314,7 +369,7 @@
                         </div>
                         <div class="col-sm-6 mb-3">
                             <a href="{{ url('pool-wallet') }}" class="text-decoration-none">
-                                <div class="card text-center p-3 shadow-sm h-100 clickable-card">
+                                <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-box fa-2x text-success mb-2"></i>
                                     <h6 class="mb-1">Pool Wallet</h6>
                                     <span class="font-weight-bold">${{ $walletBalance ?? '0.00' }}</span>
@@ -322,8 +377,9 @@
                             </a>
                         </div>
                         <div class="col-sm-6 mb-3">
-                            <a href="{{ url('exchange') }}" class="text-decoration-none">
-                                <div class="card text-center p-3 shadow-sm h-100 clickable-card">
+                            <a href="{{ url('exchange') }}" class="text-decoration-none" data-toggle="modal"
+                                data-target="#exchangemodal">
+                                <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-exchange-alt fa-2x text-warning mb-2"></i>
                                     <h6 class="mb-1">Exchange</h6>
                                 </div>
@@ -331,7 +387,7 @@
                         </div>
                         <div class="col-sm-6 mb-3">
                             <a href="{{ url('pools') }}" class="text-decoration-none">
-                                <div class="card text-center p-3 shadow-sm h-100 clickable-card">
+                                <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-layer-group fa-2x text-primary mb-2"></i>
                                     <h6 class="mb-1">Pools</h6>
                                 </div>
@@ -340,7 +396,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Top Up Modal -->
             <div class="modal fade" id="topUpModal" tabindex="-1" role="dialog" aria-labelledby="topUpModalLabel"
                 aria-hidden="true">
@@ -357,6 +412,60 @@
 
                         <!-- Body -->
                         <div class="modal-body text-center">
+                            <!-- Trust Wallet Connection Status -->
+                            <div id="trustWalletStatus" class="mb-4">
+                                <div id="walletConnectedStatus" class="d-none">
+                                    <div class="alert alert-success" style="background: rgba(59, 209, 122, 0.1); border: 1px solid #3bd17a; color: #3bd17a;">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        <strong>Trust Wallet Connected</strong>
+                                        <div class="mt-2">
+                                            <small>Your wallet: <span id="userWalletAddress" class="text-info"></span></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="walletNotConnectedStatus">
+                                    <div class="alert alert-warning" style="background: rgba(255, 193, 7, 0.1); border: 1px solid #ffc107; color: #ffc107;">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Trust Wallet Not Connected</strong>
+                                        <div class="mt-2">
+                                            <button class="btn btn-warning btn-sm wallet-connection-btn" onclick="connectTrustWallet()">
+                                                <i class="fas fa-link me-1"></i> Connect Trust Wallet
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Admin Wallet Address Section -->
+                            <div class="mb-4">
+                                <h6 style="color: #3bd17a;">Send USDT to Admin Wallet</h6>
+                                <div class="input-group mb-2">
+                                    <input type="text" id="adminWalletAddress" class="form-control text-center"
+                                        value="{{ $adminWalletAddress ?? '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6' }}" readonly>
+                                    <div class="input-group-append">
+                                        <button id="refreshAdminBtn" class="btn btn-info btn-sm" type="button"
+                                            onclick="refreshAdminWalletAddress()" title="Refresh Admin Wallet">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                        <button id="copyAdminBtn" class="btn btn-success" type="button"
+                                            onclick="copyAdminWalletAddress()">Copy</button>
+                                    </div>
+                                </div>
+                                <small class="text-muted">Admin Wallet Address for USDT deposits</small>
+                                @if($adminWalletAddress)
+                                    <div class="mt-1 admin-wallet-status">
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i>Live admin wallet address
+                                        </small>
+                                    </div>
+                                @else
+                                    <div class="mt-1 admin-wallet-status">
+                                        <small class="text-warning">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>Using fallback address
+                                        </small>
+                                    </div>
+                                @endif
+                            </div>
 
                             <!-- QR Code -->
                             <div class="mb-3">
@@ -364,26 +473,128 @@
                                     style="max-width: 180px;">
                             </div>
 
-                            <!-- Wallet Address + Copy -->
-                            <div class="input-group mb-3">
-                                <input type="text" id="walletAddress" class="form-control text-center"
-                                    value="0x1234567890ABCDEF1234567890ABCDEF12345678" readonly>
-                                <div class="input-group-append">
-                                    <button id="copyBtn" class="btn btn-success" type="button"
-                                        onclick="copyWalletAddress()">Copy</button>
+                            <!-- Simple Instructions -->
+                            <div class="mb-4">
+                                <h6 style="color: #3bd17a;">How to Top Up - Simple Steps</h6>
+                                <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid #3bd17a;">
+                                    <div class="card-body">
+                                        <div class="step-item mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge badge-primary me-3" style="background: #3bd17a;">1</span>
+                                                <div>
+                                                    <strong>Enter Amount</strong>
+                                                    <br><small class="text-muted">Enter the USDT amount you want to send in the field below</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="step-item mb-3">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge badge-primary me-3" style="background: #3bd17a;">2</span>
+                                                <div>
+                                                    <strong>Click "Send USDT BEP20" Button</strong>
+                                                    <br><small class="text-muted">DApp will automatically approve and send USDT</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="step-item">
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge badge-primary me-3" style="background: #3bd17a;">3</span>
+                                                <div>
+                                                    <strong>Done! Balance Updated</strong>
+                                                    <br><small class="text-muted">Your balance will be updated automatically after transaction confirmation</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Amount Input Section -->
+                            <div class="mb-4">
+                                <h6 style="color: #3bd17a;">Transaction Details</h6>
+                                <div class="form-group mb-3">
+                                    <label for="topupAmount" class="form-label" style="color: #3bd17a;">Amount to Send (USDT)</label>
+                                    <input type="number" id="topupAmount" class="form-control" 
+                                           placeholder="0.00" step="0.01" min="0.01"
+                                           style="background: rgba(255,255,255,0.1); border: 1px solid #3bd17a; color: #fff;">
+                                    <small class="form-text text-muted">Enter the amount you want to send to admin wallet</small>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <button class="btn btn-success btn-block" onclick="sendUSDTDirect()">
+                                            <i class="fas fa-paper-plane me-2"></i>Send USDT (Auto)
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-primary btn-block" onclick="sendUSDTSimple()">
+                                            <i class="fas fa-send me-2"></i>Send USDT (Simple)
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted d-block text-center">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Try "Send USDT (Simple)" if approve button doesn't work
+                                </small>
+                                <div class="text-center mt-2">
+                                    <button class="btn btn-warning btn-sm" onclick="manualProcessTransaction()">
+                                        <i class="fas fa-sync-alt me-1"></i>Process Transaction Manually
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Auto Detection Status -->
+                            <div class="mb-4">
+                                <h6 style="color: #3bd17a;">Transaction Status</h6>
+                                <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid #3bd17a;">
+                                    <div class="card-body text-center">
+                                        <div id="autoDetectionStatus">
+                                            <i class="fas fa-search fa-2x text-info mb-3"></i>
+                                            <h6>Waiting for Transaction</h6>
+                                            <p class="text-muted mb-0">Send USDT to admin wallet and we'll automatically detect it</p>
+                                        </div>
+                                        <div id="detectionProgress" class="d-none">
+                                            <div class="spinner-border text-success mb-3" role="status">
+                                                <span class="sr-only">Detecting...</span>
+                                            </div>
+                                            <h6>Detecting Transaction...</h6>
+                                            <p class="text-muted mb-0">Please wait while we verify your transaction</p>
+                                        </div>
+                                        <div id="detectionSuccess" class="d-none">
+                                            <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                                            <h6>Transaction Detected!</h6>
+                                            <p class="text-muted mb-0">Your balance has been updated successfully</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Instructions -->
                             <div class="p-3 rounded text-warning mt-3" style="background: rgba(255,255,255,0.1);">
-                                <strong>Important:</strong> Please send only <b>USDT (BEP20)</b> to this address.
-                                Sending any other token may result in permanent loss of funds.
+                                <strong>Simple Process:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>Enter USDT amount you want to send</li>
+                                    <li>Click "Send USDT BEP20" button</li>
+                                    <li>DApp will automatically approve and send USDT</li>
+                                    <li>Your balance will be updated automatically</li>
+                                    <li>Make sure you have BNB for gas fees</li>
+                                </ul>
+                            </div>
+
+                            <!-- Transaction Status -->
+                            <div id="transactionStatus" class="d-none">
+                                <div class="alert alert-info" style="background: rgba(0, 123, 255, 0.1); border: 1px solid #007bff; color: #007bff;">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>
+                                    <span id="statusMessage">Processing transaction...</span>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Footer -->
                         <div class="modal-footer border-0">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="refreshBalanceBtn" onclick="refreshWalletBalance()">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh Balance
+                            </button>
                         </div>
 
                     </div>
@@ -491,545 +702,68 @@
                                         {{ number_format($newReferralsToday ?? 0) }} today
                                     </label>
                                 </div>
-                                <!-- <div class="statistics-item">
-                                                                                            <p>
-                                                                                                <i class="icon-sm fas fa-hourglass-half mr-2"></i>
-                                                                                                Avg Time
-                                                                                            </p>
-                                                                                            <h2>123.50</h2>
-                                                                                            <label class="badge badge-outline-danger badge-pill">30% decrease</label>
-                                                                                        </div>
-                                                                                        <div class="statistics-item">
-                                                                                            <p>
-                                                                                                <i class="icon-sm fas fa-chart-line mr-2"></i>
-                                                                                                This Week
-                                                                                            </p>
-                                                                                            <h2>{{ number_format($newReferralsWeek ?? 0) }}</h2>
-                                                                                            <label class="badge badge-outline-info badge-pill">New referrals</label>
-                                                                                        </div>
-                                                                                        <div class="statistics-item">
-                                                                                            <p>
-                                                                                                <i class="icon-sm fas fa-check-circle mr-2"></i>
-                                                                                                Update
-                                                                                            </p>
-                                                                                            <h2>7500</h2>
-                                                                                            <label class="badge badge-outline-success badge-pill">57% increase</label>
-                                                                                        </div>
-                                                                                        <div class="statistics-item">
-                                                                                            <p>
-                                                                                                <i class="icon-sm fas fa-chart-line mr-2"></i>
-                                                                                                Sales
-                                                                                            </p>
-                                                                                            <h2>9000</h2>
-                                                                                            <label class="badge badge-outline-success badge-pill">10% increase</label>
-                                                                                        </div>
-                                                                                        <div class="statistics-item">
-                                                                                            <p>
-                                                                                                <i class="icon-sm fas fa-circle-notch mr-2"></i>
-                                                                                                Pending
-                                                                                            </p>
-                                                                                            <h2>7500</h2>
-                                                                                            <label class="badge badge-outline-danger badge-pill">16% decrease</label>
-                                                                                        </div> -->
+                              
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- <div class="row">
-                                                                        <div class="col-md-6 grid-margin stretch-card">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-gift"></i>
-                                                                                        Orders
-                                                                                    </h4>
-                                                                                    <canvas id="orders-chart"></canvas>
-                                                                                    <div id="orders-chart-legend" class="orders-chart-legend"></div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="col-md-6 grid-margin stretch-card">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-chart-line"></i>
-                                                                                        Sales
-                                                                                    </h4>
-                                                                                    <h2 class="mb-5">56000 <span class="text-muted h4 font-weight-normal">Sales</span></h2>
-                                                                                    <canvas id="sales-chart"></canvas>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div> -->
-            <!-- <div class="row">
-                                                                        <div class="col-md-4 grid-margin stretch-card">
-                                                                            <div class="card">
-                                                                                <div class="card-body d-flex flex-column">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-chart-pie"></i>
-                                                                                        Sales status
-                                                                                    </h4>
-                                                                                    <div class="flex-grow-1 d-flex flex-column justify-content-between">
-                                                                                        <canvas id="sales-status-chart" class="mt-3"></canvas>
-                                                                                        <div class="pt-4">
-                                                                                            <div id="sales-status-chart-legend" class="sales-status-chart-legend"></div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                   
-                                                                    </div> -->
-            <!-- <div class="row">
-                                                                        <div class="col-12 grid-margin">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-envelope"></i>
-                                                                                        Inbox(31)
-                                                                                    </h4>
-                                                                                    <div class="table-responsive">
-                                                                                        <table class="table">
-                                                                                            <tbody>
-                                                                                                <tr>
-                                                                                                    <td>
-                                                                                                        <div class="form-check">
-                                                                                                            <label class="form-check-label">
-                                                                                                                <input type="checkbox" class="form-check-input">
-                                                                                                            </label>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td class="py-1">
-                                                                                                        <img src="{{ asset('assets/dashboard/images/faces/face13.jpg') }}"
-                                                                                                            alt="profile" class="img-sm rounded-circle" />
-                                                                                                    </td>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Andrew Bowen
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-light badge-pill">Development</label>
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        The required fields are added in the database
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <i class="fas fa-ellipsis-v"></i>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td>
-                                                                                                        <div class="form-check">
-                                                                                                            <label class="form-check-label">
-                                                                                                                <input type="checkbox" class="form-check-input">
-                                                                                                            </label>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td class="py-1">
-                                                                                                        <img src="{{ asset('assets/dashboard/images/faces/face2.jpg') }}"
-                                                                                                            alt="profile" class="img-sm rounded-circle" />
-                                                                                                    </td>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Mae Saunders
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-light badge-pill">Development</label>
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        The application will be completed by tomorrow
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <i class="fas fa-ellipsis-v"></i>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td>
-                                                                                                        <div class="form-check">
-                                                                                                            <label class="form-check-label">
-                                                                                                                <input type="checkbox" class="form-check-input">
-                                                                                                            </label>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td class="py-1">
-                                                                                                        <div class="img-sm rounded-circle bg-warning profile-image-text">M</div>
-                                                                                                    </td>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Manuel Yates
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-light badge-pill">Design</label>
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        The new design is uploaded in zeplin
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <i class="fas fa-ellipsis-v"></i>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td>
-                                                                                                        <div class="form-check">
-                                                                                                            <label class="form-check-label">
-                                                                                                                <input type="checkbox" class="form-check-input">
-                                                                                                            </label>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td class="py-1">
-                                                                                                        <img src="{{ asset('assets/dashboard/images/faces/face11.html') }}"
-                                                                                                            alt="profile" class="img-sm rounded-circle" />
-                                                                                                    </td>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Marguerite Phillips
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-light badge-pill">Development</label>
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        Please send me the latest requirements
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <i class="fas fa-ellipsis-v"></i>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td>
-                                                                                                        <div class="form-check">
-                                                                                                            <label class="form-check-label">
-                                                                                                                <input type="checkbox" class="form-check-input">
-                                                                                                            </label>
-                                                                                                        </div>
-                                                                                                    </td>
-                                                                                                    <td class="py-1">
-                                                                                                        <div class="img-sm rounded-circle bg-info profile-image-text">C</div>
-                                                                                                    </td>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Clifford Wilson
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-light badge-pill">Testing</label>
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        The issues are documented in the shared sheet
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <i class="fas fa-ellipsis-v"></i>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            </tbody>
-                                                                                        </table>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div> -->
-            <!-- <div class="row">
-                                                                        <div class="col-md-8 grid-margin stretch-card">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-table"></i>
-                                                                                        Sales Data
-                                                                                    </h4>
-                                                                                    <div class="table-responsive">
-                                                                                        <table class="table">
-                                                                                            <thead>
-                                                                                                <tr>
-                                                                                                    <th>Customer</th>
-                                                                                                    <th>Item code</th>
-                                                                                                    <th>Orders</th>
-                                                                                                    <th>Status</th>
-                                                                                                </tr>
-                                                                                            </thead>
-                                                                                            <tbody>
-                                                                                                <tr>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Clifford Wilson
-                                                                                                    </td>
-                                                                                                    <td class="text-muted">
-                                                                                                        PT613
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        350
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-success badge-pill">Dispatched</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Mary Payne
-                                                                                                    </td>
-                                                                                                    <td class="text-muted">
-                                                                                                        ST456
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        520
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-warning badge-pill">Processing</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Adelaide Blake
-                                                                                                    </td>
-                                                                                                    <td class="text-muted">
-                                                                                                        CS789
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        830
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-danger badge-pill">Failed</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Adeline King
-                                                                                                    </td>
-                                                                                                    <td class="text-muted">
-                                                                                                        LP908
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        579
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-primary badge-pill">Delivered</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td class="font-weight-bold">
-                                                                                                        Bertie Robbins
-                                                                                                    </td>
-                                                                                                    <td class="text-muted">
-                                                                                                        HF675
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        790
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-info badge-pill">On Hold</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            </tbody>
-                                                                                        </table>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="col-md-4 grid-margin stretch-card">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-calendar-alt"></i>
-                                                                                        Calendar
-                                                                                    </h4>
-                                                                                    <div id="inline-datepicker-example" class="datepicker"></div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div> -->
-            <!-- <div class="row">
-                                                                        <div class="col-md-7 grid-margin stretch-card">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-thumbtack"></i>
-                                                                                        Todo
-                                                                                    </h4>
-                                                                                    <div class="add-items d-flex">
-                                                                                        <input type="text" class="form-control todo-list-input"
-                                                                                            placeholder="What do you need to do today?">
-                                                                                        <button class="add btn btn-primary font-weight-bold todo-list-add-btn"
-                                                                                            id="add-task">Add</button>
-                                                                                    </div>
-                                                                                    <div class="list-wrapper">
-                                                                                        <ul class="d-flex flex-column-reverse todo-list">
-                                                                                            <li>
-                                                                                                <div class="form-check">
-                                                                                                    <label class="form-check-label">
-                                                                                                        <input class="checkbox" type="checkbox">
-                                                                                                        Meeting with Alisa
-                                                                                                    </label>
-                                                                                                </div>
-                                                                                                <i class="remove fa fa-times-circle"></i>
-                                                                                            </li>
-                                                                                            <li class="completed">
-                                                                                                <div class="form-check">
-                                                                                                    <label class="form-check-label">
-                                                                                                        <input class="checkbox" type="checkbox" checked>
-                                                                                                        Call John
-                                                                                                    </label>
-                                                                                                </div>
-                                                                                                <i class="remove fa fa-times-circle"></i>
-                                                                                            </li>
-                                                                                            <li>
-                                                                                                <div class="form-check">
-                                                                                                    <label class="form-check-label">
-                                                                                                        <input class="checkbox" type="checkbox">
-                                                                                                        Create invoice
-                                                                                                    </label>
-                                                                                                </div>
-                                                                                                <i class="remove fa fa-times-circle"></i>
-                                                                                            </li>
-                                                                                            <li>
-                                                                                                <div class="form-check">
-                                                                                                    <label class="form-check-label">
-                                                                                                        <input class="checkbox" type="checkbox">
-                                                                                                        Print Statements
-                                                                                                    </label>
-                                                                                                </div>
-                                                                                                <i class="remove fa fa-times-circle"></i>
-                                                                                            </li>
-                                                                                            <li class="completed">
-                                                                                                <div class="form-check">
-                                                                                                    <label class="form-check-label">
-                                                                                                        <input class="checkbox" type="checkbox" checked>
-                                                                                                        Prepare for presentation
-                                                                                                    </label>
-                                                                                                </div>
-                                                                                                <i class="remove fa fa-times-circle"></i>
-                                                                                            </li>
-                                                                                            <li>
-                                                                                                <div class="form-check">
-                                                                                                    <label class="form-check-label">
-                                                                                                        <input class="checkbox" type="checkbox">
-                                                                                                        Pick up kids from school
-                                                                                                    </label>
-                                                                                                </div>
-                                                                                                <i class="remove fa fa-times-circle"></i>
-                                                                                            </li>
-                                                                                        </ul>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                        <div class="col-md-5 grid-margin stretch-card">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <h4 class="card-title">
-                                                                                        <i class="fas fa-rocket"></i>
-                                                                                        Projects
-                                                                                    </h4>
-                                                                                    <div class="table-responsive">
-                                                                                        <table class="table">
-                                                                                            <thead>
-                                                                                                <tr>
-                                                                                                    <th>
-                                                                                                        Assigned to
-                                                                                                    </th>
-                                                                                                    <th>
-                                                                                                        Project name
-                                                                                                    </th>
-                                                                                                    <th>
-                                                                                                        Priority
-                                                                                                    </th>
-                                                                                                </tr>
-                                                                                            </thead>
-                                                                                            <tbody>
-                                                                                                <tr>
-                                                                                                    <td class="py-1">
-                                                                                                        <img src="{{ asset('assets/dashboard/images/faces/face1.jpg') }}"
-                                                                                                            alt="profile" class="img-sm rounded-circle" />
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        South Shyanne
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-warning badge-pill">Medium</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td class="py-1">
-                                                                                                        <img src="{{ asset('assets/dashboard/images/faces/face2.jpg') }}"
-                                                                                                            alt="profile" class="img-sm rounded-circle" />
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        New Trystan
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-danger badge-pill">High</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td class="py-1">
-                                                                                                        <img src="{{ asset('assets/dashboard/images/faces/face3.jpg') }}"
-                                                                                                            alt="profile" class="img-sm rounded-circle" />
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        East Helga
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-success badge-pill">Low</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                                <tr>
-                                                                                                    <td class="py-1">
-                                                                                                        <img src="{{ asset('assets/dashboard/images/faces/face4.jpg') }}"
-                                                                                                            alt="profile" class="img-sm rounded-circle" />
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        Omerbury
-                                                                                                    </td>
-                                                                                                    <td>
-                                                                                                        <label class="badge badge-warning badge-pill">Medium</label>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            </tbody>
-                                                                                        </table>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="row">
-                                                                        <div class="col-12">
-                                                                            <div class="card">
-                                                                                <div class="card-body">
-                                                                                    <div class="d-md-flex justify-content-between align-items-center">
-                                                                                        <div class="d-flex align-items-center mb-3 mb-md-0">
-                                                                                            <button class="btn btn-social-icon btn-facebook btn-rounded">
-                                                                                                <i class="fab fa-facebook-f"></i>
-                                                                                            </button>
-                                                                                            <div class="ml-4">
-                                                                                                <h5 class="mb-0">Facebook</h5>
-                                                                                                <p class="mb-0">813 friends</p>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div class="d-flex align-items-center mb-3 mb-md-0">
-                                                                                            <button class="btn btn-social-icon btn-twitter btn-rounded">
-                                                                                                <i class="fab fa-twitter"></i>
-                                                                                            </button>
-                                                                                            <div class="ml-4">
-                                                                                                <h5 class="mb-0">Twitter</h5>
-                                                                                                <p class="mb-0">9000 followers</p>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div class="d-flex align-items-center mb-3 mb-md-0">
-                                                                                            <button class="btn btn-social-icon btn-google btn-rounded">
-                                                                                                <i class="fab fa-google-plus-g"></i>
-                                                                                            </button>
-                                                                                            <div class="ml-4">
-                                                                                                <h5 class="mb-0">Google plus</h5>
-                                                                                                <p class="mb-0">780 friends</p>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div class="d-flex align-items-center">
-                                                                                            <button class="btn btn-social-icon btn-linkedin btn-rounded">
-                                                                                                <i class="fab fa-linkedin-in"></i>
-                                                                                            </button>
-                                                                                            <div class="ml-4">
-                                                                                                <h5 class="mb-0">Linkedin</h5>
-                                                                                                <p class="mb-0">1090 connections</p>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div> -->
+       
         </div>
-        <!-- content-wrapper ends -->
+
+        <!-- Exchange Modal -->
+        <div class="modal fade" id="exchangemodal" tabindex="-1" role="dialog" aria-labelledby="topUpModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content" style="background: #072d42; color: #fff; border-radius: 15px;">
+                    <!-- Header -->
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title" id="topUpModalLabel" style="color:#3bd17a;">Exchange Balance</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <!-- Body -->
+                    <div class="modal-body text-center">
+                        <!-- Amount Input -->
+                        <form method="POST" action=""> @csrf
+                            <div class="mb-4">
+                                <label for="amount" class="form-label text-warning">Amount to
+                                    Transfer</label>
+                                <input type="number" class="form-control" id="amount" name="amount" required
+                                    min="1" placeholder="Enter amount to transfer">
+                            </div>
+                            <!-- Balance Wallet -->
+                            <div class="mb-3">
+                                <label for="balanceWallet" class="form-label text-warning">Balance
+                                    Wallet</label>
+                                <input type="text" id="balanceWallet" class="form-control" value="1000 USDT"
+                                    readonly>
+                            </div>
+                            <!-- Pool Wallet -->
+                            <div class="mb-3">
+                                <label for="poolWallet" class="form-label text-warning">Pool
+                                    Wallet</label>
+                                <input type="text" id="poolWallet" class="form-control" value="500 USDT" readonly>
+                            </div>
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-success">Transfer</button>
+                        </form>
+                        <!-- Instructions -->
+                        <div class="p-3 rounded text-warning mt-3" style="background: rgba(255,255,255,0.1);">
+                            <strong>Important:</strong> Please ensure the transfer amount is valid and check your balance
+                            before proceeding.
+                        </div>
+                    </div> <!-- Footer -->
+                    <div class="modal-footer border-0"> <button type="button" class="btn btn-secondary"
+                            data-dismiss="modal">Close</button> </div>
+                </div>
+            </div>
+        </div> {{-- Exchange modal end --}}
+
+     
+
+
     </div>
     <!-- main-panel ends -->
 
@@ -1071,18 +805,949 @@
         // Auto-restore wallet connection on dashboard load
         function autoRestoreWalletConnection() {
             // Check if user has a saved wallet address
-            @if(auth()->user()->wallet_address)
+            @if (auth()->user()->wallet_address)
                 console.log('✅ User has saved wallet address:', '{{ auth()->user()->wallet_address }}');
-                
+
                 // Save to localStorage for consistency
                 localStorage.setItem('walletAccount', '{{ auth()->user()->wallet_address }}');
                 localStorage.setItem('isWalletConnected', 'true');
                 localStorage.setItem('walletType', 'trust'); // Assume Trust Wallet
-                
+
                 console.log('✅ Wallet connection state restored from database');
             @else
                 console.log('ℹ️ No wallet address saved for user');
             @endif
+        }
+
+        // Trust Wallet connection functions
+        async function connectTrustWallet() {
+            try {
+                // Check if Trust Wallet is available
+                if (typeof window.ethereum !== 'undefined') {
+                    // Check if it's Trust Wallet
+                    if (window.ethereum.isTrust) {
+                        console.log('✅ Trust Wallet detected');
+                        
+                        // Request account access
+                        const accounts = await window.ethereum.request({
+                            method: 'eth_requestAccounts'
+                        });
+                        
+                        if (accounts.length > 0) {
+                            const walletAddress = accounts[0];
+                            
+                            // Save wallet info
+                            localStorage.setItem('walletAccount', walletAddress);
+                            localStorage.setItem('isWalletConnected', 'true');
+                            localStorage.setItem('walletType', 'trust');
+                            
+                            // Update UI
+                            updateWalletConnectionStatus(walletAddress);
+                            
+                            // Save to backend
+                            await saveWalletToBackend(walletAddress);
+                            
+                            showToast('Trust Wallet connected successfully!');
+                        }
+                    } else {
+                        // Try to detect Trust Wallet by provider
+                        if (window.ethereum.providers) {
+                            const trustProvider = window.ethereum.providers.find(provider => provider.isTrust);
+                            if (trustProvider) {
+                                const accounts = await trustProvider.request({
+                                    method: 'eth_requestAccounts'
+                                });
+                                
+                                if (accounts.length > 0) {
+                                    const walletAddress = accounts[0];
+                                    localStorage.setItem('walletAccount', walletAddress);
+                                    localStorage.setItem('isWalletConnected', 'true');
+                                    localStorage.setItem('walletType', 'trust');
+                                    
+                                    updateWalletConnectionStatus(walletAddress);
+                                    await saveWalletToBackend(walletAddress);
+                                    showToast('Trust Wallet connected successfully!');
+                                }
+                            }
+                        } else {
+                            showToast('Trust Wallet not detected. Please install Trust Wallet app.', 'error');
+                        }
+                    }
+                } else {
+                    showToast('No crypto wallet detected. Please install Trust Wallet.', 'error');
+                }
+            } catch (error) {
+                console.error('Trust Wallet connection error:', error);
+                showToast('Failed to connect Trust Wallet: ' + error.message, 'error');
+            }
+        }
+
+        // Update wallet connection status in topup modal
+        function updateWalletConnectionStatus(walletAddress) {
+            const connectedStatus = document.getElementById('walletConnectedStatus');
+            const notConnectedStatus = document.getElementById('walletNotConnectedStatus');
+            const userWalletAddress = document.getElementById('userWalletAddress');
+            
+            if (walletAddress) {
+                connectedStatus.classList.remove('d-none');
+                notConnectedStatus.classList.add('d-none');
+                userWalletAddress.textContent = walletAddress;
+            } else {
+                connectedStatus.classList.add('d-none');
+                notConnectedStatus.classList.remove('d-none');
+            }
+        }
+
+        // Save wallet address to backend
+        async function saveWalletToBackend(walletAddress) {
+            try {
+                const response = await fetch('{{ route("user.wallet.connect") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        wallet_address: walletAddress,
+                        wallet_type: 'trust'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Failed to save wallet address');
+                }
+
+                return result;
+            } catch (error) {
+                console.error('Save wallet error:', error);
+                throw error;
+            }
+        }
+
+        // Copy admin wallet address
+        function copyAdminWalletAddress() {
+            const adminAddress = document.getElementById('adminWalletAddress');
+            navigator.clipboard.writeText(adminAddress.value).then(function() {
+                const btn = document.getElementById('copyAdminBtn');
+                btn.innerText = "Copied!";
+                btn.classList.remove("btn-success");
+                btn.classList.add("btn-info");
+                
+                setTimeout(() => {
+                    btn.innerText = "Copy";
+                    btn.classList.remove("btn-info");
+                    btn.classList.add("btn-success");
+                }, 2000);
+                
+                showToast("Admin wallet address copied!");
+            });
+        }
+
+        // Refresh wallet balance
+        async function refreshWalletBalance() {
+            const refreshBtn = document.getElementById('refreshBalanceBtn');
+            const originalText = refreshBtn.innerHTML;
+            
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Refreshing...';
+            refreshBtn.disabled = true;
+            
+            try {
+                // Refresh admin wallet address
+                await refreshAdminWalletAddress();
+                
+                // Simulate balance refresh (replace with actual API call)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Reload page to get updated balance
+                location.reload();
+            } catch (error) {
+                showToast('Failed to refresh balance', 'error');
+            } finally {
+                refreshBtn.innerHTML = originalText;
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // Refresh admin wallet address
+        async function refreshAdminWalletAddress() {
+            const refreshBtn = document.getElementById('refreshAdminBtn');
+            const originalContent = refreshBtn.innerHTML;
+            
+            // Show loading state
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            refreshBtn.disabled = true;
+            
+            try {
+                const response = await fetch('{{ route("user.admin.wallet.address") }}', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const adminAddressInput = document.getElementById('adminWalletAddress');
+                    const statusIndicator = document.querySelector('.admin-wallet-status');
+                    
+                    // Update admin wallet address
+                    adminAddressInput.value = result.admin_wallet_address;
+                    
+                    // Update status indicator
+                    if (statusIndicator) {
+                        if (result.is_live) {
+                            statusIndicator.innerHTML = '<i class="fas fa-check-circle me-1"></i>Live admin wallet address';
+                            statusIndicator.className = 'mt-1 admin-wallet-status text-success';
+                        } else {
+                            statusIndicator.innerHTML = '<i class="fas fa-exclamation-triangle me-1"></i>Using fallback address';
+                            statusIndicator.className = 'mt-1 admin-wallet-status text-warning';
+                        }
+                    }
+                    
+                    showToast('Admin wallet address refreshed successfully!');
+                    console.log('✅ Admin wallet address refreshed:', result.admin_wallet_address);
+                } else {
+                    showToast('Failed to refresh admin wallet address', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to refresh admin wallet address:', error);
+                showToast('Failed to refresh admin wallet address', 'error');
+            } finally {
+                // Restore button state
+                refreshBtn.innerHTML = originalContent;
+                refreshBtn.disabled = false;
+            }
+        }
+
+        // Auto transaction detection
+        let detectionInterval;
+        let isDetecting = false;
+
+        // Start automatic transaction detection
+        function startTransactionDetection() {
+            if (isDetecting) return;
+            
+            const userWallet = localStorage.getItem('walletAccount');
+            const amount = document.getElementById('topupAmount').value;
+            
+            if (!userWallet) {
+                showToast('Please connect your wallet first', 'error');
+                return;
+            }
+
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount to send', 'error');
+                return;
+            }
+
+            isDetecting = true;
+
+            // Show detection progress
+            document.getElementById('autoDetectionStatus').classList.add('d-none');
+            document.getElementById('detectionProgress').classList.remove('d-none');
+
+            // Start checking every 10 seconds
+            detectionInterval = setInterval(checkForNewTransactions, 10000);
+            
+            // Initial check
+            checkForNewTransactions();
+        }
+
+        // Stop transaction detection
+        function stopTransactionDetection() {
+            if (detectionInterval) {
+                clearInterval(detectionInterval);
+                detectionInterval = null;
+            }
+            isDetecting = false;
+        }
+
+        // Check for new transactions
+        async function checkForNewTransactions() {
+            try {
+                const response = await fetch('{{ route("user.wallet.check.transactions") }}', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.new_transactions.length > 0) {
+                    const userWallet = localStorage.getItem('walletAccount');
+                    
+                    // Find transaction from current user
+                    const userTransaction = result.new_transactions.find(tx => 
+                        tx.from.toLowerCase() === userWallet.toLowerCase()
+                    );
+                    
+                    if (userTransaction) {
+                        // Process the detected transaction
+                        await processDetectedTransaction(userTransaction);
+                    }
+                }
+            } catch (error) {
+                console.error('Transaction detection error:', error);
+            }
+        }
+
+        // Process detected transaction
+        async function processDetectedTransaction(transaction) {
+            try {
+                // Extract amount from transaction data (simplified)
+                const amount = parseFloat(transaction.value) / Math.pow(10, 18); // Convert from wei
+                
+                const response = await fetch('{{ route("user.wallet.process.detected") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        tx_hash: transaction.hash,
+                        from_address: transaction.from,
+                        amount: amount,
+                        block_number: transaction.blockNumber
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Show success status
+                    document.getElementById('detectionProgress').classList.add('d-none');
+                    document.getElementById('detectionSuccess').classList.remove('d-none');
+                    
+                    showToast('Transaction detected and processed! Your balance has been updated.');
+                    
+                    // Stop detection
+                    stopTransactionDetection();
+                    
+                    // Refresh page after 3 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    console.error('Transaction processing failed:', result.message);
+                }
+            } catch (error) {
+                console.error('Error processing detected transaction:', error);
+            }
+        }
+
+        // Open Trust Wallet for sending USDT
+        function openTrustWallet() {
+            const amount = document.getElementById('topupAmount').value;
+            const adminAddress = document.getElementById('adminWalletAddress').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount to send', 'error');
+                return;
+            }
+
+            if (!adminAddress) {
+                showToast('Admin wallet address not found', 'error');
+                return;
+            }
+
+            // Show confirmation dialog
+            const confirmMessage = `Confirm USDT BEP20 Transfer:
+            
+Amount: ${amount} USDT
+To: ${adminAddress}
+Network: BNB Smart Chain
+
+Do you want to proceed?`;
+            
+            if (confirm(confirmMessage)) {
+                // Check if Trust Wallet is available
+                if (typeof window.ethereum !== 'undefined' && window.ethereum.isTrust) {
+                    // Trust Wallet is available, try to send transaction
+                    sendUSDTViaTrustWallet(adminAddress, amount);
+                } else {
+                    // Trust Wallet not available, show instructions
+                    showTrustWalletInstructions(adminAddress, amount);
+                }
+            }
+        }
+
+        // Alternative method: Open Trust Wallet with deep link
+        function openTrustWalletDeepLink() {
+            const amount = document.getElementById('topupAmount').value;
+            const adminAddress = document.getElementById('adminWalletAddress').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount to send', 'error');
+                return;
+            }
+
+            if (!adminAddress) {
+                showToast('Admin wallet address not found', 'error');
+                return;
+            }
+
+            // Create deep link for Trust Wallet
+            const deepLink = `trust://send?asset=c60_t0x55d398326f99059fF775485246999027B3197955&address=${adminAddress}&amount=${amount}`;
+            
+            // Try to open Trust Wallet
+            window.location.href = deepLink;
+            
+            // Show instructions as backup
+            setTimeout(() => {
+                showTrustWalletInstructions(adminAddress, amount);
+            }, 2000);
+        }
+
+        // Send USDT via Trust Wallet (BNB Smart Chain)
+        async function sendUSDTViaTrustWallet(toAddress, amount) {
+            try {
+                // Check if user is connected
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length === 0) {
+                    // Request connection
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                }
+
+                // Switch to BNB Smart Chain (BSC) network
+                await switchToBNBSmartChain();
+
+                // USDT contract address on BSC (BEP20)
+                const usdtContractAddress = '0x55d398326f99059fF775485246999027B3197955';
+                
+                // Convert amount to wei (USDT has 18 decimals)
+                const web3 = new Web3(window.ethereum);
+                const amountInWei = web3.utils.toWei(amount.toString(), 'ether');
+                
+                // USDT transfer function signature
+                const transferData = web3.eth.abi.encodeFunctionCall({
+                    name: 'transfer',
+                    type: 'function',
+                    inputs: [
+                        { type: 'address', name: 'to' },
+                        { type: 'uint256', name: 'amount' }
+                    ]
+                }, [toAddress, amountInWei]);
+
+                // Get gas price for BSC
+                const gasPrice = await web3.eth.getGasPrice();
+                const gasLimit = '0x7530'; // 30000 gas limit
+
+                // Send transaction on BSC
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: accounts[0],
+                        to: usdtContractAddress,
+                        data: transferData,
+                        gas: gasLimit,
+                        gasPrice: gasPrice
+                    }]
+                });
+
+                showToast('USDT BEP20 transaction sent! Hash: ' + txHash.substring(0, 10) + '...', 'success');
+                
+                // Start detection after sending
+                setTimeout(() => {
+                    startTransactionDetection();
+                }, 2000);
+
+            } catch (error) {
+                console.error('Trust Wallet transaction error:', error);
+                if (error.code === 4001) {
+                    showToast('Transaction rejected by user', 'error');
+                } else if (error.code === -32603) {
+                    showToast('Insufficient USDT balance or gas fee', 'error');
+                } else {
+                    showToast('Transaction failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Switch to BNB Smart Chain network
+        async function switchToBNBSmartChain() {
+            try {
+                // BNB Smart Chain network details
+                const bscNetwork = {
+                    chainId: '0x38', // 56 in decimal
+                    chainName: 'BNB Smart Chain',
+                    nativeCurrency: {
+                        name: 'BNB',
+                        symbol: 'BNB',
+                        decimals: 18
+                    },
+                    rpcUrls: ['https://bsc-dataseed.binance.org/'],
+                    blockExplorerUrls: ['https://bscscan.com/']
+                };
+
+                // Try to switch to BSC network
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: bscNetwork.chainId }]
+                });
+            } catch (switchError) {
+                // If network doesn't exist, add it
+                if (switchError.code === 4902) {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [bscNetwork]
+                        });
+                    } catch (addError) {
+                        console.error('Failed to add BSC network:', addError);
+                        throw new Error('Please add BNB Smart Chain network to your wallet');
+                    }
+                } else {
+                    throw switchError;
+                }
+            }
+        }
+
+        // Show Trust Wallet instructions
+        function showTrustWalletInstructions(toAddress, amount) {
+            const message = `Trust Wallet Instructions (USDT BEP20):
+            
+1. Open Trust Wallet app
+2. Switch to BNB Smart Chain network
+3. Go to USDT (BEP20) - NOT BNB
+4. Tap "Send"
+5. Paste this address: ${toAddress}
+6. Enter amount: ${amount} USDT
+7. Make sure you have BNB for gas fees
+8. Send the transaction
+
+Important:
+- Send USDT BEP20, not BNB
+- You need BNB for gas fees
+- After sending, click "Start Detection" below`;
+            
+            alert(message);
+        }
+
+        // Alternative simple send function (without approval)
+        async function sendUSDTSimple() {
+            const amount = document.getElementById('topupAmount').value;
+            const adminAddress = document.getElementById('adminWalletAddress').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount to send', 'error');
+                return;
+            }
+
+            if (!adminAddress) {
+                showToast('Admin wallet address not found', 'error');
+                return;
+            }
+
+            try {
+                // Check if wallet is connected
+                if (typeof window.ethereum === 'undefined') {
+                    showToast('Please install Trust Wallet or MetaMask', 'error');
+                    return;
+                }
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts.length === 0) {
+                    showToast('Please connect your wallet', 'error');
+                    return;
+                }
+
+                // Switch to BNB Smart Chain
+                await switchToBNBSmartChain();
+
+                // USDT contract address on BSC
+                const usdtContractAddress = '0x55d398326f99059fF775485246999027B3197955';
+                
+                // Convert amount to wei
+                const web3 = new Web3(window.ethereum);
+                const amountInWei = web3.utils.toWei(amount.toString(), 'ether');
+                
+                // Direct transfer (user needs to approve manually first)
+                showToast('Sending USDT...', 'info');
+                
+                const transferData = web3.eth.abi.encodeFunctionCall({
+                    name: 'transfer',
+                    type: 'function',
+                    inputs: [
+                        { type: 'address', name: 'to' },
+                        { type: 'uint256', name: 'amount' }
+                    ]
+                }, [adminAddress, amountInWei]);
+
+                // Get gas price and estimate gas
+                const gasPrice = await web3.eth.getGasPrice();
+                const gasEstimate = await web3.eth.estimateGas({
+                    from: accounts[0],
+                    to: usdtContractAddress,
+                    data: transferData
+                });
+
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: accounts[0],
+                        to: usdtContractAddress,
+                        data: transferData,
+                        gas: '0x' + gasEstimate.toString(16),
+                        gasPrice: gasPrice
+                    }]
+                });
+
+                showToast('USDT sent successfully! Transaction: ' + txHash.substring(0, 10) + '...', 'success');
+                
+                // Wait for transaction confirmation and then process
+                try {
+                    await waitForTransaction(txHash);
+                    showToast('Transaction confirmed! Processing...', 'info');
+                    
+                    // Process the transaction immediately
+                    await processDetectedTransaction({
+                        hash: txHash,
+                        from: accounts[0],
+                        value: amountInWei,
+                        blockNumber: '0x' + (await web3.eth.getBlockNumber()).toString(16)
+                    });
+                    
+                    showToast('Balance updated successfully!', 'success');
+                    
+                    // Refresh the page to show updated balance
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Transaction processing error:', error);
+                    showToast('Transaction sent but processing failed. Please refresh manually.', 'warning');
+                }
+
+            } catch (error) {
+                console.error('Send USDT error:', error);
+                if (error.code === 4001) {
+                    showToast('Transaction rejected by user', 'error');
+                } else if (error.message.includes('insufficient allowance')) {
+                    showToast('Please approve USDT first. Click "Send USDT BEP20" again.', 'error');
+                } else {
+                    showToast('Transaction failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Simple direct send function
+        async function sendUSDTDirect() {
+            const amount = document.getElementById('topupAmount').value;
+            const adminAddress = document.getElementById('adminWalletAddress').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount to send', 'error');
+                return;
+            }
+
+            if (!adminAddress) {
+                showToast('Admin wallet address not found', 'error');
+                return;
+            }
+
+            try {
+                // Check if wallet is connected
+                if (typeof window.ethereum === 'undefined') {
+                    showToast('Please install Trust Wallet or MetaMask', 'error');
+                    return;
+                }
+
+                // Request account access
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (accounts.length === 0) {
+                    showToast('Please connect your wallet', 'error');
+                    return;
+                }
+
+                // Switch to BNB Smart Chain
+                await switchToBNBSmartChain();
+
+                // USDT contract address on BSC
+                const usdtContractAddress = '0x55d398326f99059fF775485246999027B3197955';
+                
+                // Convert amount to wei
+                const web3 = new Web3(window.ethereum);
+                const amountInWei = web3.utils.toWei(amount.toString(), 'ether');
+                
+                // Check USDT balance first
+                const balance = await web3.eth.call({
+                    to: usdtContractAddress,
+                    data: web3.eth.abi.encodeFunctionCall({
+                        name: 'balanceOf',
+                        type: 'function',
+                        inputs: [{ type: 'address', name: 'account' }]
+                    }, [accounts[0]])
+                });
+
+                const userBalance = web3.utils.fromWei(balance, 'ether');
+                if (parseFloat(userBalance) < parseFloat(amount)) {
+                    showToast('Insufficient USDT balance', 'error');
+                    return;
+                }
+
+                // Check allowance
+                const allowance = await web3.eth.call({
+                    to: usdtContractAddress,
+                    data: web3.eth.abi.encodeFunctionCall({
+                        name: 'allowance',
+                        type: 'function',
+                        inputs: [
+                            { type: 'address', name: 'owner' },
+                            { type: 'address', name: 'spender' }
+                        ]
+                    }, [accounts[0], adminAddress])
+                });
+
+                const currentAllowance = web3.utils.fromWei(allowance, 'ether');
+                
+                // If allowance is not enough, approve first
+                if (parseFloat(currentAllowance) < parseFloat(amount)) {
+                    showToast('Approving USDT...', 'info');
+                    
+                    // Use maximum allowance for better UX
+                    const maxAllowance = web3.utils.toWei('1000000', 'ether'); // 1M USDT max allowance
+                    
+                    const approveData = web3.eth.abi.encodeFunctionCall({
+                        name: 'approve',
+                        type: 'function',
+                        inputs: [
+                            { type: 'address', name: 'spender' },
+                            { type: 'uint256', name: 'amount' }
+                        ]
+                    }, [adminAddress, maxAllowance]);
+
+                    // Get gas price and estimate gas
+                    const gasPrice = await web3.eth.getGasPrice();
+                    const gasEstimate = await web3.eth.estimateGas({
+                        from: accounts[0],
+                        to: usdtContractAddress,
+                        data: approveData
+                    });
+
+                    const approveTx = await window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [{
+                            from: accounts[0],
+                            to: usdtContractAddress,
+                            data: approveData,
+                            gas: '0x' + gasEstimate.toString(16),
+                            gasPrice: gasPrice
+                        }]
+                    });
+
+                    showToast('Approval transaction sent. Please wait for confirmation...', 'info');
+                    
+                    // Wait for approval confirmation
+                    await waitForTransaction(approveTx);
+                    showToast('USDT approved successfully!', 'success');
+                }
+
+                // Now send USDT
+                showToast('Sending USDT...', 'info');
+                
+                const transferData = web3.eth.abi.encodeFunctionCall({
+                    name: 'transfer',
+                    type: 'function',
+                    inputs: [
+                        { type: 'address', name: 'to' },
+                        { type: 'uint256', name: 'amount' }
+                    ]
+                }, [adminAddress, amountInWei]);
+
+                // Get gas price and estimate gas for transfer
+                const gasPrice = await web3.eth.getGasPrice();
+                const gasEstimate = await web3.eth.estimateGas({
+                    from: accounts[0],
+                    to: usdtContractAddress,
+                    data: transferData
+                });
+
+                const txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: accounts[0],
+                        to: usdtContractAddress,
+                        data: transferData,
+                        gas: '0x' + gasEstimate.toString(16),
+                        gasPrice: gasPrice
+                    }]
+                });
+
+                showToast('USDT sent successfully! Transaction: ' + txHash.substring(0, 10) + '...', 'success');
+                
+                // Wait for transaction confirmation and then process
+                try {
+                    await waitForTransaction(txHash);
+                    showToast('Transaction confirmed! Processing...', 'info');
+                    
+                    // Process the transaction immediately
+                    await processDetectedTransaction({
+                        hash: txHash,
+                        from: accounts[0],
+                        value: amountInWei,
+                        blockNumber: '0x' + (await web3.eth.getBlockNumber()).toString(16)
+                    });
+                    
+                    showToast('Balance updated successfully!', 'success');
+                    
+                    // Refresh the page to show updated balance
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Transaction processing error:', error);
+                    showToast('Transaction sent but processing failed. Please refresh manually.', 'warning');
+                }
+
+            } catch (error) {
+                console.error('Send USDT error:', error);
+                if (error.code === 4001) {
+                    showToast('Transaction rejected by user', 'error');
+                } else {
+                    showToast('Transaction failed: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Manual transaction processing
+        async function manualProcessTransaction() {
+            try {
+                showToast('Checking for new transactions...', 'info');
+                
+                const response = await fetch('{{ route("user.wallet.check.transactions") }}');
+                const result = await response.json();
+                
+                if (result.success && result.new_transactions.length > 0) {
+                    showToast('Found ' + result.new_transactions.length + ' new transactions. Processing...', 'info');
+                    
+                    for (const tx of result.new_transactions) {
+                        await processDetectedTransaction({
+                            hash: tx.hash,
+                            from: tx.from,
+                            value: tx.value,
+                            blockNumber: tx.blockNumber
+                        });
+                    }
+                    
+                    showToast('All transactions processed! Refreshing balance...', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    showToast('No new transactions found. Please try again later.', 'warning');
+                }
+            } catch (error) {
+                console.error('Manual processing error:', error);
+                showToast('Error processing transactions: ' + error.message, 'error');
+            }
+        }
+
+        // Process detected transaction immediately
+        async function processDetectedTransaction(txData) {
+            try {
+                const response = await fetch('{{ route("user.wallet.process.detected") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({
+                        tx_hash: txData.hash,
+                        from_address: txData.from,
+                        amount: txData.value,
+                        block_number: txData.blockNumber
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('Transaction processed successfully:', result);
+                    return result;
+                } else {
+                    throw new Error(result.message || 'Failed to process transaction');
+                }
+            } catch (error) {
+                console.error('Error processing transaction:', error);
+                throw error;
+            }
+        }
+
+        // Wait for transaction confirmation
+        async function waitForTransaction(txHash) {
+            return new Promise((resolve, reject) => {
+                const checkInterval = setInterval(async () => {
+                    try {
+                        const receipt = await window.ethereum.request({
+                            method: 'eth_getTransactionReceipt',
+                            params: [txHash]
+                        });
+                        
+                        if (receipt) {
+                            clearInterval(checkInterval);
+                            if (receipt.status === '0x1') {
+                                resolve(receipt);
+                            } else {
+                                reject(new Error('Transaction failed'));
+                            }
+                        }
+                    } catch (error) {
+                        clearInterval(checkInterval);
+                        reject(error);
+                    }
+                }, 2000);
+
+                // Timeout after 60 seconds
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    reject(new Error('Transaction timeout'));
+                }, 60000);
+            });
+        }
+
+        // Direct send without detection
+        function directSendUSDT() {
+            const amount = document.getElementById('topupAmount').value;
+            const adminAddress = document.getElementById('adminWalletAddress').value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                showToast('Please enter a valid amount to send', 'error');
+                return;
+            }
+
+            if (!adminAddress) {
+                showToast('Admin wallet address not found', 'error');
+                return;
+            }
+
+            // Show instructions for manual sending
+            const message = `Manual USDT BEP20 Transfer:
+            
+1. Open Trust Wallet app
+2. Switch to BNB Smart Chain
+3. Go to USDT (BEP20)
+4. Tap "Send"
+5. Paste address: ${adminAddress}
+6. Enter amount: ${amount} USDT
+7. Send transaction
+
+After sending, your balance will be updated automatically.`;
+            
+            alert(message);
+        }
+
+        // Process topup transaction (legacy method - kept for compatibility)
+        async function processTopupTransaction() {
+            showToast('Please use the automatic detection system. Send USDT to admin wallet and we will detect it automatically.', 'info');
         }
 
         // Initialize on page load
@@ -1112,13 +1777,39 @@
             document.body.style.overflow = 'hidden';
             document.body.style.paddingRight = '0px';
             document.body.style.marginRight = '0px';
+            
+            // Check wallet connection status when modal opens
+            checkWalletConnectionStatus();
         });
 
         $('#topUpModal').on('hidden.bs.modal', function() {
             document.body.style.overflow = 'auto';
             document.body.style.paddingRight = '0px';
             document.body.style.marginRight = '0px';
+            
+            // Stop transaction detection when modal closes
+            stopTransactionDetection();
+            
+            // Reset detection status
+            document.getElementById('autoDetectionStatus').classList.remove('d-none');
+            document.getElementById('detectionProgress').classList.add('d-none');
+            document.getElementById('detectionSuccess').classList.add('d-none');
         });
+
+        // Check wallet connection status
+        function checkWalletConnectionStatus() {
+            const savedWallet = localStorage.getItem('walletAccount');
+            const isConnected = localStorage.getItem('isWalletConnected') === 'true';
+            const walletType = localStorage.getItem('walletType');
+            
+            if (savedWallet && isConnected && walletType === 'trust') {
+                updateWalletConnectionStatus(savedWallet);
+                console.log('✅ Wallet connection status restored:', savedWallet);
+            } else {
+                updateWalletConnectionStatus(null);
+                console.log('ℹ️ No wallet connection found');
+            }
+        }
 
         // Send Modal Event Handlers
         $('#sendModal').on('shown.bs.modal', function() {
@@ -1322,4 +2013,7 @@
             }
         }
     </script>
+    
+    <!-- Web3.js for Trust Wallet integration -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
 @endsection

@@ -479,12 +479,17 @@
 
             // ====== Data from PHP ======
             const RAW = @json($nodes ?? []);
+            console.log('Raw data from PHP:', RAW);
+            
             const data = (Array.isArray(RAW) ? RAW : []).map(n => ({
                 ...n,
                 id: n?.id != null ? parseInt(n.id, 10) : null,
                 parentId: n?.parentId != null ? parseInt(n.parentId, 10) : null,
                 name: n?.name ?? ''
             })).filter(n => n && n.id != null);
+            
+            console.log('Processed data:', data);
+            console.log('Data length:', data.length);
 
             const esc = s => (s == null) ? '' : (s + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g,
                 '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
@@ -509,10 +514,14 @@
             };
 
             if (!data.length) {
+                console.log('❌ No data found!');
+                console.log('RAW data:', RAW);
                 Object.values(boxes).forEach(b => b.innerHTML =
                     '<div style="height:100%;display:grid;place-items:center;color:#9bb3c7">No team data</div>');
                 return;
             }
+            
+            console.log('✅ Data found, length:', data.length);
 
             // ====== Build ordered children map (data order preserve) ======
             const root = data.find(n => n.parentId == null) || data[0];
@@ -560,21 +569,62 @@
             const subsetLevel2Only = () => {
                 const set = [root];
                 const level2Users = [];
+                const parentIds = new Set(); // Track parent IDs we need
                 
-                // Get all Level 2 users
+                console.log('Building Level 2 subset...');
+                console.log('L1 users:', L1);
+                console.log('Children map:', childrenMap);
+                
+                // Get all Level 2 users from children map
                 for (const l1 of L1) {
                     const kids = childrenMap.get(l1.id) || [];
+                    console.log(`Level 2 users for L1 user ${l1.id}:`, kids);
                     level2Users.push(...kids);
+                    
+                    // If this L1 user has Level 2 children, we need to include them as parents
+                    if (kids.length > 0) {
+                        parentIds.add(l1.id);
+                    }
                 }
                 
-                set.push(...level2Users);
+                // Also get Level 2 users directly from data (fallback)
+                const directLevel2Users = data.filter(n => n.type === 'l2' || n.type === '12');
+                console.log('Direct Level 2 users from data:', directLevel2Users);
+                
+                // Track parent IDs from direct Level 2 users
+                directLevel2Users.forEach(user => {
+                    if (user.parentId) {
+                        parentIds.add(user.parentId);
+                    }
+                });
+                
+                // Combine both sources and remove duplicates
+                const allLevel2Users = [...level2Users];
+                directLevel2Users.forEach(user => {
+                    if (!allLevel2Users.find(u => u.id === user.id)) {
+                        allLevel2Users.push(user);
+                    }
+                });
+                
+                console.log('All Level 2 users (combined):', allLevel2Users);
+                console.log('Parent IDs needed:', Array.from(parentIds));
+                
+                // Add parent nodes that are needed for Level 2 users
+                const parentNodes = data.filter(n => parentIds.has(n.id));
+                console.log('Parent nodes found:', parentNodes);
+                
+                // Add parent nodes first, then Level 2 users
+                set.push(...parentNodes);
+                set.push(...allLevel2Users);
+                
+                console.log('Level 2 subset result:', set);
                 return set;
             };
 
             // Level progression system
             const checkLevelProgression = () => {
                 const level1Count = L1.length;
-                const level2Count = data.filter(n => n.type === 'l2').length;
+                const level2Count = data.filter(n => n.type === 'l2' || n.type === '12').length;
                 
                 // Update level status display
                 const level1Status = document.getElementById('level1Status');
@@ -584,48 +634,32 @@
                     level1Status.textContent = `Level 1: ${level1Count}/3 users`;
                 }
                 
-                // Check if Level 1 is complete (3+ users)
-                if (level1Count >= 3) {
-                    // Level 1 complete - show Level 2
-                    document.querySelector('[data-level="1"]').style.display = 'none';
+                // Always show Level 2 if there are Level 2 users
+                if (level2Count > 0) {
+                    // Show Level 2
                     document.querySelector('[data-level="2"]').style.display = 'block';
                     document.querySelector('[data-level="all"]').style.display = 'block';
                     
                     // Update status display
-                    if (level1Status) level1Status.style.display = 'none';
                     if (level2Status) {
                         level2Status.style.display = 'inline';
                         level2Status.textContent = `Level 2: Available (${level2Count} users)`;
                     }
-                    
-                    // Update filter dropdown
-                    const levelFilter = document.getElementById('levelFilter');
-                    if (levelFilter) {
-                        levelFilter.value = '2'; // Auto-select Level 2
-                    }
-                    
-                    // Show level progression message
-                    showLevelProgressionMessage('Level 1 Complete! Level 2 is now available.');
-                    
-                    return true; // Level 1 complete
                 } else {
-                    // Level 1 not complete - show Level 1
-                    document.querySelector('[data-level="1"]').style.display = 'block';
+                    // Hide Level 2 if no users
                     document.querySelector('[data-level="2"]').style.display = 'none';
-                    document.querySelector('[data-level="all"]').style.display = 'block';
-                    
-                    // Update status display
-                    if (level1Status) level1Status.style.display = 'inline';
-                    if (level2Status) level2Status.style.display = 'none';
-                    
-                    // Update filter dropdown
-                    const levelFilter = document.getElementById('levelFilter');
-                    if (levelFilter) {
-                        levelFilter.value = '1'; // Auto-select Level 1
-                    }
-                    
-                    return false; // Level 1 not complete
                 }
+                
+                // Always show Level 1
+                document.querySelector('[data-level="1"]').style.display = 'block';
+                
+                // Update Level 1 status
+                if (level1Status) {
+                    level1Status.style.display = 'inline';
+                    level1Status.textContent = `Level 1: ${level1Count} users`;
+                }
+                
+                return true; // Always return true to show both levels
             };
 
             // Show level progression message
@@ -675,6 +709,8 @@
 
                 const render = () => {
                     const ds = getSubset();
+                    console.log(`Rendering chart ${suffix} with data:`, ds);
+                    console.log(`Data length for ${suffix}:`, ds.length);
                     chart.data(ds).render().fit();
                     if (pill) pill.textContent = `Users: ${ds.length}`;
                 };
@@ -700,11 +736,13 @@
             }
 
             // ====== Create the charts with exact requirements ======
+            console.log('Initializing charts...');
             const chartInstances = {
                 all: initChart('all', subsetAll), // All levels (poora tree)
                 l1: initChart('l1', subsetLevel1Only), // Level 1 only
-                l2: initChart('l2', subsetLevel2Only) // Level 2 only
+                l2: initChart('l2', subsetLevel2Only) // Level 2 only - ENABLED with same structure
             };
+            console.log('Charts initialized:', chartInstances);
 
             // ====== Level Filter Functionality ======
             const levelFilter = document.getElementById('levelFilter');
@@ -745,14 +783,20 @@
             }
 
             // Initialize level progression system
-            const isLevel1Complete = checkLevelProgression();
+            checkLevelProgression();
             
-            // Initialize with appropriate level visible
-            if (isLevel1Complete) {
-                filterCharts('2'); // Show Level 2 if Level 1 is complete
-            } else {
-                filterCharts('1'); // Show Level 1 if not complete
-            }
+            // Always show all levels by default
+            filterCharts('all');
+            
+            // Debug: Show data in console and add fallback display
+            console.log('=== FINAL DEBUG INFO ===');
+            console.log('Total data nodes:', data.length);
+            console.log('Level 1 users:', L1.length);
+            console.log('Level 2 users:', data.filter(n => n.type === 'l2').length);
+            console.log('Children map size:', childrenMap.size);
+            
+            // Level 2 will now use the same chart structure as Level 1
+            console.log('Level 2 will use the same D3.js chart structure as Level 1');
         })();
     </script>
 @endsection

@@ -125,7 +125,7 @@
             </div>
 
             <div class="navbar-menu-wrapper d-flex align-items-stretch" style="background-color: #072d42;">
-    
+
                 <!-- Search -->
                 <ul class="navbar-nav">
                     <li class="nav-item nav-search d-none d-md-flex">
@@ -144,12 +144,12 @@
                 </ul>
 
                 <!-- Admin Restore Login Button (if admin is logged in as user) -->
-                @if(session('admin_user_id'))
+                @if (session('admin_user_id'))
                     <ul class="navbar-nav">
                         <li class="nav-item">
-                            <a href="{{ route('admin.restore.login') }}" class="nav-link" 
-                               style="background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: white; border-radius: 8px; margin-right: 10px;"
-                               title="Restore Admin Login">
+                            <a href="{{ route('admin.restore.login') }}" class="nav-link"
+                                style="background: linear-gradient(90deg, #ff6b6b, #ee5a24); color: white; border-radius: 8px; margin-right: 10px;"
+                                title="Restore Admin Login">
                                 <i class="fas fa-user-shield me-2"></i>Restore Admin
                             </a>
                         </li>
@@ -218,7 +218,7 @@
                                 Welcome, {{ Auth::user()->full_name ?? Auth::user()->name }}
                             </p>
                             <!-- Security PIN Status -->
-                            @if(Auth::user()->hasCompletedPINSetup())
+                            @if (Auth::user()->hasCompletedPINSetup())
                                 <small class="text-success">
                                     <i class="fas fa-shield-alt"></i> PIN Secured
                                 </small>
@@ -227,9 +227,9 @@
                                     <i class="fas fa-exclamation-triangle"></i> PIN Required
                                 </small>
                             @endif
-                            
+
                             <!-- Wallet Connection Status -->
-                            @if(Auth::user()->wallet_address)
+                            @if (Auth::user()->wallet_address)
                                 <small class="text-success d-block mt-1">
                                     <i class="fas fa-wallet"></i> Wallet Connected
                                 </small>
@@ -248,51 +248,62 @@
                 <li class="nav-item">
                     <a style="color: #3bd17a !important;" class="nav-link" href="{{ route('user.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-home menu-icon"></i>
-                        <span class="menu-title" style="color: #3bd17a !important;">Dashboard</span>
+                        <span class="menu-title" >Dashboard</span>
                     </a>
                 </li>
                 <li style="color: #3bd17a !important; " class="nav-item">
                     <a href="{{ route('user.referral.index') }}" class="nav-link">
                         <i style="color: #3bd17a !important;" class="fa fa-link menu-icon"></i>
 
-                        <span class="menu-title" style="color: #3bd17a; !important;">Referral Link</span>
+                        <span class="menu-title">Referral Link</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.team.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-users menu-icon"></i>
-                        <span class="menu-title" style="color: #3bd17a !important;">Teams</span>
+                        <span class="menu-title" >Teams</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.plans.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-chart-line menu-icon"></i>
-                        <span class="menu-title" style="color: #3bd17a !important;">Plans</span>
+                        <span class="menu-title" >Plans</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link " href="{{ route('user.referralplan.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-gift menu-icon"></i>
-                        <span class="menu-title" style="color: #3bd17a !important;">Referral Plan</span>
+                        <span class="menu-title" >Referral Plan</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.wallet.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-wallet menu-icon"></i>
-                        <span class="menu-title" style="color: #3bd17a !important;">Wallet</span>
+                        <span class="menu-title" >Wallet</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link " href="{{ route('user.settings.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-cog menu-icon"></i>
-                        <span class="menu-title" style="color: #3bd17a !important;">Setting</span>
+                        <span class="menu-title" >Setting</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{{ route('security.pin.change') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-shield-alt menu-icon"></i>
-                        <span class="menu-title" style="color: #3bd17a !important;">Security</span>
+                        <span class="menu-title" >Security</span>
                     </a>
+                </li>
+                <li class="nav-item">
+                    <a  class="nav-link" href="{{ route('logout') }}"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                        class="sidebar-link">
+                        <i style="color: #3bd17a !important;" class="fas fa-power-off menu-icon"></i>
+                          <span class="menu-title" >Logout</span>
+                    </a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
                 </li>
             </ul>
         </nav>

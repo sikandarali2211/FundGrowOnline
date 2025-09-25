@@ -105,6 +105,7 @@ class AdminWalletController extends Controller
         }
     }
 
+
     /**
      * Send transaction
      */
@@ -131,29 +132,55 @@ class AdminWalletController extends Controller
     }
 
     /**
-     * Get transaction history
+     * Get transaction history for admin
      */
     public function getTransactionHistory(Request $request)
     {
         try {
-            $address = $request->input('address');
-            
-            if (!$address) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Wallet address is required'
-                ], 400);
-            }
+            $transactions = \App\Models\Transaction::with('user')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
 
-            // This will be handled by JavaScript on the frontend
             return response()->json([
                 'success' => true,
-                'message' => 'Transaction history check initiated'
+                'transactions' => $transactions
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to get transaction history: ' . $e->getMessage()
+                'message' => 'Failed to fetch transaction history: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get transaction statistics for admin dashboard
+     */
+    public function getTransactionStats()
+    {
+        try {
+            $totalTransactions = \App\Models\Transaction::count();
+            $totalAmount = \App\Models\Transaction::where('status', 'confirmed')->sum('amount');
+            $pendingTransactions = \App\Models\Transaction::where('status', 'pending')->count();
+            $todayTransactions = \App\Models\Transaction::whereDate('created_at', today())->count();
+            $todayAmount = \App\Models\Transaction::where('status', 'confirmed')
+                ->whereDate('created_at', today())
+                ->sum('amount');
+
+            return response()->json([
+                'success' => true,
+                'stats' => [
+                    'total_transactions' => $totalTransactions,
+                    'total_amount' => number_format($totalAmount, 2),
+                    'pending_transactions' => $pendingTransactions,
+                    'today_transactions' => $todayTransactions,
+                    'today_amount' => number_format($todayAmount, 2)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch transaction statistics: ' . $e->getMessage()
             ], 500);
         }
     }

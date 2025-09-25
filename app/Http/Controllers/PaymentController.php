@@ -122,7 +122,7 @@ class PaymentController extends Controller
             // Create user investment record
             $userInvestment = UserInvestment::create([
                 'user_id' => $user->id,
-                'plan_id' => $planData['id'] ?? 1, // Fallback to plan ID 1 if null
+                'investment_plan_id' => $planData['id'] ?? 1, // Use investment_plan_id (correct column name)
                 'amount' => $planData['amount'],
                 'status' => 'pending',
                 'payment_transaction_id' => $transaction->id,

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\PlanPayment;
+use App\Models\PaymentTransaction;
+use App\Models\UserInvestment;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller

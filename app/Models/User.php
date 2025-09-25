@@ -26,7 +26,8 @@ class User extends Authenticatable
         'referred_by',       // jis user ne refer kiya (users.id)
         'level',             // 👈 NEW: user level
         'google_id',         // Google OAuth ID
-        'wallet_address',    // Admin wallet address
+        'wallet_address',    // User wallet address
+        'wallet_type',       // Wallet type (trust, metamask, other)
         'security_pin',      // Security PIN for sensitive operations
         'otp_code',          // OTP for verification
         'otp_expires_at',    // OTP expiration time
@@ -61,6 +62,11 @@ class User extends Authenticatable
     public function referrals()
     {
         return $this->hasMany(User::class, 'referred_by');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(\App\Models\Transaction::class);
     }
 
     /** Unique referral code */

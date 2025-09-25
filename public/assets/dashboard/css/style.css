@@ -18512,6 +18512,7 @@ input:focus {
   display: inline-block;
   font-size: 0.875rem;
   line-height: 1;
+  color: #3bd17a;
   vertical-align: middle;
   font-weight: 400;
 }

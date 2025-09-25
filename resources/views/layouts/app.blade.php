@@ -38,13 +38,13 @@
                 backdrop-filter: blur(10px);
                 border: 1px solid rgba(59, 209, 122, 0.3);
                 border-radius: 50px;
-                height: 100px;
+                height: 70px;
+                /* 👈 reduced from 95px */
                 width: 95%;
                 max-width: 900px;
-                padding: 0 30px;
+                padding: 0 20px;
                 display: flex;
                 align-items: center;
-                /* 👈 all items vertically center */
                 justify-content: space-between;
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
                 z-index: 1000;
@@ -57,8 +57,8 @@
             }
 
             .navbar-brand img {
-                height: 80px;
-                /* 👈 logo resize to fit height */
+                height: 50px;
+                /* 👈 scaled down to match new nav height */
                 display: block;
             }
 
@@ -69,16 +69,25 @@
                 margin: 0 !important;
                 padding: 0;
                 list-style: none;
+                height: 100%;
+            }
+
+            .menu .nav-item {
+                display: flex;
+                align-items: center;
+                height: 100%;
             }
 
             .menu .nav-link {
                 font-size: 15px;
                 font-weight: 600;
                 color: #3bd17a !important;
-                transition: color 0.2s;
-                line-height: normal;
-                /* 👈 remove extra baseline */
                 padding: 0;
+                line-height: 1;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .menu .nav-link:hover {
@@ -89,13 +98,13 @@
                 background: #3bd17a;
                 color: #072d42;
                 border: none;
-                padding: 8px 18px;
-                font-size: 15px;
+                padding: 6px 16px;
+                /* 👈 slightly smaller button to match nav height */
+                font-size: 14px;
                 border-radius: 25px;
                 font-weight: 600;
                 transition: all 0.3s;
                 text-decoration: none;
-
             }
         }
 
@@ -103,7 +112,22 @@
         /* Mobile Navbar */
         @media (max-width: 991px) {
             .navbar {
-                background: #072d42 !important;
+                background: rgba(7, 45, 66, 0.6);
+                /* Transparent background with slight opacity */
+                backdrop-filter: blur(10px);
+                /* Blurring the background */
+                position: fixed;
+                /* Keeps the navbar fixed at the top */
+                width: 100%;
+                /* Ensure navbar spans the entire width */
+                z-index: 999;
+                /* Keeps navbar above other content */
+                top: 0;
+                /* Aligns navbar to the top */
+                left: 0;
+                /* Aligns navbar to the left */
+                padding: 2px 10px;
+                /* Optional padding */
             }
 
             .navbar .nav-link {
@@ -127,6 +151,16 @@
                 text-align: center;
             }
         }
+
+        /* Ensure the collapse class works */
+        .collapse {
+            display: none !important;
+        }
+
+        /* When the "show" class is added, the navbar content should be visible */
+        .collapse.show {
+            display: block !important;
+        }
     </style>
 </head>
 
@@ -138,7 +172,7 @@
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid justify-content-between">
                 <a class="navbar-brand text-white" href="/">
-                    <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="70">
+                    <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="50">
                 </a>
                 <ul class="navbar-nav menu mx-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
@@ -171,11 +205,13 @@
             <a class="navbar-brand text-white" href="/">
                 <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="87">
             </a>
+            <!-- Hamburger Menu Button -->
             <button class="navbar-toggler text-white border-0" type="button" data-bs-toggle="collapse"
                 data-bs-target="#navbarMenu" aria-controls="navbarMenu" aria-expanded="false"
                 aria-label="Toggle navigation">
                 <i class="fas fa-bars"></i>
             </button>
+            <!-- Collapsible Navbar Content -->
             <div class="collapse navbar-collapse" id="navbarMenu">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
@@ -199,6 +235,7 @@
             </div>
         </div>
     </nav>
+
 
     <!-- Main Content -->
     @yield('content')
@@ -230,11 +267,12 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="https://www.instagram.com/fundgrowonline?igsh=MTF2YzBndWp3bGluYg%3D%3D&utm_source=qr">
+                                    <a
+                                        href="https://www.instagram.com/fundgrowonline?igsh=MTF2YzBndWp3bGluYg%3D%3D&utm_source=qr">
                                         <i class="fab fa-instagram"></i>
                                     </a>
                                 </li>
-                                 <li>
+                                <li>
                                     <a href="https://www.tiktok.com/@fundgrowonline?is_from_webapp=1&sender_device=pc">
                                         <i class="fab fa-tiktok"></i>
                                     </a>
@@ -284,7 +322,7 @@
                                     <input type="text" class="form-control form--control" name="email"
                                         placeholder="Enter Your Email">
                                 </div>
-                                <button class="cmn--btn btn--transparent" type="submit">Subscribe</button>
+                                <button class="cmn--btn " type="submit">Subscribe</button>
                             </form>
                         </div>
                     </div>
@@ -310,18 +348,45 @@
 
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('assets/js/jquery-3.6.0.min.js') }}"></script>
+    <script src="assets/js/jquery-3.6.0.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/isotope.pkgd.min.js"></script>
+    <script src="assets/js/magnific-popup.min.js"></script>
+    <script src="assets/js/wow.min.js"></script>
+    <script src="assets/js/viewport.jquery.js"></script>
+    <script src="assets/js/odometer.min.js"></script>
+    <script src="assets/js/nice-select.js"></script>
+    <script src="assets/js/owl.min.js"></script>
+    <script src="assets/js/countdown.min.js"></script>
+    <script src="assets/js/main.js"></script>
+    <!-- Bootstrap 5 Bundle (includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
     <script>
-        // Loader hide after 3s
-        window.addEventListener("load", () => {
-            setTimeout(() => {
-                const loader = document.getElementById("page-loader");
-                loader.style.opacity = "0";
-                loader.style.pointerEvents = "none";
-                setTimeout(() => loader.style.display = "none", 600);
-            }, 3000);
+        // Toggle the collapse behavior manually
+        const toggler = document.querySelector('.navbar-toggler');
+        const collapseMenu = document.querySelector('#navbarMenu');
+
+        // Toggle menu on hamburger click
+        toggler.addEventListener('click', function() {
+            // Toggle the "show" class, which controls the visibility of the navbar content
+            collapseMenu.classList.toggle('show');
+
+            // Update aria-expanded attribute
+            const isExpanded = collapseMenu.classList.contains('show');
+            toggler.setAttribute('aria-expanded', isExpanded);
         });
+
+        // Close the menu when clicking outside of the navbar
+        document.addEventListener('click', function(event) {
+            if (!collapseMenu.contains(event.target) && !toggler.contains(event.target)) {
+                collapseMenu.classList.remove('show');
+                toggler.setAttribute('aria-expanded', 'false');
+            }
+        });
+
 
         // Floating navbar hide on scroll down, show on scroll up
         document.addEventListener("DOMContentLoaded", function() {
