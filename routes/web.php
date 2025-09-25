@@ -1,10 +1,11 @@
 <?php
 
+use App\Models\PlanSelection;
 use App\Http\Middleware\AuthAdmin;
+
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
@@ -13,15 +14,16 @@ use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\AdminUserDetailController;
 use App\Http\Controllers\PlanController;   // ← NEW
 use App\Http\Controllers\TeamController;   // ← NEW
+use App\Http\Controllers\PaymentController;   // ← NEW
+use App\Http\Controllers\SecurityController;   // ← NEW
+use App\Http\Controllers\Admin\RoleController;   // ← NEW
+use App\Http\Controllers\AdminWalletController;   // ← NEW
 use App\Http\Controllers\Auth\GoogleController;   // ← NEW
 use App\Http\Controllers\TransactionController;   // ← NEW
 use App\Http\Controllers\ReferralPlanController;   // ← NEW
 use App\Http\Controllers\PlanSelectionController;   // ← NEW
+use App\Http\Controllers\Admin\AdminTransactionLogsController;
 use App\Http\Controllers\AdminInvestmentPlanController;   // ← NEW
-use App\Http\Controllers\AdminWalletController;   // ← NEW
-use App\Http\Controllers\PaymentController;   // ← NEW
-use App\Http\Controllers\SecurityController;   // ← NEW
-use App\Http\Controllers\Admin\RoleController;   // ← NEW
 
 Route::view('/', 'index');
 
@@ -272,6 +274,12 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
     });
 
 
+    Route::middleware(['auth'])->group(function () {
+        Route::prefix('admin')->name('admin.')->group(function () {
+            Route::get('/transaction-logs', [AdminTransactionLogsController::class, 'index'])
+                ->name('transactionlog.index');
+        });
+    });
 
     // Debug route for plan selections
     Route::get('/admin/debug-plan-selections', function () {

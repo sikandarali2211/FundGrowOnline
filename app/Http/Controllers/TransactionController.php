@@ -23,11 +23,30 @@ class TransactionController extends Controller
             'tokenAddress' => 'nullable|string'
         ]);
 
-        $txHash = $request->txHash;
-        $fromAddress = $request->fromAddress;
-        $toAddress = $request->toAddress;
+        $result = $this->verifyTransactionInternal($request);
+        
+        if ($result['success']) {
+            return response()->json($result);
+        } else {
+            return response()->json($result, 400);
+        }
+    }
+
+    private function verifyTransactionInternal(Request $request)
+    {
+        $request->validate([
+            'tx_hash' => 'required|string',
+            'from_address' => 'required|string',
+            'to_address' => 'required|string',
+            'amount' => 'required|numeric',
+            'token_address' => 'nullable|string'
+        ]);
+
+        $txHash = $request->tx_hash;
+        $fromAddress = $request->from_address;
+        $toAddress = $request->to_address;
         $amount = $request->amount;
-        $tokenAddress = $request->tokenAddress;
+        $tokenAddress = $request->token_address;
 
         try {
             // Get transaction details from BSCScan
@@ -39,19 +58,21 @@ class TransactionController extends Controller
             ]);
 
             if (!$response->successful()) {
-                return response()->json([
+                return [
                     'success' => false,
+                    'verified' => false,
                     'message' => 'Failed to fetch transaction from BSCScan'
-                ], 400);
+                ];
             }
 
             $txData = $response->json();
 
             if (isset($txData['error'])) {
-                return response()->json([
+                return [
                     'success' => false,
+                    'verified' => false,
                     'message' => 'Transaction not found or invalid'
-                ], 404);
+                ];
             }
 
             // Verify transaction details
@@ -69,28 +90,29 @@ class TransactionController extends Controller
                 $receipt = $receiptResponse->json();
                 $isConfirmed = isset($receipt['result']) && $receipt['result']['status'] === '0x1';
 
-                return response()->json([
+                return [
                     'success' => true,
                     'verified' => true,
                     'confirmed' => $isConfirmed,
                     'blockNumber' => $receipt['result']['blockNumber'] ?? null,
                     'gasUsed' => $receipt['result']['gasUsed'] ?? null,
                     'transaction' => $txData['result']
-                ]);
+                ];
             } else {
-                return response()->json([
-                    'success' => true,
+                return [
+                    'success' => false,
                     'verified' => false,
                     'message' => 'Transaction details do not match'
-                ]);
+                ];
             }
 
         } catch (\Exception $e) {
             Log::error('Transaction verification error: ' . $e->getMessage());
-            return response()->json([
+            return [
                 'success' => false,
-                'message' => 'Error verifying transaction'
-            ], 500);
+                'verified' => false,
+                'message' => 'Error verifying transaction: ' . $e->getMessage()
+            ];
         }
     }
 
@@ -481,6 +503,10 @@ class TransactionController extends Controller
      */
     public function processDetectedTransaction(Request $request)
     {
+        \Log::info('processDetectedTransaction called with data:', $request->all());
+        \Log::info('User authenticated:', Auth::check());
+        \Log::info('User ID:', Auth::id());
+        
         $request->validate([
             'tx_hash' => 'required|string',
             'from_address' => 'required|string',
@@ -493,6 +519,13 @@ class TransactionController extends Controller
             $fromAddress = $request->from_address;
             $amount = $request->amount;
             $blockNumber = $request->block_number;
+            
+            \Log::info('Processing transaction:', [
+                'tx_hash' => $txHash,
+                'from_address' => $fromAddress,
+                'amount' => $amount,
+                'block_number' => $blockNumber
+            ]);
 
             // Check if transaction already processed
             $existingTransaction = Transaction::where('tx_hash', $txHash)->first();
@@ -556,7 +589,8 @@ class TransactionController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Auto transaction processing error: ' . $e->getMessage());
+            \Log::error('Auto transaction processing error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to process transaction: ' . $e->getMessage()
@@ -588,7 +622,7 @@ class TransactionController extends Controller
             $tokenSymbol = $request->token_symbol ?? 'USDT';
 
             // Verify transaction on blockchain
-            $verificationResult = $this->verifyTransaction($request);
+            $verificationResult = $this->verifyTransactionInternal($request);
             
             if (!$verificationResult['verified']) {
                 return response()->json([
@@ -641,6 +675,12 @@ class TransactionController extends Controller
                 'new_balance' => $this->calculateWalletBalance($user->id)
             ]);
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             Log::error('Topup transaction processing error: ' . $e->getMessage());
             return response()->json([
@@ -656,17 +696,18 @@ class TransactionController extends Controller
     private function updateUserWalletBalance($userId, $amount)
     {
         try {
-            // This could be implemented based on your business logic
-            // For now, we'll just log the balance update
+            // The transaction is already stored in the transactions table
+            // The wallet balance will be calculated dynamically from the transactions
+            // No need to store duplicate data
+            
             Log::info("User wallet balance updated", [
                 'user_id' => $userId,
                 'amount_added' => $amount,
                 'timestamp' => now()
             ]);
             
-            // You can implement actual balance update logic here
-            // For example, update a wallet_balance field in users table
-            // or create a separate wallet_balances table
+            // The balance calculation is now handled in UserController::calculateWalletBalance()
+            // which includes confirmed transactions in the balance calculation
             
         } catch (\Exception $e) {
             Log::error('Failed to update user wallet balance: ' . $e->getMessage());

@@ -338,6 +338,13 @@
                         <div style="margin-top:70px;">
                             <h5 style="color: #3bd17a;">Total Balance</h5>
                             <h2 style="color: #3bd17a" class="font-weight-bold mb-0">${{ $walletBalance ?? '0.00' }}</h2>
+                            @if(isset($balanceBreakdown))
+                                <div style="margin-top: 10px; font-size: 0.8rem;">
+                                    <div style="color: #28a745;">Sent: ${{ $balanceBreakdown['total_sent'] }}</div>
+                                    <div style="color: #17a2b8;">Investment: ${{ $balanceBreakdown['total_investment'] }}</div>
+                                    <div style="color: #ffc107;">Returns: ${{ $balanceBreakdown['total_returns'] }}</div>
+                                </div>
+                            @endif
                         </div>
                         <div class="d-flex flex-column">
                             <button class="btn btn-light btn-sm mb-2" style="border-radius: 20px; min-width: 120px;"
@@ -357,6 +364,31 @@
 
                 <!-- Right Side Wallet Cards -->
                 <div class="col-md-6 col-lg-6">
+                    <!-- Recent Transactions Card -->
+                    @if(isset($balanceBreakdown) && $balanceBreakdown['recent_transactions']->count() > 0)
+                        <div class="card mb-3" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                            <div class="card-header" style="background: transparent; border-bottom: 1px solid #3bd17a;">
+                                <h6 class="mb-0 text-success">
+                                    <i class="fas fa-history me-2"></i>Recent Transactions
+                                </h6>
+                            </div>
+                            <div class="card-body" style="max-height: 200px; overflow-y: auto;">
+                                @foreach($balanceBreakdown['recent_transactions'] as $tx)
+                                    <div class="d-flex justify-content-between align-items-center mb-2" style="font-size: 0.85rem;">
+                                        <div>
+                                            <span class="text-white">{{ $tx->token_symbol ?? 'USDT' }}</span>
+                                            <small class="text-muted d-block">{{ $tx->created_at->format('M d, H:i') }}</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-success font-weight-bold">${{ number_format($tx->amount, 2) }}</span>
+                                            <small class="text-muted d-block">Sent</small>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                    
                     <div class="row">
                         <div class="col-sm-6 mb-3">
                             <a href="{{ url('balance-wallet') }}" class="text-decoration-none">
@@ -535,11 +567,6 @@
                                     <i class="fas fa-info-circle me-1"></i>
                                     Try "Send USDT (Simple)" if approve button doesn't work
                                 </small>
-                                <div class="text-center mt-2">
-                                    <button class="btn btn-warning btn-sm" onclick="manualProcessTransaction()">
-                                        <i class="fas fa-sync-alt me-1"></i>Process Transaction Manually
-                                    </button>
-                                </div>
                             </div>
 
                             <!-- Auto Detection Status -->
@@ -1618,42 +1645,12 @@ Important:
             }
         }
 
-        // Manual transaction processing
-        async function manualProcessTransaction() {
-            try {
-                showToast('Checking for new transactions...', 'info');
-                
-                const response = await fetch('{{ route("user.wallet.check.transactions") }}');
-                const result = await response.json();
-                
-                if (result.success && result.new_transactions.length > 0) {
-                    showToast('Found ' + result.new_transactions.length + ' new transactions. Processing...', 'info');
-                    
-                    for (const tx of result.new_transactions) {
-                        await processDetectedTransaction({
-                            hash: tx.hash,
-                            from: tx.from,
-                            value: tx.value,
-                            blockNumber: tx.blockNumber
-                        });
-                    }
-                    
-                    showToast('All transactions processed! Refreshing balance...', 'success');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
-                } else {
-                    showToast('No new transactions found. Please try again later.', 'warning');
-                }
-            } catch (error) {
-                console.error('Manual processing error:', error);
-                showToast('Error processing transactions: ' + error.message, 'error');
-            }
-        }
-
         // Process detected transaction immediately
         async function processDetectedTransaction(txData) {
             try {
+                // Convert amount from wei to decimal
+                const amount = parseFloat(txData.value) / Math.pow(10, 18);
+                
                 const response = await fetch('{{ route("user.wallet.process.detected") }}', {
                     method: 'POST',
                     headers: {
@@ -1663,12 +1660,29 @@ Important:
                     body: JSON.stringify({
                         tx_hash: txData.hash,
                         from_address: txData.from,
-                        amount: txData.value,
+                        amount: amount,
                         block_number: txData.blockNumber
                     })
                 });
 
-                const result = await response.json();
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                // Get response text first to debug
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                // Try to parse JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (jsonError) {
+                    console.error('JSON parsing error:', jsonError);
+                    console.error('Response text:', responseText);
+                    throw new Error('Invalid JSON response from server');
+                }
                 
                 if (result.success) {
                     console.log('Transaction processed successfully:', result);
@@ -1678,6 +1692,7 @@ Important:
                 }
             } catch (error) {
                 console.error('Error processing transaction:', error);
+                showToast('Transaction failed: ' + error.message, 'error');
                 throw error;
             }
         }

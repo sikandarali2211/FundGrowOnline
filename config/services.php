@@ -44,8 +44,11 @@ return [
         'sms_number' => env('TWILIO_SMS_NUMBER'),
     ],
     'bscscan' => [
-        'base' => env('BSCSCAN_API_URL', 'https://api.bscscan.com/api'),
-        'key'  => env('BSCSCAN_API_KEY'),
+        'key'           => env('BSCSCAN_API_KEY'),
+        'base_url'      => env('BSCSCAN_BASE_URL', 'https://api.etherscan.io/v2/api'),
+        'chain_id'      => (int) env('BSCSCAN_CHAIN_ID', 56), // BSC mainnet
+        'admin_address' => env('ADMIN_WALLET_ADDRESS'),
     ],
+
 
 ];

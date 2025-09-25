@@ -46,8 +46,11 @@ class UserController extends Controller
             ->where('created_at', '>=', now()->subDays(7))
             ->count();
 
-        // Calculate wallet balance from user investments
+        // Calculate wallet balance from user investments and transactions
         $walletBalance = $this->calculateWalletBalance($user->id);
+        
+        // Get detailed balance breakdown
+        $balanceBreakdown = $this->getBalanceBreakdown($user->id);
         
         // Get admin wallet address from database
         $adminWalletAddress = $this->getAdminWalletAddress();
@@ -58,6 +61,7 @@ class UserController extends Controller
             'newReferralsToday',
             'newReferralsWeek',
             'walletBalance',
+            'balanceBreakdown',
             'adminWalletAddress'
         ));
     }
@@ -104,7 +108,7 @@ class UserController extends Controller
     }
 
     /**
-     * Calculate user's wallet balance from investments
+     * Calculate user's wallet balance from investments and transactions
      */
     private function calculateWalletBalance($userId)
     {
@@ -114,18 +118,74 @@ class UserController extends Controller
                 ->where('status', 'active')
                 ->sum('amount');
             
-            // Get user's total returns from plan payments
-            $totalReturns = \App\Models\PlanPayment::where('user_id', $userId)
-                ->where('status', 'completed')
+            // Get user's total returns from plan payments (if table exists)
+            $totalReturns = 0; // For now, we'll focus on investments and transactions
+            
+            // Get user's total sent amounts from transactions (topup amounts)
+            $totalSentAmount = \App\Models\Transaction::where('user_id', $userId)
+                ->where('status', 'confirmed')
                 ->sum('amount');
             
-            // Calculate wallet balance (investments + returns)
-            $walletBalance = $totalInvestment + $totalReturns;
+            // Get user's total received amounts from transactions (if any)
+            $totalReceivedAmount = 0; // For now, we'll focus on sent amounts
+            
+            // Calculate wallet balance (investments + returns + sent amounts)
+            // The sent amounts represent the user's contribution to the system
+            $walletBalance = $totalInvestment + $totalReturns + $totalSentAmount;
             
             return number_format($walletBalance, 2);
         } catch (\Exception $e) {
+            \Log::error("Failed to calculate wallet balance for user {$userId}: " . $e->getMessage());
             // If there's any error, return 0
             return '0.00';
+        }
+    }
+
+    /**
+     * Get detailed balance breakdown for user dashboard
+     */
+    private function getBalanceBreakdown($userId)
+    {
+        try {
+            // Get user's total investment amount from user_investments table
+            $totalInvestment = \App\Models\UserInvestment::where('user_id', $userId)
+                ->where('status', 'active')
+                ->sum('amount');
+            
+            // Get user's total returns from plan payments (if table exists)
+            $totalReturns = 0; // For now, we'll focus on investments and transactions
+            
+            // Get user's total sent amounts from transactions (topup amounts)
+            $totalSentAmount = \App\Models\Transaction::where('user_id', $userId)
+                ->where('status', 'confirmed')
+                ->sum('amount');
+            
+            // Get user's total received amounts from transactions (if any)
+            $totalReceivedAmount = 0; // For now, we'll focus on sent amounts
+            
+            // Get recent transactions for display
+            $recentTransactions = \App\Models\Transaction::where('user_id', $userId)
+                ->where('status', 'confirmed')
+                ->orderBy('created_at', 'desc')
+                ->limit(5)
+                ->get(['amount', 'token_symbol', 'from_address', 'to_address', 'created_at']);
+            
+            return [
+                'total_investment' => number_format($totalInvestment, 2),
+                'total_returns' => number_format($totalReturns, 2),
+                'total_sent' => number_format($totalSentAmount, 2),
+                'total_received' => number_format($totalReceivedAmount, 2),
+                'recent_transactions' => $recentTransactions
+            ];
+        } catch (\Exception $e) {
+            \Log::error("Failed to get balance breakdown for user {$userId}: " . $e->getMessage());
+            return [
+                'total_investment' => '0.00',
+                'total_returns' => '0.00',
+                'total_sent' => '0.00',
+                'total_received' => '0.00',
+                'recent_transactions' => collect()
+            ];
         }
     }
 

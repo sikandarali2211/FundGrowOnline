@@ -236,6 +236,14 @@
                         <span class="menu-title" style="color: #3bd17a;">Role Management</span>
                     </a>
                 </li>
+                    <!-- Role Management - Only for Admin -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.transactionlog.index') }}">
+                        <i class="fa fa-users-cog menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Transcation Log</span>
+                    </a>
+                </li>
                 <!-- Investment Plans - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
