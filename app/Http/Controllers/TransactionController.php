@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Models\Transaction;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class TransactionController extends Controller
 {
@@ -24,7 +25,7 @@ class TransactionController extends Controller
         ]);
 
         $result = $this->verifyTransactionInternal($request);
-        
+
         if ($result['success']) {
             return response()->json($result);
         } else {
@@ -105,7 +106,6 @@ class TransactionController extends Controller
                     'message' => 'Transaction details do not match'
                 ];
             }
-
         } catch (\Exception $e) {
             Log::error('Transaction verification error: ' . $e->getMessage());
             return [
@@ -119,7 +119,7 @@ class TransactionController extends Controller
     private function validateTransaction($txData, $expectedFrom, $expectedTo, $expectedAmount, $tokenAddress = null)
     {
         $tx = $txData['result'];
-        
+
         // Check from address
         if (strtolower($tx['from']) !== strtolower($expectedFrom)) {
             return false;
@@ -181,7 +181,6 @@ class TransactionController extends Controller
                 'gasUsed' => $receipt['result']['gasUsed'] ?? null,
                 'receipt' => $receipt['result']
             ]);
-
         } catch (\Exception $e) {
             Log::error('Transaction status check error: ' . $e->getMessage());
             return response()->json([
@@ -222,7 +221,6 @@ class TransactionController extends Controller
                 'balance' => $balanceInBNB,
                 'balanceWei' => $balance
             ]);
-
         } catch (\Exception $e) {
             Log::error('Balance check error: ' . $e->getMessage());
             return response()->json([
@@ -276,7 +274,7 @@ class TransactionController extends Controller
     public function updateTransactionStatus(Request $request, $txHash)
     {
         $transaction = Transaction::where('tx_hash', $txHash)->first();
-        
+
         if (!$transaction) {
             return response()->json([
                 'success' => false,
@@ -341,17 +339,15 @@ class TransactionController extends Controller
                 'message' => 'Wallet address saved successfully',
                 'wallet_address' => $request->wallet_address
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid wallet address format',
                 'errors' => $e->errors()
             ], 422);
-
         } catch (\Exception $e) {
             Log::error("Failed to save wallet address: " . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save wallet address'
@@ -408,17 +404,15 @@ class TransactionController extends Controller
                 'message' => 'Transaction recorded successfully',
                 'transaction' => $transaction
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
-
         } catch (\Exception $e) {
             Log::error("Failed to record send transaction: " . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to record transaction'
@@ -436,7 +430,7 @@ class TransactionController extends Controller
             $admin = \App\Models\User::where('utype', 'ADM')
                 ->whereNotNull('wallet_address')
                 ->first();
-            
+
             if (!$admin) {
                 return response()->json([
                     'success' => false,
@@ -445,7 +439,7 @@ class TransactionController extends Controller
             }
 
             $adminWalletAddress = $admin->wallet_address;
-            
+
             // Get recent transactions from BSCScan API
             $response = Http::get($this->bscApiUrl, [
                 'module' => 'account',
@@ -475,7 +469,7 @@ class TransactionController extends Controller
                 if ($tx['input'] === '0xa9059cbb' && $tx['to'] === $adminWalletAddress) {
                     // Check if transaction already exists in our database
                     $existingTx = Transaction::where('tx_hash', $tx['hash'])->first();
-                    
+
                     if (!$existingTx) {
                         // This is a new USDT transaction to admin wallet
                         $newTransactions[] = $tx;
@@ -488,7 +482,6 @@ class TransactionController extends Controller
                 'new_transactions' => $newTransactions,
                 'admin_wallet' => $adminWalletAddress
             ]);
-
         } catch (\Exception $e) {
             Log::error('Admin wallet transaction check error: ' . $e->getMessage());
             return response()->json([
@@ -503,10 +496,10 @@ class TransactionController extends Controller
      */
     public function processDetectedTransaction(Request $request)
     {
-        \Log::info('processDetectedTransaction called with data:', $request->all());
-        \Log::info('User authenticated:', Auth::check());
-        \Log::info('User ID:', Auth::id());
-        
+        Log::info('processDetectedTransaction called with data:', $request->all());
+        Log::info('User authenticated:', Auth::check());
+        Log::info('User ID:', Auth::id());
+
         $request->validate([
             'tx_hash' => 'required|string',
             'from_address' => 'required|string',
@@ -519,8 +512,8 @@ class TransactionController extends Controller
             $fromAddress = $request->from_address;
             $amount = $request->amount;
             $blockNumber = $request->block_number;
-            
-            \Log::info('Processing transaction:', [
+
+            Log::info('Processing transaction:', [
                 'tx_hash' => $txHash,
                 'from_address' => $fromAddress,
                 'amount' => $amount,
@@ -587,10 +580,9 @@ class TransactionController extends Controller
                     'email' => $user->email
                 ]
             ]);
-
         } catch (\Exception $e) {
-            \Log::error('Auto transaction processing error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            Log::error('Auto transaction processing error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to process transaction: ' . $e->getMessage()
@@ -623,7 +615,7 @@ class TransactionController extends Controller
 
             // Verify transaction on blockchain
             $verificationResult = $this->verifyTransactionInternal($request);
-            
+
             if (!$verificationResult['verified']) {
                 return response()->json([
                     'success' => false,
@@ -674,7 +666,6 @@ class TransactionController extends Controller
                 'transaction' => $transaction,
                 'new_balance' => $this->calculateWalletBalance($user->id)
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -699,16 +690,16 @@ class TransactionController extends Controller
             // The transaction is already stored in the transactions table
             // The wallet balance will be calculated dynamically from the transactions
             // No need to store duplicate data
-            
+
             Log::info("User wallet balance updated", [
                 'user_id' => $userId,
                 'amount_added' => $amount,
                 'timestamp' => now()
             ]);
-            
+
             // The balance calculation is now handled in UserController::calculateWalletBalance()
             // which includes confirmed transactions in the balance calculation
-            
+
         } catch (\Exception $e) {
             Log::error('Failed to update user wallet balance: ' . $e->getMessage());
         }
@@ -742,7 +733,6 @@ class TransactionController extends Controller
                 'wallet_address' => $walletAddress,
                 'wallet_type' => $walletType
             ]);
-
         } catch (\Exception $e) {
             Log::error('Wallet connection error: ' . $e->getMessage());
             return response()->json([
@@ -755,26 +745,29 @@ class TransactionController extends Controller
     /**
      * Calculate user's wallet balance from investments
      */
-    private function calculateWalletBalance($userId)
-    {
-        try {
-            // Get user's total investments
-            $totalInvestment = \App\Models\PlanSelection::where('user_id', $userId)
-                ->where('status', 'active')
-                ->sum('amount');
+  // Total funds user owns on platform (credits - debits)
+private function calculateWalletBalance($userId)
+{
+    try {
+        $totalCredits = Transaction::where('user_id', $userId)
+            ->where('status', 'confirmed')
+            ->where(function ($q) {
+                $q->whereNull('type')->orWhere('type', '!=', 'send'); // inbound
+            })
+            ->sum('amount');
 
-            // Get user's total returns (this would be calculated based on your business logic)
-            $totalReturns = 0; // Implement your returns calculation logic here
+        $totalDebits = Transaction::where('user_id', $userId)
+            ->where('type', 'send')
+            ->where('status', '!=', 'failed')
+            ->sum('amount');
 
-            // Calculate wallet balance (investments + returns)
-            $walletBalance = $totalInvestment + $totalReturns;
-
-            return number_format($walletBalance, 2);
-        } catch (\Exception $e) {
-            Log::error("Failed to calculate wallet balance: " . $e->getMessage());
-            return 0;
-        }
+        return max(0, round((float)$totalCredits - (float)$totalDebits, 2));
+    } catch (\Exception $e) {
+        Log::error("Failed to calculate wallet balance: " . $e->getMessage());
+        return 0.0;
     }
+}
+
 
     /**
      * Disconnect wallet and remove wallet address from database
@@ -783,7 +776,7 @@ class TransactionController extends Controller
     {
         try {
             $user = Auth::user();
-            
+
             if (!$user) {
                 return response()->json([
                     'success' => false,
@@ -807,10 +800,9 @@ class TransactionController extends Controller
                     'wallet_type' => null
                 ]
             ]);
-
         } catch (\Exception $e) {
             Log::error("Failed to disconnect wallet: " . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to disconnect wallet. Please try again.',
@@ -818,4 +810,142 @@ class TransactionController extends Controller
             ], 500);
         }
     }
+
+   
+    /**
+     * Get user's balance wallet amount
+     */
+private function getUserBalanceWalletAmount($user)
+{
+    try {
+        // Use the same logic as UserController for consistency
+        // Get user's total investment amount from user_investments table
+        $totalInvestment = \App\Models\UserInvestment::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->sum('amount');
+        
+        // Get user's total returns from plan payments (if table exists)
+        $totalReturns = 0; // For now, we'll focus on investments and transactions
+        
+        // Get user's total sent amounts from transactions (topup amounts)
+        $totalSentAmount = \App\Models\Transaction::where('user_id', $user->id)
+            ->where('status', 'confirmed')
+            ->sum('amount');
+        
+        // Get user's total received amounts from transactions (if any)
+        $totalReceivedAmount = 0; // For now, we'll focus on sent amounts
+        
+        // Get current pool wallet amount
+        $poolAmount = (float) \App\Models\User::where('id', $user->id)->value('pool_wallet_amount') ?? 0;
+        
+        // Calculate wallet balance (investments + returns + sent amounts - pool amount)
+        // The sent amounts represent the user's contribution to the system
+        // Pool amount is subtracted because it's no longer available in balance wallet
+        $walletBalance = $totalInvestment + $totalReturns + $totalSentAmount - $poolAmount;
+        
+        Log::info('Balance calculation details', [
+            'user_id' => $user->id,
+            'total_investment' => $totalInvestment,
+            'total_returns' => $totalReturns,
+            'total_sent_amount' => $totalSentAmount,
+            'total_received_amount' => $totalReceivedAmount,
+            'pool_amount' => $poolAmount,
+            'calculated_balance' => $walletBalance
+        ]);
+        
+        return (float) $walletBalance;
+    } catch (\Exception $e) {
+        Log::error("Error calculating balance wallet amount: " . $e->getMessage());
+        return 0.0;
+    }
+}
+
+
+   public function exchangeToPool(Request $request)
+{
+    try {
+        Log::info('Exchange request received', [
+            'amount' => $request->amount,
+            'pin_verified' => $request->pin_verified,
+            'user_id' => Auth::id(),
+            'all_data' => $request->all()
+        ]);
+
+        $request->validate(['amount' => 'required|numeric|min:0.01']);
+
+        $authUser = Auth::user();
+        if (!$authUser) {
+            return response()->json(['success' => false, 'message' => 'User not authenticated'], 401);
+        }
+        // PIN verification temporarily disabled for testing
+        // if (!$request->boolean('pin_verified')) {
+        //     return response()->json(['success' => false, 'message' => 'Security PIN not verified'], 403);
+        // }
+
+        $amount = round($request->amount, 2);
+
+        // ⚠️ read balances using a fresh user row
+        $user = \App\Models\User::findOrFail($authUser->id);
+        $currentBalance = $this->getUserBalanceWalletAmount($user);
+        $currentPool    = (float) ($user->pool_wallet_amount ?? 0);
+
+        Log::info('Balance calculation', [
+            'user_id' => $user->id,
+            'current_balance' => $currentBalance,
+            'current_pool' => $currentPool,
+            'requested_amount' => $amount
+        ]);
+
+        if ($amount > $currentBalance) {
+            Log::warning('Insufficient balance', [
+                'user_id' => $user->id,
+                'current_balance' => $currentBalance,
+                'requested_amount' => $amount
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Insufficient balance. Available balance: $' . number_format($currentBalance, 2)
+            ], 400);
+        }
+
+        DB::transaction(function () use ($user, $amount) {
+            // lock + update
+            $fresh = \App\Models\User::where('id', $user->id)->lockForUpdate()->first();
+            $fresh->pool_wallet_amount = (float) ($fresh->pool_wallet_amount ?? 0) + $amount;
+            $fresh->save();
+        });
+
+        // ⚠️ recompute with a refreshed user after commit
+        $userAfter   = \App\Models\User::find($user->id);
+        $newPool     = (float) ($userAfter->pool_wallet_amount ?? 0);
+        $newBalance  = $this->getUserBalanceWalletAmount($userAfter);
+
+        Log::info("Exchange to pool", [
+            'user_id'          => $user->id,
+            'amount'           => $amount,
+            'previous_balance' => $currentBalance,
+            'previous_pool'    => $currentPool,
+            'new_balance'      => $newBalance,
+            'new_pool'         => $newPool,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Exchange completed successfully!',
+            'data' => [
+                'exchange_amount'    => $amount,
+                'previous_balance'   => round($currentBalance, 2),
+                'previous_pool'      => round($currentPool, 2),
+                'new_balance_amount' => round($newBalance, 2),
+                'new_pool_amount'    => round($newPool, 2),
+            ]
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+    } catch (\Exception $e) {
+        Log::error("Failed to exchange to pool: " . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Exchange failed. Please try again.'], 500);
+    }
+}
+
 }

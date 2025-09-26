@@ -15,7 +15,7 @@ class SecurityController extends Controller
     public function showPINSetup()
     {
         $user = Auth::user();
-        
+
         // If user has already completed PIN setup, redirect to dashboard
         if ($user->hasCompletedPINSetup()) {
             return redirect()->route('user.index');
@@ -30,7 +30,7 @@ class SecurityController extends Controller
     public function setupPIN(Request $request)
     {
         $user = Auth::user();
-        
+
         $validator = Validator::make($request->all(), [
             'security_pin' => ['required', 'string', 'min:6', 'max:6', 'regex:/^[0-9]{6}$/'],
             'security_pin_confirmation' => ['required', 'same:security_pin'],
@@ -69,10 +69,10 @@ class SecurityController extends Controller
     public function sendOTPForPINSetup(Request $request)
     {
         $user = Auth::user();
-        
+
         // Send OTP via email only
         $results = $user->sendOTP(['email']);
-        
+
         if (isset($results['email']) && $results['email']) {
             $message = 'OTP has been sent to your email address successfully!';
             $success = true;
@@ -94,7 +94,7 @@ class SecurityController extends Controller
     public function showPINVerification()
     {
         $user = Auth::user();
-        
+
         if (!$user->hasCompletedPINSetup()) {
             return redirect()->route('security.pin.setup');
         }
@@ -108,34 +108,68 @@ class SecurityController extends Controller
     public function verifyPIN(Request $request)
     {
         $user = Auth::user();
-        
-        $validator = Validator::make($request->all(), [
-            'security_pin' => ['required', 'string', 'min:6', 'max:6', 'regex:/^[0-9]{6}$/'],
-        ], [
-            'security_pin.required' => 'Security PIN is required.',
-            'security_pin.min' => 'Security PIN must be exactly 6 digits.',
-            'security_pin.max' => 'Security PIN must be exactly 6 digits.',
-            'security_pin.regex' => 'Security PIN must contain only numbers.',
-        ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator);
+        $rules = ['security_pin' => ['required', 'string', 'min:6', 'max:6', 'regex:/^[0-9]{6}$/']];
+
+        // If AJAX/JSON request, respond with JSON (no redirects)
+        if ($request->expectsJson()) {
+            $validator = \Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first('security_pin'),
+                ], 422);
+            }
+
+            if (!$user->verifySecurityPIN($request->input('security_pin'))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid security PIN.',
+                ], 401);
+            }
+
+            session(['pin_verified' => true, 'pin_verified_at' => now()]);
+            return response()->json(['success' => true]);
         }
 
-        // Verify PIN
+        // ← existing non-AJAX flow (redirects) rehne dein
+        $validator = \Validator::make($request->all(), $rules);
+        if ($validator->fails()) return back()->withErrors($validator);
+
         if (!$user->verifySecurityPIN($request->security_pin)) {
             return back()->withErrors(['security_pin' => 'Invalid security PIN.']);
         }
 
-        // Store PIN verification in session for 5 minutes
         session(['pin_verified' => true, 'pin_verified_at' => now()]);
-
-        // Redirect to intended URL or dashboard
         $intendedUrl = session('intended_url', route('user.index'));
         session()->forget('intended_url');
-        
+
         return redirect($intendedUrl)->with('success', 'Security PIN verified successfully!');
     }
+    public function verifyPINAjax(\Illuminate\Http\Request $request)
+    {
+        if (!\Illuminate\Support\Facades\Auth::check()) {
+            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+        }
+
+        $request->validate([
+            'security_pin' => ['required', 'regex:/^[0-9]{6}$/']
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Compare exactly 6-digit string; don't coerce numbers (leading zeros matter)
+        if (!$user->verifySecurityPIN($request->input('security_pin'))) {
+            return response()->json(['success' => false, 'message' => 'Invalid PIN'], 422);
+        }
+
+        // Mark session as verified (optional TTL check can be added)
+        session(['pin_verified' => true, 'pin_verified_at' => now()]);
+
+        return response()->json(['success' => true, 'message' => 'PIN verified']);
+    }
+
 
     /**
      * Check if PIN is verified for current session
@@ -161,7 +195,7 @@ class SecurityController extends Controller
     public function clearPINVerification()
     {
         session()->forget(['pin_verified', 'pin_verified_at']);
-        
+
         return response()->json(['success' => true]);
     }
 
@@ -171,7 +205,7 @@ class SecurityController extends Controller
     public function showPINChange()
     {
         $user = Auth::user();
-        
+
         if (!$user->hasCompletedPINSetup()) {
             return redirect()->route('security.pin.setup');
         }
@@ -185,7 +219,7 @@ class SecurityController extends Controller
     public function changePIN(Request $request)
     {
         $user = Auth::user();
-        
+
         $validator = Validator::make($request->all(), [
             'current_pin' => ['required', 'string', 'min:6', 'max:6', 'regex:/^[0-9]{6}$/'],
             'new_pin' => ['required', 'string', 'min:6', 'max:6', 'regex:/^[0-9]{6}$/'],

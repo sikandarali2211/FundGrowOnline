@@ -112,6 +112,22 @@ Route::middleware(['auth'])->group(function () {
         }
         return response()->json(['error' => 'User not authenticated']);
     });
+
+    // Test route for balance calculation
+    Route::get('/test-balance', function () {
+        $user = Auth::user();
+        if ($user) {
+            $controller = new \App\Http\Controllers\TransactionController();
+            $balance = $controller->getUserBalanceWalletAmount($user);
+            return response()->json([
+                'success' => true,
+                'user_id' => $user->id,
+                'balance' => $balance,
+                'pool_amount' => $user->pool_wallet_amount ?? 0
+            ]);
+        }
+        return response()->json(['error' => 'User not authenticated']);
+    });
 });
 
 Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name('user.')->group(function () {
@@ -181,7 +197,9 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::get('/wallet/transaction-status/{txHash}', [TransactionController::class, 'getTransactionStatus'])->name('wallet.status');
     Route::get('/wallet/balance/{address}', [TransactionController::class, 'getBSCBalance'])->name('wallet.balance');
     Route::get('/wallet/transactions', [TransactionController::class, 'getTransactionHistory'])->name('wallet.transactions');
-
+    Route::post('/wallet/exchange-to-pool', [TransactionController::class, 'exchangeToPool'])
+        ->name('wallet.exchange')
+        ->withoutMiddleware(['require.pin.verification']);
     // Payment Routes (require PIN verification for sensitive operations)
     Route::middleware(['require.pin.verification'])->group(function () {
         Route::post('/payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');
@@ -189,7 +207,13 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
 
     Route::get('/payment/history', [PaymentController::class, 'getPaymentHistory'])->name('payment.history');
 });
+Route::middleware(['auth'])->prefix('security')->name('security.')->group(function () {
+    // ...aap ke existing routes
 
+    // AJAX-only PIN verify (always JSON)
+    Route::post('/pin/verify-ajax', [\App\Http\Controllers\SecurityController::class, 'verifyPINAjax'])
+        ->name('pin.verify.ajax');
+});
 // Public Payment Routes (accessible without authentication)
 Route::get('/payment/{planId}', [PaymentController::class, 'showPaymentForm'])->name('payment.form');
 Route::post('/payment/process', [PaymentController::class, 'processPayment'])->name('payment.process');

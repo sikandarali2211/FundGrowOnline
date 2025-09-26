@@ -129,9 +129,13 @@ class UserController extends Controller
             // Get user's total received amounts from transactions (if any)
             $totalReceivedAmount = 0; // For now, we'll focus on sent amounts
             
-            // Calculate wallet balance (investments + returns + sent amounts)
+            // Get current pool wallet amount
+            $poolAmount = (float) \App\Models\User::where('id', $userId)->value('pool_wallet_amount') ?? 0;
+            
+            // Calculate wallet balance (investments + returns + sent amounts - pool amount)
             // The sent amounts represent the user's contribution to the system
-            $walletBalance = $totalInvestment + $totalReturns + $totalSentAmount;
+            // Pool amount is subtracted because it's no longer available in balance wallet
+            $walletBalance = $totalInvestment + $totalReturns + $totalSentAmount - $poolAmount;
             
             return number_format($walletBalance, 2);
         } catch (\Exception $e) {

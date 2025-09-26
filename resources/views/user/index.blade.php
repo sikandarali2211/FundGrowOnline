@@ -391,7 +391,7 @@
                     
                     <div class="row">
                         <div class="col-sm-6 mb-3">
-                            <a href="{{ url('balance-wallet') }}" class="text-decoration-none">
+                            <a href="#" class="text-decoration-none">
                                 <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-wallet fa-2x text-info mb-2"></i>
                                     <h6 class="mb-1">Balance Wallet</h6>
@@ -400,11 +400,11 @@
                             </a>
                         </div>
                         <div class="col-sm-6 mb-3">
-                            <a href="{{ url('pool-wallet') }}" class="text-decoration-none">
+                            <a href="#" class="text-decoration-none">
                                 <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-box fa-2x text-success mb-2"></i>
                                     <h6 class="mb-1">Pool Wallet</h6>
-                                    <span class="font-weight-bold">${{ $walletBalance ?? '0.00' }}</span>
+                                    <span class="font-weight-bold" id="mainPoolWallet">${{ number_format(auth()->user()->pool_wallet_amount ?? 0, 2) }}</span>
                                 </div>
                             </a>
                         </div>
@@ -739,57 +739,86 @@
         </div>
 
         <!-- Exchange Modal -->
-        <div class="modal fade" id="exchangemodal" tabindex="-1" role="dialog" aria-labelledby="topUpModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content" style="background: #072d42; color: #fff; border-radius: 15px;">
-                    <!-- Header -->
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title" id="topUpModalLabel" style="color:#3bd17a;">Exchange Balance</h5>
-                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <!-- Body -->
-                    <div class="modal-body text-center">
-                        <!-- Amount Input -->
-                        <form method="POST" action=""> @csrf
-                            <div class="mb-4">
-                                <label for="amount" class="form-label text-warning">Amount to
-                                    Transfer</label>
-                                <input type="number" class="form-control" id="amount" name="amount" required
-                                    min="1" placeholder="Enter amount to transfer">
-                            </div>
-                            <!-- Balance Wallet -->
-                            <div class="mb-3">
-                                <label for="balanceWallet" class="form-label text-warning">Balance
-                                    Wallet</label>
-                                <input type="text" id="balanceWallet" class="form-control" value="1000 USDT"
-                                    readonly>
-                            </div>
-                            <!-- Pool Wallet -->
-                            <div class="mb-3">
-                                <label for="poolWallet" class="form-label text-warning">Pool
-                                    Wallet</label>
-                                <input type="text" id="poolWallet" class="form-control" value="500 USDT" readonly>
-                            </div>
-                            <!-- Submit Button -->
-                            <button type="submit" class="btn btn-success">Transfer</button>
-                        </form>
-                        <!-- Instructions -->
-                        <div class="p-3 rounded text-warning mt-3" style="background: rgba(255,255,255,0.1);">
-                            <strong>Important:</strong> Please ensure the transfer amount is valid and check your balance
-                            before proceeding.
-                        </div>
-                    </div> <!-- Footer -->
-                    <div class="modal-footer border-0"> <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">Close</button> </div>
-                </div>
+       <div class="modal fade" id="exchangemodal" tabindex="-1" role="dialog" aria-labelledby="exchangeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content" style="background:#072d42;color:#fff;border-radius:15px;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="exchangeLabel" style="color:#3bd17a;">Exchange: Balance → Pool</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="alert alert-secondary" style="background:rgba(255,255,255,0.06);border:1px solid #3bd17a;color:#9ec3d8;">
+          <div class="d-flex justify-content-between">
+            <div>
+              <div><small>Balance Wallet</small></div>
+              <div class="h5 mb-0" id="exBalance">${{ number_format($walletBalance ?? 0, 2) }}</div>
             </div>
-        </div> {{-- Exchange modal end --}}
+            <div class="text-right">
+              <div><small>Pool Wallet</small></div>
+              <div class="h5 mb-0" id="exPool">${{ number_format(auth()->user()->pool_wallet_amount ?? 0, 2) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <label for="exAmount" class="form-label text-warning">Amount to transfer (USDT)</label>
+        <input type="number" class="form-control mb-2" id="exAmount" min="0.01" step="0.01"
+               placeholder="Enter amount" style="background:rgba(255,255,255,0.1);border:1px solid #3bd17a;color:#fff;">
+        <small class="text-muted">Max: <span id="exMax">{{ number_format($walletBalance ?? 0, 2) }}</span> USDT</small>
+
+        <div class="mt-3 card" style="background:rgba(255,255,255,0.05);border:1px solid #3bd17a;">
+          <div class="card-body py-2">
+            <div class="d-flex justify-content-between">
+              <span>Preview Balance Wallet</span>
+              <strong id="exPreviewBalance">${{ number_format($walletBalance ?? 0, 2) }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Preview Pool Wallet</span>
+              <strong id="exPreviewPool">${{ number_format(auth()->user()->pool_wallet_amount ?? 0, 2) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div id="exMsg" class="mt-3 d-none"></div>
+      </div>
+
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" id="btnExchange" class="btn btn-success">
+          <i class="fas fa-lock mr-1"></i> Verify PIN & Transfer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+        
+        <!-- {{-- Exchange modal end --}} -->
 
      
-
+<div class="modal fade" id="pinModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background:#072d42;color:#fff;border-radius:15px;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" style="color:#3bd17a;">Verify Security PIN</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <input type="password" id="pinInput" class="form-control" placeholder="Enter 6-digit PIN"
+               maxlength="6" style="background:rgba(255,255,255,0.1);border:1px solid #3bd17a;color:#fff;">
+        <small class="text-muted d-block mt-2">This secures your transfer.</small>
+        <div id="pinMsg" class="mt-2 d-none"></div>
+      </div>
+      <div class="modal-footer border-0">
+        <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" id="btnVerifyPin"><i class="fas fa-check mr-1"></i> Verify</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     </div>
     <!-- main-panel ends -->
@@ -2028,7 +2057,195 @@ After sending, your balance will be updated automatically.`;
             }
         }
     </script>
+    <script>
+(function () {
+  const exAmount     = document.getElementById('exAmount');
+  const exBalanceEl  = document.getElementById('exBalance');
+  const exPoolEl     = document.getElementById('exPool');
+  const exPrevBalEl  = document.getElementById('exPreviewBalance');
+  const exPrevPoolEl = document.getElementById('exPreviewPool');
+  const exMsg        = document.getElementById('exMsg');
+  const exMaxEl      = document.getElementById('exMax');
+
+  // Wait for DOM to be ready
+  document.addEventListener('DOMContentLoaded', function() {
+    const btnExchange  = document.getElementById('btnExchange');
+    const pinModal     = $('#pinModal');
+    const pinInput     = document.getElementById('pinInput');
+    const pinMsg       = document.getElementById('pinMsg');
+    const btnVerifyPin = document.getElementById('btnVerifyPin');
     
+    // Debug logging
+    console.log('btnExchange found:', !!btnExchange);
+    console.log('pinModal found:', pinModal.length > 0);
+    console.log('pinInput found:', !!pinInput);
+    console.log('btnVerifyPin found:', !!btnVerifyPin);
+
+  // Helpers
+  const num = (v) => parseFloat((v || '0').toString().replace(/[^\d.]/g,'')) || 0;
+  const fmt = (v) => Number(v).toFixed(2);
+
+  function currentBalances() {
+    // Remove $ and any commas from the text content
+    const bal = num(exBalanceEl.textContent.replace(/[$,]/g,''));
+    const pool = num(exPoolEl.textContent.replace(/[$,]/g,''));
+    console.log('Current balances - Balance:', bal, 'Pool:', pool);
+    return { bal, pool };
+  }
+
+  function showMsg(el, text, type='info') {
+    el.className = `alert alert-${type}`;
+    el.style.background = 'rgba(255,255,255,0.06)';
+    el.style.border = '1px solid #3bd17a';
+    el.classList.remove('d-none');
+    el.innerText = text;
+  }
+
+  function clearMsg(el) {
+    el.classList.add('d-none');
+    el.innerHTML = '';
+  }
+
+  // Live preview
+  exAmount && exAmount.addEventListener('input', () => {
+    clearMsg(exMsg);
+    const { bal, pool } = currentBalances();
+    const amt = Math.max(0, num(exAmount.value));
+    const max = num(exMaxEl.textContent.replace(/[$,]/g,''));
+    if (amt > max) {
+      showMsg(exMsg, `Amount exceeds Balance Wallet. Max available: $${fmt(max)}`, 'warning');
+    }
+    exPrevBalEl.textContent  = '$' + fmt(Math.max(0, bal - amt));
+    exPrevPoolEl.textContent = '$' + fmt(pool + amt);
+  });
+
+  // Step 1: Open PIN modal
+  btnExchange && btnExchange.addEventListener('click', () => {
+    console.log('Exchange button clicked!');
+    const amt = num(exAmount.value);
+    const max = num(exMaxEl.textContent.replace(/[$,]/g,''));
+    console.log('Amount:', amt, 'Max:', max);
+    if (!amt || amt <= 0) {
+      showMsg(exMsg, 'Please enter a valid amount (min 0.01).', 'danger');
+      return;
+    }
+    if (amt > max) {
+      showMsg(exMsg, `Insufficient balance. Available: $${fmt(max)}`, 'danger');
+      return;
+    }
+    console.log('Opening PIN modal...');
+    pinInput.value = '';
+    clearMsg(pinMsg);
+    pinModal.modal('show');
+  });
+
+  // Step 2: Verify PIN → if ok, perform exchange
+  btnVerifyPin && btnVerifyPin.addEventListener('click', async () => {
+    clearMsg(pinMsg);
+    const pin = (pinInput.value || '').trim();
+
+    if (!/^\d{6}$/.test(pin)) {
+      showMsg(pinMsg, 'Enter a valid 6-digit PIN.', 'warning');
+      return;
+    }
+
+    // Disable buttons while processing
+    btnVerifyPin.disabled = true;
+    btnVerifyPin.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Verifying...';
+
+    try {
+      // 2.1 Verify PIN (use your existing route)
+const csrf = document.querySelector("meta[name='csrf-token']")?.getAttribute('content') || '';
+const verifyRes = await fetch('{{ route("security.pin.verify.ajax") }}', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'X-CSRF-TOKEN': csrf,
+    'X-Requested-With': 'XMLHttpRequest'
+  },
+  credentials: 'same-origin',          // session cookie carry
+  body: JSON.stringify({ security_pin: pin }) // ✅ correct param name
+});
+
+      const verifyJson = await verifyRes.json();
+      if (!verifyRes.ok || !verifyJson.success) {
+        showMsg(pinMsg, verifyJson.message || 'PIN verification failed.', 'danger');
+        btnVerifyPin.disabled = false;
+        btnVerifyPin.innerHTML = '<i class="fas fa-check mr-1"></i> Verify';
+        return;
+      }
+
+      // 2.2 If PIN OK → call exchange
+      const amt = num(exAmount.value);
+      const exchRes = await fetch('{{ route("user.wallet.exchange") }}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector("meta[name='csrf-token']").getAttribute('content')
+        },
+        body: JSON.stringify({
+          amount: amt
+        })
+      });
+
+      const exchJson = await exchRes.json();
+      if (!exchRes.ok || !exchJson.success) {
+        pinModal.modal('hide');
+        showMsg(exMsg, exchJson.message || 'Exchange failed. Please try again.', 'danger');
+        btnVerifyPin.disabled = false;
+        btnVerifyPin.innerHTML = '<i class="fas fa-check mr-1"></i> Verify';
+        return;
+      }
+
+      // Success: update UI live (no reload needed)
+      pinModal.modal('hide');
+      const data = exchJson.data;
+      exBalanceEl.textContent   = '$' + fmt(data.new_balance_amount);
+      exPoolEl.textContent      = '$' + fmt(data.new_pool_amount);
+      exPrevBalEl.textContent   = '$' + fmt(data.new_balance_amount);
+      exPrevPoolEl.textContent  = '$' + fmt(data.new_pool_amount);
+      exMaxEl.textContent       = fmt(data.new_balance_amount);
+      exAmount.value = '';
+
+      // Update all pool wallet displays
+      const mainPoolWallet = document.getElementById('mainPoolWallet');
+      if (mainPoolWallet) {
+        mainPoolWallet.textContent = '$' + fmt(data.new_pool_amount);
+      }
+      
+      // Also update any other pool wallet displays on the page
+      const allPoolDisplays = document.querySelectorAll('[id*="pool"], [class*="pool"]');
+      allPoolDisplays.forEach(el => {
+        if (el.textContent.includes('$') && el.id !== 'exPool' && el.id !== 'exPreviewPool') {
+          el.textContent = '$' + fmt(data.new_pool_amount);
+        }
+      });
+
+      showMsg(exMsg, 'Exchange completed successfully!', 'success');
+
+    } catch (e) {
+      showMsg(pinMsg, 'Something went wrong. Please try again.', 'danger');
+    } finally {
+      btnVerifyPin.disabled = false;
+      btnVerifyPin.innerHTML = '<i class="fas fa-check mr-1"></i> Verify';
+    }
+  });
+
+  // Reset modal state when opened
+  $('#exchangemodal').on('shown.bs.modal', function () {
+    clearMsg(exMsg);
+    const { bal, pool } = currentBalances();
+    exPrevBalEl.textContent  = '$' + fmt(bal);
+    exPrevPoolEl.textContent = '$' + fmt(pool);
+    exAmount.value = '';
+  });
+
+  }); // End of DOMContentLoaded listener
+
+})();
+</script>
+
     <!-- Web3.js for Trust Wallet integration -->
     <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
 @endsection
