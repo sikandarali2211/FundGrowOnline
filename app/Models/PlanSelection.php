@@ -27,6 +27,12 @@ class PlanSelection extends Model
         'processed_at',
     ];
 
+    protected $casts = [
+        'processed_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -81,7 +81,7 @@ class SyncBscTransactions extends Command
             // Skip if already exists
             if (Transaction::where('tx_hash', $hash)->exists()) { $skipped++; continue; }
 
-            Transaction::create([
+            $transaction = Transaction::create([
                 'user_id'        => $userId,
                 'tx_hash'        => $hash,
                 'from_address'   => $from,
@@ -95,6 +95,12 @@ class SyncBscTransactions extends Command
                 'transaction_data' => json_encode($tx),
                 'confirmed_at'   => $status === 'confirmed' ? now() : null,
             ]);
+            
+            // Update user balance if transaction is confirmed and user exists
+            if ($status === 'confirmed' && $userId) {
+                $this->updateUserWalletBalance($userId, $amount);
+            }
+            
             $inserted++;
         }
 
@@ -121,7 +127,7 @@ class SyncBscTransactions extends Command
 
             if (Transaction::where('tx_hash', $hash)->exists()) { $skipped++; continue; }
 
-            Transaction::create([
+            $transaction = Transaction::create([
                 'user_id'        => $userId,
                 'tx_hash'        => $hash,
                 'from_address'   => $from,
@@ -135,10 +141,42 @@ class SyncBscTransactions extends Command
                 'transaction_data' => json_encode($tx),
                 'confirmed_at'   => now(),
             ]);
+            
+            // Update user balance if user exists
+            if ($userId) {
+                $this->updateUserWalletBalance($userId, $amount);
+            }
+            
             $inserted++;
         }
 
         $this->info("Inserted: {$inserted}, Skipped: {$skipped}");
         return Command::SUCCESS;
+    }
+
+    /**
+     * Update user wallet balance after successful transaction
+     */
+    private function updateUserWalletBalance($userId, $amount)
+    {
+        try {
+            $user = User::find($userId);
+            if (!$user) {
+                $this->error("User not found for ID: {$userId}");
+                return;
+            }
+
+            // Update balance_wallet field
+            $currentBalance = (float) ($user->balance_wallet ?? 0);
+            $newBalance = $currentBalance + $amount;
+            
+            $user->balance_wallet = $newBalance;
+            $user->save();
+
+            $this->info("Updated User {$userId} balance: {$currentBalance} + {$amount} = {$newBalance}");
+
+        } catch (\Exception $e) {
+            $this->error('Failed to update user wallet balance: ' . $e->getMessage());
+        }
     }
 }

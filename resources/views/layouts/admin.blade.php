@@ -7,6 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Fund Grow Online</title>
 
     <!-- Plugins CSS -->
@@ -263,6 +264,20 @@
                         @endphp
                         @if ($pendingCount > 0)
                             <span class="badge badge-warning badge-pill ml-auto">{{ $pendingCount }}</span>
+                        @endif
+                    </a>
+                </li>
+                <!-- Withdrawal Requests - Only for Admin -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.withdrawals.index') }}">
+                        <i class="fa fa-money-bill-wave menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Withdrawals</span>
+                        @php
+                            $pendingWithdrawals = \App\Models\WithdrawalRequest::where('status', 'pending')->count();
+                        @endphp
+                        @if ($pendingWithdrawals > 0)
+                            <span class="badge badge-warning badge-pill ml-auto">{{ $pendingWithdrawals }}</span>
                         @endif
                     </a>
                 </li>

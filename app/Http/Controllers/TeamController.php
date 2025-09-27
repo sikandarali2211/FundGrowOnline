@@ -11,28 +11,19 @@ class TeamController extends Controller
     {
         $me = auth()->user();
 
-        // --- Level 1 (directs) ---
+        // --- Level 1 (directs) - Only users with active plans ---
         $level1 = User::select('id', 'name', 'email', 'referral_code', 'created_at', 'referred_by', 'sponsor_id')
             ->where(function ($q) use ($me) {
                 $q->where('referred_by', $me->id)
                     ->orWhere('sponsor_id', $me->id);
             })
+            ->whereHas('planSelections', function ($query) {
+                $query->where('status', 'approved');
+            })
             ->orderBy('created_at')
             ->get();
 
-        // --- Level 2 (children of my directs) ---
-        $level2 = collect();
-        if ($level1->isNotEmpty()) {
-            $l1Ids = $level1->pluck('id');
-            $level2 = User::select('id', 'name', 'email', 'referral_code', 'created_at', 'referred_by', 'sponsor_id')
-                ->where(function ($q) use ($l1Ids) {
-                    $q->whereIn('referred_by', $l1Ids)
-                        ->orWhereIn('sponsor_id', $l1Ids);
-                })
-                ->orderBy('created_at')
-                ->get()
-                ->groupBy(fn($u) => $u->referred_by ?? $u->sponsor_id);
-        }
+        // Level 2 removed - only showing Level 1 direct referrals
 
         // --- NEW: Recalculate and persist level as per rules ---
         $newLevel = LevelService::recalcAndSave($me);
@@ -56,7 +47,7 @@ class TeamController extends Controller
             'parentId' => null
         ];
         
-        // Add Level 1 users
+        // Add Level 1 users only
         foreach ($level1 as $user) {
             $nodes[] = [
                 'id' => $user->id,
@@ -67,25 +58,10 @@ class TeamController extends Controller
                 'parentId' => $me->id
             ];
         }
-        
-        // Add Level 2 users
-        foreach ($level2 as $parentId => $children) {
-            foreach ($children as $user) {
-                $nodes[] = [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'code' => $user->referral_code,
-                    'joined' => $user->created_at->format('M d, Y'),
-                    'type' => 'l2',
-                    'parentId' => $parentId
-                ];
-            }
-        }
 
         return view('user.team.index', compact(
             'me',
             'level1',
-            'level2',
             'directCount',
             'toNext',
             'progress',

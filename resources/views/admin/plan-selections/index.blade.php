@@ -283,7 +283,7 @@
                                                         </span>
                                                         @if ($selection->processed_at)
                                                             <br><small class="text-muted">
-                                                                {{ $selection->processed_at->format('M d, Y') }}
+                                                                {{ $selection->processed_at instanceof \Carbon\Carbon ? $selection->processed_at->format('M d, Y') : \Carbon\Carbon::parse($selection->processed_at)->format('M d, Y') }}
                                                             </small>
                                                         @endif
                                                     </td>

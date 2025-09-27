@@ -337,7 +337,7 @@
                             style="position: absolute; top: 5px; left: 15px; height: 60px;">
                         <div style="margin-top:70px;">
                             <h5 style="color: #3bd17a;">Total Balance</h5>
-                            <h2 style="color: #3bd17a" class="font-weight-bold mb-0">${{ $walletBalance ?? '0.00' }}</h2>
+                            <h2 style="color: #3bd17a" class="font-weight-bold mb-0">${{ number_format((float)($balanceBreakdown['balance_wallet'] ?? 0), 2) }}</h2>
                             @if(isset($balanceBreakdown))
                                 <div style="margin-top: 10px; font-size: 0.8rem;">
                                     <div style="color: #28a745;">Sent: ${{ $balanceBreakdown['total_sent'] }}</div>
@@ -395,7 +395,7 @@
                                 <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-wallet fa-2x text-info mb-2"></i>
                                     <h6 class="mb-1">Balance Wallet</h6>
-                                    <span class="font-weight-bold">${{ $walletBalance ?? '0.00' }}</span>
+                                    <span class="font-weight-bold">${{ $balanceBreakdown['balance_wallet'] ?? '0.00' }}</span>
                                 </div>
                             </a>
                         </div>
@@ -404,7 +404,16 @@
                                 <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-box fa-2x text-success mb-2"></i>
                                     <h6 class="mb-1">Pool Wallet</h6>
-                                    <span class="font-weight-bold" id="mainPoolWallet">${{ number_format(auth()->user()->pool_wallet_amount ?? 0, 2) }}</span>
+                                    <span class="font-weight-bold" id="mainPoolWallet">${{ $balanceBreakdown['pool_wallet'] ?? '0.00' }}</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <a href="#" class="text-decoration-none">
+                                <div class="card text-center p-3  h-100 clickable-card">
+                                    <i class="fas fa-percentage fa-2x text-primary mb-2"></i>
+                                    <h6 class="mb-1">Pool Commission</h6>
+                                    <span class="font-weight-bold">${{ $balanceBreakdown['pool_commission'] ?? '0.00' }}</span>
                                 </div>
                             </a>
                         </div>

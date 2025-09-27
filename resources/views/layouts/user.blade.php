@@ -259,6 +259,12 @@
                     </a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" href="{{ route('user.referral.team') }}">
+                        <i style="color: #3bd17a !important;" class="fa fa-user-friends menu-icon"></i>
+                        <span class="menu-title">Referral Team</span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" href="{{ route('user.team.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-users menu-icon"></i>
                         <span class="menu-title" >Teams</span>
@@ -280,6 +286,12 @@
                     <a class="nav-link" href="{{ route('user.wallet.index') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-wallet menu-icon"></i>
                         <span class="menu-title" >Wallet</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('user.withdrawal.index') }}">
+                        <i style="color: #3bd17a !important;" class="fa fa-money-bill-wave menu-icon"></i>
+                        <span class="menu-title" >Withdrawal</span>
                     </a>
                 </li>
                 <li class="nav-item">

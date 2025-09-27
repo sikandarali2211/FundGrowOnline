@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Http;
 class TransactionController extends Controller
 {
     private $bscApiUrl = 'https://api.bscscan.com/api';
-    private $apiKey = 'Q4QV82H9XUYPCQYA347QFE1YGF9J2Q9XHU'; // Replace with your BSCScan API key
+    private $apiKey = 'Z21U8PT68AZ53MIJMR7YC1NA9IB86BJVBR'; // Replace with your BSCScan API key
 
     public function verifyTransaction(Request $request)
     {
@@ -687,18 +687,26 @@ class TransactionController extends Controller
     private function updateUserWalletBalance($userId, $amount)
     {
         try {
-            // The transaction is already stored in the transactions table
-            // The wallet balance will be calculated dynamically from the transactions
-            // No need to store duplicate data
+            $user = \App\Models\User::find($userId);
+            if (!$user) {
+                Log::error("User not found for ID: {$userId}");
+                return;
+            }
+
+            // Update balance_wallet field
+            $currentBalance = (float) ($user->balance_wallet ?? 0);
+            $newBalance = $currentBalance + $amount;
+            
+            $user->balance_wallet = $newBalance;
+            $user->save();
 
             Log::info("User wallet balance updated", [
                 'user_id' => $userId,
                 'amount_added' => $amount,
+                'old_balance' => $currentBalance,
+                'new_balance' => $newBalance,
                 'timestamp' => now()
             ]);
-
-            // The balance calculation is now handled in UserController::calculateWalletBalance()
-            // which includes confirmed transactions in the balance calculation
 
         } catch (\Exception $e) {
             Log::error('Failed to update user wallet balance: ' . $e->getMessage());
@@ -838,10 +846,10 @@ private function getUserBalanceWalletAmount($user)
         // Get current pool wallet amount
         $poolAmount = (float) \App\Models\User::where('id', $user->id)->value('pool_wallet_amount') ?? 0;
         
-        // Calculate wallet balance (investments + returns + sent amounts - pool amount)
-        // The sent amounts represent the user's contribution to the system
+        // Calculate wallet balance (sent amounts - pool amount)
+        // When amount is transferred to pool, balance wallet becomes 0
         // Pool amount is subtracted because it's no longer available in balance wallet
-        $walletBalance = $totalInvestment + $totalReturns + $totalSentAmount - $poolAmount;
+        $walletBalance = $totalSentAmount - $poolAmount;
         
         Log::info('Balance calculation details', [
             'user_id' => $user->id,
@@ -911,7 +919,13 @@ private function getUserBalanceWalletAmount($user)
         DB::transaction(function () use ($user, $amount) {
             // lock + update
             $fresh = \App\Models\User::where('id', $user->id)->lockForUpdate()->first();
+            
+            // Add to pool wallet
             $fresh->pool_wallet_amount = (float) ($fresh->pool_wallet_amount ?? 0) + $amount;
+            
+            // Deduct from balance wallet
+            $fresh->balance_wallet = (float) ($fresh->balance_wallet ?? 0) - $amount;
+            
             $fresh->save();
         });
 

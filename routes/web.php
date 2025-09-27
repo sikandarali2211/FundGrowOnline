@@ -24,6 +24,8 @@ use App\Http\Controllers\ReferralPlanController;   // ← NEW
 use App\Http\Controllers\PlanSelectionController;   // ← NEW
 use App\Http\Controllers\Admin\AdminTransactionLogsController;
 use App\Http\Controllers\AdminInvestmentPlanController;   // ← NEW
+use App\Http\Controllers\WithdrawalController;   // ← NEW
+use App\Http\Controllers\Admin\AdminWithdrawalController;   // ← NEW
 
 Route::view('/', 'index');
 
@@ -137,6 +139,10 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::get('/referral-link', [UserController::class, 'referralLink'])
         ->name('referral.index');
 
+    // Referral team page
+    Route::get('/referral-team', [UserController::class, 'referralTeam'])
+        ->name('referral.team');
+
     // NEW: Team tree page (YOU -> Level 1 -> Level 2)
     Route::get('/team', [TeamController::class, 'index'])->name('team.index');
 
@@ -160,6 +166,11 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
         return view('user.settings.index');
     })->name('settings.index');
 
+    // NEW: Withdrawal routes
+    Route::get('/withdrawal', [WithdrawalController::class, 'index'])->name('withdrawal.index');
+    Route::post('/withdrawal', [WithdrawalController::class, 'store'])->name('withdrawal.store');
+    Route::get('/withdrawal/history', [WithdrawalController::class, 'history'])->name('withdrawal.history');
+
     // NEW: Wallet page
     Route::get('/wallet', function () {
         return view('user.wallet.index');
@@ -182,6 +193,7 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::get('/plan-selections', [PlanSelectionController::class, 'userSelections'])->name('plan-selections.index');
     Route::get('/plan-selections/create', [PlanSelectionController::class, 'create'])->name('plan-selections.create');
     Route::post('/plan-selections', [PlanSelectionController::class, 'store'])->name('plan-selections.store');
+    Route::post('/plan-selections/buy-with-pool', [PlanSelectionController::class, 'buyWithPoolWallet'])->name('plan-selections.buy-with-pool');
     Route::get('/plan-selections/success', [PlanSelectionController::class, 'success'])->name('plan-selections.success');
 
 
@@ -273,6 +285,16 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
         Route::get('/admin/investment-plans', [AdminInvestmentPlanController::class, 'index'])->name('admin.investmentplans.index');
         Route::post('/admin/investment-plans/{userInvestment}/status', [AdminInvestmentPlanController::class, 'updateUserInvestmentStatus'])->name('admin.investmentplans.updateStatus');
         Route::post('/admin/investment-plans/{userInvestment}/plan', [AdminInvestmentPlanController::class, 'updateUserPlan'])->name('admin.investmentplans.updatePlan');
+    });
+
+    // Admin Withdrawal Routes - Admin Only
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/admin/withdrawals', [AdminWithdrawalController::class, 'index'])->name('admin.withdrawals.index');
+        Route::get('/admin/withdrawals/{id}', [AdminWithdrawalController::class, 'show'])->name('admin.withdrawals.show');
+        Route::post('/admin/withdrawals/{id}/approve', [AdminWithdrawalController::class, 'approve'])->name('admin.withdrawals.approve');
+        Route::post('/admin/withdrawals/{id}/reject', [AdminWithdrawalController::class, 'reject'])->name('admin.withdrawals.reject');
+        Route::post('/admin/withdrawals/{id}/complete', [AdminWithdrawalController::class, 'complete'])->name('admin.withdrawals.complete');
+        Route::post('/admin/withdrawals/{id}/transfer', [AdminWithdrawalController::class, 'transferFunds'])->name('admin.withdrawals.transfer');
     });
 
     // Plan Selection Management - Admin Only

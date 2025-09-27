@@ -113,31 +113,18 @@ class UserController extends Controller
     private function calculateWalletBalance($userId)
     {
         try {
-            // Get user's total investment amount from user_investments table
-            $totalInvestment = \App\Models\UserInvestment::where('user_id', $userId)
-                ->where('status', 'active')
-                ->sum('amount');
+            // Get user's balance_wallet directly from database
+            // This field is updated when commission is distributed
+            $user = \App\Models\User::find($userId);
+            $balanceWallet = (float) ($user->balance_wallet ?? 0);
             
-            // Get user's total returns from plan payments (if table exists)
-            $totalReturns = 0; // For now, we'll focus on investments and transactions
+            \Log::info('Balance calculation', [
+                'user_id' => $userId,
+                'balance_wallet' => $balanceWallet,
+                'pool_wallet' => $user->pool_wallet_amount ?? 0
+            ]);
             
-            // Get user's total sent amounts from transactions (topup amounts)
-            $totalSentAmount = \App\Models\Transaction::where('user_id', $userId)
-                ->where('status', 'confirmed')
-                ->sum('amount');
-            
-            // Get user's total received amounts from transactions (if any)
-            $totalReceivedAmount = 0; // For now, we'll focus on sent amounts
-            
-            // Get current pool wallet amount
-            $poolAmount = (float) \App\Models\User::where('id', $userId)->value('pool_wallet_amount') ?? 0;
-            
-            // Calculate wallet balance (investments + returns + sent amounts - pool amount)
-            // The sent amounts represent the user's contribution to the system
-            // Pool amount is subtracted because it's no longer available in balance wallet
-            $walletBalance = $totalInvestment + $totalReturns + $totalSentAmount - $poolAmount;
-            
-            return number_format($walletBalance, 2);
+            return number_format($balanceWallet, 2);
         } catch (\Exception $e) {
             \Log::error("Failed to calculate wallet balance for user {$userId}: " . $e->getMessage());
             // If there's any error, return 0
@@ -151,21 +138,15 @@ class UserController extends Controller
     private function getBalanceBreakdown($userId)
     {
         try {
-            // Get user's total investment amount from user_investments table
-            $totalInvestment = \App\Models\UserInvestment::where('user_id', $userId)
-                ->where('status', 'active')
-                ->sum('amount');
-            
-            // Get user's total returns from plan payments (if table exists)
-            $totalReturns = 0; // For now, we'll focus on investments and transactions
+            // Get user's balance_wallet and pool_wallet_amount directly from database
+            $user = \App\Models\User::find($userId);
+            $balanceWallet = (float) ($user->balance_wallet ?? 0);
+            $poolWallet = (float) ($user->pool_wallet_amount ?? 0);
             
             // Get user's total sent amounts from transactions (topup amounts)
             $totalSentAmount = \App\Models\Transaction::where('user_id', $userId)
                 ->where('status', 'confirmed')
                 ->sum('amount');
-            
-            // Get user's total received amounts from transactions (if any)
-            $totalReceivedAmount = 0; // For now, we'll focus on sent amounts
             
             // Get recent transactions for display
             $recentTransactions = \App\Models\Transaction::where('user_id', $userId)
@@ -174,20 +155,35 @@ class UserController extends Controller
                 ->limit(5)
                 ->get(['amount', 'token_symbol', 'from_address', 'to_address', 'created_at']);
             
+            // Calculate user's own money (topup + exchange) - separate from referral commissions
+            $referralCommissionBalance = (float) ($user->referral_commission_balance ?? 0);
+            $referralCommissionPool = (float) ($user->referral_commission_pool ?? 0);
+            $userOwnMoney = $balanceWallet - $referralCommissionBalance;
+            
+            // Pool commission (60% of referral commissions)
+            $poolCommission = $referralCommissionBalance;
+            
+            // Pool wallet = only user's own pool money (no referral commission)
+            $userOwnPoolMoney = $poolWallet;
+            
             return [
-                'total_investment' => number_format($totalInvestment, 2),
-                'total_returns' => number_format($totalReturns, 2),
+                'balance_wallet' => number_format($userOwnMoney, 2),
+                'pool_wallet' => number_format($userOwnPoolMoney, 2),
+                'pool_commission' => number_format($poolCommission, 2),
                 'total_sent' => number_format($totalSentAmount, 2),
-                'total_received' => number_format($totalReceivedAmount, 2),
+                'total_investment' => '0.00', // Not shown
+                'total_returns' => '0.00', // Not shown
                 'recent_transactions' => $recentTransactions
             ];
         } catch (\Exception $e) {
             \Log::error("Failed to get balance breakdown for user {$userId}: " . $e->getMessage());
             return [
+                'balance_wallet' => '0.00',
+                'pool_wallet' => '0.00',
+                'pool_commission' => '0.00',
+                'total_sent' => '0.00',
                 'total_investment' => '0.00',
                 'total_returns' => '0.00',
-                'total_sent' => '0.00',
-                'total_received' => '0.00',
                 'recent_transactions' => collect()
             ];
         }
@@ -214,6 +210,51 @@ class UserController extends Controller
         }
         
         return $total;
+    }
+
+    public function referralTeam()
+    {
+        $user = auth()->user();
+        
+        // Get ALL users referred by this user (regardless of plan activation status)
+        $referrals = User::where('referred_by', $user->id)
+            ->with(['referrer', 'planSelections'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Add level information and plan status to each referral
+        $referrals->each(function ($referral) use ($user) {
+            $referral->level = $this->calculateReferralLevel($referral, $user);
+            
+            // Check plan status from loaded planSelections relationship
+            $approvedPlan = $referral->planSelections->where('status', 'approved')->first();
+            
+            if ($approvedPlan) {
+                $referral->plan_status = 'Active';
+            } else {
+                $pendingPlan = $referral->planSelections->where('status', 'pending')->first();
+                $referral->plan_status = $pendingPlan ? 'Pending' : 'No Plan';
+            }
+        });
+        
+        return view('user.referralTeam.index', [
+            'user' => $user,
+            'referrals' => $referrals
+        ]);
+    }
+
+    /**
+     * Calculate the referral level for a user
+     */
+    private function calculateReferralLevel($referral, $currentUser)
+    {
+        if ($referral->referred_by == $currentUser->id) {
+            return 1; // Direct referral
+        }
+        
+        // For deeper levels, we can implement more complex logic
+        // For now, we'll just return 1 for direct referrals
+        return 1;
     }
 
     public function referralLink()

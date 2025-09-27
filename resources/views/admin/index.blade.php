@@ -179,7 +179,8 @@
                         <!-- Left: Balance -->
                         <div style="margin-top:70px;">
                             <h5 style="color: #3bd17a;">Total Balance</h5>
-                            <h2 style="color: #3bd17a" class="font-weight-bold mb-0">$5.20</h2>
+                            <h2 style="color: #3bd17a" class="font-weight-bold mb-0">${{ $adminBalance['total_usd'] ?? '0.00' }}</h2>
+                            <small style="color: #3bd17a;">USDT: ${{ $adminBalance['usdt'] ?? '0.00' }} | BNB: {{ $adminBalance['bnb'] ?? '0.0000' }}</small>
                         </div>
 
                         <!-- Right: Buttons - Only for Admin -->
@@ -253,17 +254,17 @@
                             <a href="{{ url('balance-wallet') }}" class="text-decoration-none">
                                 <div class="card text-center p-3 shadow-sm h-100 clickable-card">
                                     <i class="fas fa-wallet fa-2x text-info mb-2"></i>
-                                    <h6 class="mb-1">Balance Wallet</h6>
-                                    <span class="font-weight-bold">$5.20</span>
+                                    <h6 class="mb-1">USDT Balance</h6>
+                                    <span class="font-weight-bold">${{ $adminBalance['usdt'] ?? '0.00' }}</span>
                                 </div>
                             </a>
                         </div>
                         <div class="col-sm-6 mb-3">
                             <a href="{{ url('pool-wallet') }}" class="text-decoration-none">
                                 <div class="card text-center p-3 shadow-sm h-100 clickable-card">
-                                    <i class="fas fa-box fa-2x text-success mb-2"></i>
-                                    <h6 class="mb-1">Pool Wallet</h6>
-                                    <span class="font-weight-bold">$0.00</span>
+                                    <i class="fas fa-coins fa-2x text-warning mb-2"></i>
+                                    <h6 class="mb-1">BNB Balance</h6>
+                                    <span class="font-weight-bold">{{ $adminBalance['bnb'] ?? '0.0000' }}</span>
                                 </div>
                             </a>
                         </div>

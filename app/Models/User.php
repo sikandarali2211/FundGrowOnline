@@ -28,6 +28,10 @@ class User extends Authenticatable
         'google_id',         // Google OAuth ID
         'wallet_address',    // User wallet address
         'wallet_type',       // Wallet type (trust, metamask, other)
+        'balance_wallet',    // Balance wallet amount
+        'pool_wallet_amount', // Pool wallet amount
+        'referral_commission_balance', // 60% referral commission (goes to balance wallet)
+        'referral_commission_pool', // 40% referral commission (goes to pool wallet)
         'security_pin',      // Security PIN for sensitive operations
         'otp_code',          // OTP for verification
         'otp_expires_at',    // OTP expiration time
@@ -62,6 +66,11 @@ class User extends Authenticatable
     public function referrals()
     {
         return $this->hasMany(User::class, 'referred_by');
+    }
+
+    public function planSelections()
+    {
+        return $this->hasMany(\App\Models\PlanSelection::class);
     }
 
     public function transactions()
@@ -207,6 +216,57 @@ class User extends Authenticatable
     public function hasCompletedPINSetup(): bool
     {
         return !$this->pin_setup_required && $this->security_pin !== null;
+    }
+
+    /**
+     * Distribute commission when referred user buys first plan
+     */
+    public function distributeCommission($planAmount, $commissionPercentage = 100)
+    {
+        try {
+            // Calculate commission amount
+            $commissionAmount = $planAmount * ($commissionPercentage / 100);
+            
+            // 60% to balance wallet (referral commission), 40% to pool wallet
+            $balanceWalletCommission = $commissionAmount * 0.6;
+            $poolWalletCommission = $commissionAmount * 0.4;
+            
+            // Update referrer's wallets
+            $this->balance_wallet = ($this->balance_wallet ?? 0) + $balanceWalletCommission;
+            $this->pool_wallet_amount = ($this->pool_wallet_amount ?? 0) + $poolWalletCommission;
+            
+            // Track referral commissions separately
+            $this->referral_commission_balance = ($this->referral_commission_balance ?? 0) + $balanceWalletCommission;
+            $this->referral_commission_pool = ($this->referral_commission_pool ?? 0) + $poolWalletCommission;
+            
+            $this->save();
+            
+            // Log commission distribution
+            \Log::info("Commission distributed", [
+                'referrer_id' => $this->id,
+                'referrer_name' => $this->name,
+                'plan_amount' => $planAmount,
+                'commission_percentage' => $commissionPercentage,
+                'total_commission' => $commissionAmount,
+                'balance_wallet_commission' => $balanceWalletCommission,
+                'pool_wallet_commission' => $poolWalletCommission,
+                'new_balance_wallet' => $this->balance_wallet,
+                'new_pool_wallet' => $this->pool_wallet_amount,
+                'total_referral_commission_balance' => $this->referral_commission_balance,
+                'total_referral_commission_pool' => $this->referral_commission_pool
+            ]);
+            
+            return [
+                'success' => true,
+                'total_commission' => $commissionAmount,
+                'balance_wallet_commission' => $balanceWalletCommission,
+                'pool_wallet_commission' => $poolWalletCommission
+            ];
+            
+        } catch (\Exception $e) {
+            \Log::error("Failed to distribute commission: " . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /** Auto-fill code + default level + sponsor upgrade on child create */

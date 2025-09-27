@@ -117,21 +117,54 @@
                             </div>
                         </div>
 
-                        <!-- Form -->
-                        <form action="{{ route('user.plan-selections.store') }}" method="POST">
+                        <!-- Pool Wallet Balance Display -->
+                        <div class="alert alert-info" style="background: rgba(59, 209, 122, 0.1); border: 1px solid #3bd17a; color: #3bd17a;">
+                            <i class="fas fa-wallet me-2"></i>
+                            <strong>Pool Wallet Balance:</strong> ${{ number_format(auth()->user()->pool_wallet_amount ?? 0, 2) }}
+                        </div>
+
+                        <!-- Payment Options -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #3bd17a;">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title text-success">Pool Wallet Payment</h6>
+                                        <p class="card-text small">Use your pool wallet balance to purchase this plan instantly</p>
+                                        <button type="button" class="btn btn-success btn-sm" onclick="buyWithPoolWallet()" 
+                                                {{ (auth()->user()->pool_wallet_amount ?? 0) < $plan['amount'] ? 'disabled' : '' }}>
+                                            <i class="fas fa-credit-card me-2"></i> Buy with Pool Wallet
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card" style="background: rgba(255, 255, 255, 0.05); border: 1px solid #ffc107;">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title text-warning">Traditional Payment</h6>
+                                        <p class="card-text small">Submit plan for admin approval and external payment</p>
+                                        <button type="button" class="btn btn-warning btn-sm" onclick="submitForApproval()">
+                                            <i class="fas fa-paper-plane me-2"></i> Submit for Approval
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Forms -->
+                        <form id="poolWalletForm" action="{{ route('user.plan-selections.buy-with-pool') }}" method="POST" style="display: none;">
                             @csrf
                             <input type="hidden" name="plan_name" value="{{ $plan['name'] }}">
                             <input type="hidden" name="plan_amount" value="{{ $plan['amount'] }}">
                             <input type="hidden" name="return_percentage" value="{{ $plan['return_percentage'] }}">
                             <input type="hidden" name="duration_days" value="{{ $plan['duration_days'] }}">
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-success" hidden>
-                                    <i class="fas fa-paper-plane me-2"></i> Confirm & Submit
-                                </button>
-                                <a href="{{ route('payment.form', 'temp') }}?plan={{ $plan['name'] }}&amount={{ $plan['amount'] }}&return={{ $plan['return_percentage'] }}&duration={{ $plan['duration_days'] }}" class="btn btn-warning">
-                                    <i class="fas fa-credit-card me-2"></i> Pay with Wallet
-                                </a>
-                            </div>
+                        </form>
+
+                        <form id="approvalForm" action="{{ route('user.plan-selections.store') }}" method="POST" style="display: none;">
+                            @csrf
+                            <input type="hidden" name="plan_name" value="{{ $plan['name'] }}">
+                            <input type="hidden" name="plan_amount" value="{{ $plan['amount'] }}">
+                            <input type="hidden" name="return_percentage" value="{{ $plan['return_percentage'] }}">
+                            <input type="hidden" name="duration_days" value="{{ $plan['duration_days'] }}">
                         </form>
 
                     </div>
@@ -140,4 +173,62 @@
         </div>
     </div>
 </div>
+
+<script>
+function buyWithPoolWallet() {
+    const planAmount = {{ $plan['amount'] }};
+    const poolBalance = {{ auth()->user()->pool_wallet_amount ?? 0 }};
+    
+    if (poolBalance < planAmount) {
+        alert('Insufficient pool wallet balance. Available: $' + poolBalance.toFixed(2));
+        return;
+    }
+    
+    if (confirm('Are you sure you want to purchase this plan using your pool wallet? This action cannot be undone.')) {
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+        
+        // Submit the form
+        fetch('{{ route("user.plan-selections.buy-with-pool") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                plan_name: '{{ $plan["name"] }}',
+                plan_amount: planAmount,
+                return_percentage: {{ $plan['return_percentage'] }},
+                duration_days: {{ $plan['duration_days'] }}
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Plan purchased successfully! Your investment is now active.');
+                window.location.href = '{{ route("user.plan-selections.success") }}';
+            } else {
+                alert('Error: ' + data.message);
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    }
+}
+
+function submitForApproval() {
+    if (confirm('Submit this plan for admin approval? You will need to make an external payment.')) {
+        document.getElementById('approvalForm').submit();
+    }
+}
+</script>
 @endsection
