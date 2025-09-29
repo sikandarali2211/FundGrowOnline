@@ -46,8 +46,10 @@ return [
     'bscscan' => [
         'key'           => env('BSCSCAN_API_KEY'),
         'base_url'      => env('BSCSCAN_BASE_URL', 'https://api.etherscan.io/v2/api'),
+        'rpc_url'       => env('BSC_RPC_URL', 'https://bsc-dataseed.binance.org/'),
         'chain_id'      => (int) env('BSCSCAN_CHAIN_ID', 56), // BSC mainnet
         'admin_address' => env('ADMIN_WALLET_ADDRESS'),
+        'admin_private_key' => env('ADMIN_PRIVATE_KEY'),
     ],
 
 

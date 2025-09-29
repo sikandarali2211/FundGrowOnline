@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\WithdrawalRequest;
 use App\Models\User;
+use App\Services\AutomatedWithdrawalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,13 @@ use Illuminate\Support\Facades\Log;
 
 class AdminWithdrawalController extends Controller
 {
+    protected AutomatedWithdrawalService $withdrawalService;
+
+    public function __construct(AutomatedWithdrawalService $withdrawalService)
+    {
+        $this->withdrawalService = $withdrawalService;
+    }
+
     /**
      * Show all withdrawal requests
      */
@@ -46,7 +54,8 @@ class AdminWithdrawalController extends Controller
     public function approve(Request $request, $id)
     {
         $request->validate([
-            'admin_notes' => 'nullable|string|max:500'
+            'admin_notes' => 'nullable|string|max:500',
+            'auto_transfer' => 'boolean'
         ]);
 
         $withdrawal = WithdrawalRequest::findOrFail($id);
@@ -59,28 +68,47 @@ class AdminWithdrawalController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($withdrawal, $request) {
-                // Just approve the withdrawal, don't auto-transfer
-                $withdrawal->status = WithdrawalRequest::STATUS_APPROVED;
-                $withdrawal->admin_notes = $request->admin_notes;
-                $withdrawal->processed_by = Auth::id();
-                $withdrawal->processed_at = now();
-                $withdrawal->save();
+            // If auto_transfer is enabled, process the withdrawal automatically
+            if ($request->boolean('auto_transfer')) {
+                $result = $this->withdrawalService->processWithdrawal($withdrawal);
+                
+                if ($result['success']) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Withdrawal processed and transferred automatically.',
+                        'transaction_hash' => $result['transaction_hash'] ?? null,
+                        'withdrawal' => $withdrawal->fresh()
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Auto-transfer failed: ' . ($result['error'] ?? 'Unknown error')
+                    ], 500);
+                }
+            } else {
+                // Manual approval only
+                DB::transaction(function () use ($withdrawal, $request) {
+                    $withdrawal->status = WithdrawalRequest::STATUS_APPROVED;
+                    $withdrawal->admin_notes = $request->admin_notes;
+                    $withdrawal->processed_by = Auth::id();
+                    $withdrawal->processed_at = now();
+                    $withdrawal->save();
 
-                Log::info('Withdrawal request approved', [
-                    'withdrawal_id' => $withdrawal->id,
-                    'user_id' => $withdrawal->user_id,
-                    'amount' => $withdrawal->amount,
-                    'wallet_address' => $withdrawal->wallet_address,
-                    'admin_id' => Auth::id()
+                    Log::info('Withdrawal request approved manually', [
+                        'withdrawal_id' => $withdrawal->id,
+                        'user_id' => $withdrawal->user_id,
+                        'amount' => $withdrawal->amount,
+                        'wallet_address' => $withdrawal->wallet_address,
+                        'admin_id' => Auth::id()
+                    ]);
+                });
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Withdrawal approved. Please complete the transfer manually.',
+                    'withdrawal' => $withdrawal
                 ]);
-            });
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Withdrawal approved. Please complete the transfer manually.',
-                'withdrawal' => $withdrawal
-            ]);
+            }
 
         } catch (\Exception $e) {
             Log::error('Failed to approve withdrawal: ' . $e->getMessage());
@@ -98,7 +126,7 @@ class AdminWithdrawalController extends Controller
     {
         try {
             // Get admin wallet address
-            $adminAddress = config('services.bscscan.admin_address', '0x61bfb44A3f3277c2165D7a272d90B122622c0A34');
+            $adminAddress = config('services.bscscan.admin_address', '0x3Bb750C42f9B80CbEd7003c004eaeAdc76c9b4Fd');
             
             // USDT BEP-20 contract address
             $usdtContract = '0x55d398326f99059fF775485246999027B3197955';
@@ -321,7 +349,7 @@ class AdminWithdrawalController extends Controller
 
         try {
             // Get admin wallet address
-            $adminAddress = config('services.bscscan.admin_address', '0x61bfb44A3f3277c2165D7a272d90B122622c0A34');
+            $adminAddress = config('services.bscscan.admin_address', '0x3Bb750C42f9B80CbEd7003c004eaeAdc76c9b4Fd');
             
             // This will be handled by JavaScript on the frontend
             // The actual blockchain transfer happens in the browser
@@ -341,6 +369,49 @@ class AdminWithdrawalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to initiate transfer'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get withdrawal statistics
+     */
+    public function statistics()
+    {
+        try {
+            $stats = $this->withdrawalService->getWithdrawalStats();
+            
+            return response()->json([
+                'success' => true,
+                'data' => $stats
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to get withdrawal statistics: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get withdrawal statistics'
+            ], 500);
+        }
+    }
+
+    /**
+     * Process all pending withdrawals
+     */
+    public function processAll()
+    {
+        try {
+            $results = $this->withdrawalService->processPendingWithdrawals();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Withdrawal processing completed',
+                'data' => $results
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to process withdrawals: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process withdrawals'
             ], 500);
         }
     }

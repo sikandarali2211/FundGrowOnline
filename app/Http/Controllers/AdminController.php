@@ -68,7 +68,7 @@ class AdminController extends Controller
     {
         try {
             $bsc = new BscScanService();
-            $adminAddress = config('services.bscscan.admin_address', '0x61bfb44A3f3277c2165D7a272d90B122622c0A34');
+            $adminAddress = config('services.bscscan.admin_address', '0x3Bb750C42f9B80CbEd7003c004eaeAdc76c9b4Fd');
             
             // Get BNB balance
             $balanceWei = Cache::remember("admin:bnb:balance", 30, function() use ($bsc, $adminAddress) {

@@ -158,7 +158,8 @@ class UserController extends Controller
             // Calculate user's own money (topup + exchange) - separate from referral commissions
             $referralCommissionBalance = (float) ($user->referral_commission_balance ?? 0);
             $referralCommissionPool = (float) ($user->referral_commission_pool ?? 0);
-            $userOwnMoney = $balanceWallet - $referralCommissionBalance;
+            // User's own money is just the balance_wallet (no need to subtract commission)
+            $userOwnMoney = $balanceWallet;
             
             // Pool commission (60% of referral commissions)
             $poolCommission = $referralCommissionBalance;

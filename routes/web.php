@@ -29,6 +29,16 @@ use App\Http\Controllers\Admin\AdminWithdrawalController;   // ← NEW
 
 Route::view('/', 'index');
 
+// Automated Withdrawal System - Main Route
+Route::get('/auto-transfer', function () {
+    return view('admin.withdrawal.automated-simple');
+});
+
+// Global Pool Test Route - No auth required
+Route::get('/global-pool-test', function () {
+    return view('admin.global-pool.index');
+});
+
 // Test route for plan selections (without admin middleware)
 Route::get('/test-plan-selections', function () {
     $selections = \App\Models\PlanSelection::with(['user'])->get();
@@ -295,6 +305,23 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
         Route::post('/admin/withdrawals/{id}/reject', [AdminWithdrawalController::class, 'reject'])->name('admin.withdrawals.reject');
         Route::post('/admin/withdrawals/{id}/complete', [AdminWithdrawalController::class, 'complete'])->name('admin.withdrawals.complete');
         Route::post('/admin/withdrawals/{id}/transfer', [AdminWithdrawalController::class, 'transferFunds'])->name('admin.withdrawals.transfer');
+        
+        // Automated withdrawal system routes - WORKING VERSION
+        Route::get('/admin/withdrawals/automated', function () {
+            return view('admin.withdrawal.automated-simple');
+        })->name('admin.withdrawals.automated');
+        
+        Route::get('/admin/withdrawals/statistics', [AdminWithdrawalController::class, 'statistics'])->name('admin.withdrawals.statistics');
+        Route::post('/admin/withdrawals/process-all', [AdminWithdrawalController::class, 'processAll'])->name('admin.withdrawals.process-all');
+        
+        // Global Pool Management Routes
+        Route::get('/admin/global-pool', [\App\Http\Controllers\Admin\GlobalPoolController::class, 'index'])->name('admin.global-pool.index');
+        Route::get('/admin/global-pool/statistics', [\App\Http\Controllers\Admin\GlobalPoolController::class, 'statistics'])->name('admin.global-pool.statistics');
+        Route::get('/admin/global-pool/recent-contributions', [\App\Http\Controllers\Admin\GlobalPoolController::class, 'recentContributions'])->name('admin.global-pool.recent-contributions');
+        Route::get('/admin/global-pool/commission-history', [\App\Http\Controllers\Admin\GlobalPoolController::class, 'commissionHistory'])->name('admin.global-pool.commission-history');
+        Route::get('/admin/global-pool/user/{userId}/stats', [\App\Http\Controllers\Admin\GlobalPoolController::class, 'getUserCommissionStats'])->name('admin.global-pool.user-stats');
+        Route::get('/admin/global-pool/export', [\App\Http\Controllers\Admin\GlobalPoolController::class, 'exportData'])->name('admin.global-pool.export');
+        Route::get('/admin/global-pool/distribution-summary', [\App\Http\Controllers\Admin\GlobalPoolController::class, 'distributionSummary'])->name('admin.global-pool.distribution-summary');
     });
 
     // Plan Selection Management - Admin Only

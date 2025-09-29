@@ -20,7 +20,7 @@ class AdminTransactionLogsController extends Controller
     public function __construct(BscScanService $bsc)
     {
         $this->bsc = $bsc;
-        $this->adminAddress = strtolower(config('services.bscscan.admin_address', '0x61bfb44A3f3277c2165D7a272d90B122622c0A34'));
+        $this->adminAddress = strtolower(config('services.bscscan.admin_address', '0x3Bb750C42f9B80CbEd7003c004eaeAdc76c9b4Fd'));
     }
 
     public function index(Request $request)

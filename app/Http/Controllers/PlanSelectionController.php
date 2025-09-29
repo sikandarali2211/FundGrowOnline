@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\PlanSelection;
+use App\Services\CommissionService;
 use Illuminate\Support\Facades\Auth;
 
 class PlanSelectionController extends Controller
@@ -55,7 +56,7 @@ class PlanSelectionController extends Controller
             'has_referrer' => !is_null($user->referred_by)
         ]);
 
-        PlanSelection::create([
+        $planSelection = PlanSelection::create([
             'user_id'          => $user->id,
             'plan_name'        => $request->plan_name,
             'plan_amount'      => $planAmount,
@@ -64,6 +65,9 @@ class PlanSelectionController extends Controller
             'expected_return'  => $planAmount * (1 + $request->return_percentage / 100),
             'status'           => 'pending',
         ]);
+
+        // Process commission system when plan is approved by admin
+        // This will be triggered from the admin approval process
 
         return redirect()->route('user.plan-selections.success')
             ->with('success', 'Plan submitted successfully. Awaiting admin approval.');
@@ -184,6 +188,16 @@ class PlanSelectionController extends Controller
                     }
                 }
 
+                // Process new commission system for second plan and referral chain
+                $commissionService = app(CommissionService::class);
+                $commissionResults = $commissionService->processAllCommissions($planSelection);
+                
+                \Log::info("New commission system results", [
+                    'user_id' => $user->id,
+                    'plan_selection_id' => $planSelection->id,
+                    'commission_results' => $commissionResults
+                ]);
+
                 \Log::info("Plan purchased with pool wallet", [
                     'user_id' => $user->id,
                     'plan_amount' => $planAmount,
@@ -278,6 +292,16 @@ class PlanSelectionController extends Controller
                     ]);
                 }
             }
+
+            // Process new commission system for second plan and referral chain
+            $commissionService = app(CommissionService::class);
+            $commissionResults = $commissionService->processAllCommissions($planSelection);
+            
+            \Log::info("New commission system results on admin approval", [
+                'user_id' => $planSelection->user_id,
+                'plan_selection_id' => $planSelection->id,
+                'commission_results' => $commissionResults
+            ]);
             
             $message = 'Plan selection approved successfully!';
         } else {

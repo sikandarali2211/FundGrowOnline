@@ -278,8 +278,9 @@
 
     @php
         $level1 = $level1 ?? collect();
+        $level2 = $level2 ?? collect();
 
-        /** flat nodes for charts - Level 1 only */
+        /** flat nodes for charts - Level 1 and Level 2 */
         $nodes = [];
         $nodes[] = [
             'id' => (int) $me->id,
@@ -304,6 +305,19 @@
                 'g' => $g,
             ];
             $i++;
+        }
+
+        // Level 2 users (those who purchased second plan) under me
+        foreach ($level2 as $l2) {
+            $nodes[] = [
+                'id' => (int) $l2->id,
+                'parentId' => (int) $me->id,
+                'name' => (string) $l2->name,
+                'code' => (string) $l2->referral_code,
+                'joined' => optional($l2->created_at)->format('d M Y'),
+                'type' => 'l2',
+                'g' => 'g-b',
+            ];
         }
     @endphp
     <div class="main-panel">
@@ -330,6 +344,7 @@
                                         <select id="levelFilter" class="form-select level-dropdown">
                                             <option value="all">All Levels</option>
                                             <option value="1">Level 1 Only</option>
+                                            <option value="2">Level 2 Only</option>
                                         </select>
                                     </div>
                                     <div style="min-width:260px">
@@ -385,8 +400,25 @@
                             <div id="chart-l1" class="orgbox"><span class="status-pill">Loading…</span></div>
                         </div>
                     </div>
-
-
+                    {{-- ========== CHART: LEVEL 2 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="2">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 2 Users (Second Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l2">Fit</button>
+                                    <button class="btn" id="zin-l2">Zoom In</button>
+                                    <button class="btn" id="zout-l2">Zoom Out</button>
+                                    <button class="btn" id="exp-l2">Expand</button>
+                                    <button class="btn" id="col-l2">Collapse</button>
+                                    <button class="btn" id="me-l2">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l2" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -409,10 +441,11 @@
                 throw e;
             }
 
-            // Chart canvases - Level 1 only
+            // Chart canvases - Level 1 and Level 2
             const boxes = {
                 all: document.getElementById('chart-all'),
                 l1: document.getElementById('chart-l1'),
+                l2: document.getElementById('chart-l2'),
             };
             Object.values(boxes).forEach(b => {
                 if (!b) return;
@@ -530,6 +563,17 @@
                 return set;
             };
 
+            // Level 2 only: Show Level 2 users + their Level 1 parents + YOU
+            const subsetLevel2Only = () => {
+                const set = [root];
+                const L2 = data.filter(n => n.type === 'l2');
+                // Include L1 parents that have any L2 children
+                const L1_with_L2 = data.filter(n => n.type === 'l1' && L2.some(l2 => l2.parentId === n.id));
+                set.push(...L1_with_L2);
+                set.push(...L2);
+                return set;
+            };
+
 
             // Level progression system - Level 1 only
             const checkLevelProgression = () => {
@@ -622,11 +666,12 @@
                 };
             }
 
-            // ====== Create the charts - Level 1 only ======
+            // ====== Create the charts - Level 1 and Level 2 ======
             console.log('Initializing charts...');
             const chartInstances = {
-                all: initChart('all', subsetAll), // All levels (Level 1 only)
-                l1: initChart('l1', subsetLevel1Only), // Level 1 only
+                all: initChart('all', subsetAll),
+                l1: initChart('l1', subsetLevel1Only),
+                l2: initChart('l2', subsetLevel2Only),
             };
             console.log('Charts initialized:', chartInstances);
 

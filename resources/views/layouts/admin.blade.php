@@ -281,6 +281,24 @@
                         @endif
                     </a>
                 </li>
+                <!-- Automated Withdrawal System - Only for Admin -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="/auto-transfer">
+                        <i class="fa fa-robot menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Auto Transfer</span>
+                        <span class="badge badge-success badge-pill ml-auto">NEW</span>
+                    </a>
+                </li>
+                <!-- Global Pool Management - Only for Admin -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center px-3 py-2"
+                        href="{{ route('admin.global-pool.index') }}">
+                        <i class="fa fa-globe menu-icon mr-2" style="color: #3bd17a;"></i>
+                        <span class="menu-title" style="color: #3bd17a;">Global Pool</span>
+                        <span class="badge badge-warning badge-pill ml-auto">10%</span>
+                    </a>
+                </li>
                 <!-- Wallet Connect - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2" href="{{ route('admin.wallet.index') }}">

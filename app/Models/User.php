@@ -30,6 +30,8 @@ class User extends Authenticatable
         'wallet_type',       // Wallet type (trust, metamask, other)
         'balance_wallet',    // Balance wallet amount
         'pool_wallet_amount', // Pool wallet amount
+        'profit_wallet', // Profit wallet for 30% commission
+        'total_commission_earned', // Total commission earned
         'referral_commission_balance', // 60% referral commission (goes to balance wallet)
         'referral_commission_pool', // 40% referral commission (goes to pool wallet)
         'security_pin',      // Security PIN for sensitive operations
@@ -227,16 +229,15 @@ class User extends Authenticatable
             // Calculate commission amount
             $commissionAmount = $planAmount * ($commissionPercentage / 100);
             
-            // 60% to balance wallet (referral commission), 40% to pool wallet
-            $balanceWalletCommission = $commissionAmount * 0.6;
+            // 60% to pool commission, 40% to pool wallet (NO balance wallet)
+            $poolCommission = $commissionAmount * 0.6;
             $poolWalletCommission = $commissionAmount * 0.4;
             
-            // Update referrer's wallets
-            $this->balance_wallet = ($this->balance_wallet ?? 0) + $balanceWalletCommission;
+            // Update referrer's wallets (NO balance_wallet update)
             $this->pool_wallet_amount = ($this->pool_wallet_amount ?? 0) + $poolWalletCommission;
             
             // Track referral commissions separately
-            $this->referral_commission_balance = ($this->referral_commission_balance ?? 0) + $balanceWalletCommission;
+            $this->referral_commission_balance = ($this->referral_commission_balance ?? 0) + $poolCommission;
             $this->referral_commission_pool = ($this->referral_commission_pool ?? 0) + $poolWalletCommission;
             
             $this->save();
@@ -248,7 +249,7 @@ class User extends Authenticatable
                 'plan_amount' => $planAmount,
                 'commission_percentage' => $commissionPercentage,
                 'total_commission' => $commissionAmount,
-                'balance_wallet_commission' => $balanceWalletCommission,
+                'pool_commission' => $poolCommission,
                 'pool_wallet_commission' => $poolWalletCommission,
                 'new_balance_wallet' => $this->balance_wallet,
                 'new_pool_wallet' => $this->pool_wallet_amount,
@@ -259,7 +260,7 @@ class User extends Authenticatable
             return [
                 'success' => true,
                 'total_commission' => $commissionAmount,
-                'balance_wallet_commission' => $balanceWalletCommission,
+                'pool_commission' => $poolCommission,
                 'pool_wallet_commission' => $poolWalletCommission
             ];
             
