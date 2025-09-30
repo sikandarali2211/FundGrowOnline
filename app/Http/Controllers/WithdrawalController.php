@@ -18,6 +18,8 @@ class WithdrawalController extends Controller
     {
         $user = Auth::user();
         $poolCommission = (float) ($user->referral_commission_balance ?? 0);
+        $balanceWallet = (float) ($user->balance_wallet ?? 0);
+        $totalAvailable = $poolCommission + $balanceWallet;
         
         // Get user's withdrawal history
         $withdrawals = WithdrawalRequest::where('user_id', $user->id)
@@ -25,7 +27,7 @@ class WithdrawalController extends Controller
             ->limit(10)
             ->get();
 
-        return view('user.withdrawal.index', compact('poolCommission', 'withdrawals'));
+        return view('user.withdrawal.index', compact('poolCommission', 'balanceWallet', 'totalAvailable', 'withdrawals'));
     }
 
     /**
@@ -36,18 +38,21 @@ class WithdrawalController extends Controller
         $request->validate([
             'amount' => 'required|numeric|min:1',
             'wallet_address' => 'required|string|min:42|max:42',
-            'wallet_type' => 'required|in:trust,metamask,other'
+            'wallet_type' => 'required|in:trust,metamask,other',
+            'withdrawal_source' => 'required|in:pool_commission,balance_wallet,both'
         ]);
 
         $user = Auth::user();
-        $amount = (float) $request->amount;
+        $amount = (float) $request->amount; // requested (gross) amount
         $poolCommission = (float) ($user->referral_commission_balance ?? 0);
+        $balanceWallet = (float) ($user->balance_wallet ?? 0);
+        $totalAvailable = $poolCommission + $balanceWallet;
 
         // Check if user has sufficient balance
-        if ($amount > $poolCommission) {
+        if ($amount > $totalAvailable) {
             return response()->json([
                 'success' => false,
-                'message' => 'Insufficient balance. Available: $' . number_format($poolCommission, 2)
+                'message' => 'Insufficient balance. Available: $' . number_format($totalAvailable, 2)
             ], 400);
         }
 
@@ -64,31 +69,52 @@ class WithdrawalController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($user, $amount, $request, $poolCommission) {
+            DB::transaction(function () use ($user, $amount, $request, $poolCommission, $balanceWallet) {
+                // Apply 10% fee on requested amount
+                $fee = round($amount * 0.10, 2);
+                $netAmount = max(0, round($amount - $fee, 2));
                 // Create withdrawal request
                 WithdrawalRequest::create([
                     'user_id' => $user->id,
-                    'amount' => $amount,
+                    // Store NET amount to be paid out to the user
+                    'amount' => $netAmount,
                     'wallet_address' => $request->wallet_address,
                     'wallet_type' => $request->wallet_type,
-                    'status' => WithdrawalRequest::STATUS_PENDING
+                    'status' => WithdrawalRequest::STATUS_PENDING,
+                    'withdrawal_source' => $request->withdrawal_source,
+                    'admin_notes' => trim((string)($request->admin_notes ?? '')) . ' | 10% fee $' . number_format($fee, 2) . ' deducted from $' . number_format($amount, 2)
                 ]);
 
-                // Deduct amount from user's pool commission
-                $user->referral_commission_balance = max(0, $poolCommission - $amount);
+                // Deduct GROSS amount from the selected source(s)
+                $remainingAmount = $amount;
+                
+                if ($request->withdrawal_source === 'pool_commission' || $request->withdrawal_source === 'both') {
+                    $deductFromPool = min($remainingAmount, $poolCommission);
+                    $user->referral_commission_balance = max(0, $poolCommission - $deductFromPool);
+                    $remainingAmount -= $deductFromPool;
+                }
+                
+                if ($request->withdrawal_source === 'balance_wallet' || $request->withdrawal_source === 'both') {
+                    $deductFromBalance = min($remainingAmount, $balanceWallet);
+                    $user->balance_wallet = max(0, $balanceWallet - $deductFromBalance);
+                }
+                
                 $user->save();
 
                 Log::info('Withdrawal request created', [
                     'user_id' => $user->id,
-                    'amount' => $amount,
+                    'requested_amount' => $amount,
+                    'net_amount' => $netAmount,
+                    'fee_amount' => $fee,
                     'wallet_address' => $request->wallet_address,
-                    'wallet_type' => $request->wallet_type
+                    'wallet_type' => $request->wallet_type,
+                    'withdrawal_source' => $request->withdrawal_source
                 ]);
             });
 
             return response()->json([
                 'success' => true,
-                'message' => 'Withdrawal request submitted successfully'
+                'message' => 'Withdrawal request submitted successfully (10% fee applied)'
             ]);
 
         } catch (\Exception $e) {

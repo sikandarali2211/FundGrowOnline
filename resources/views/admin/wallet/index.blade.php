@@ -35,8 +35,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
         }
 
         .page-header h1 {
@@ -235,8 +240,15 @@
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .status-success {
@@ -314,11 +326,11 @@
             .page-header h1 {
                 font-size: 2rem;
             }
-            
+
             .card-body {
                 padding: 1.5rem;
             }
-            
+
             .wallet-connect-btn {
                 padding: 15px 25px;
                 font-size: 16px;
@@ -337,7 +349,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Status Indicators */
@@ -350,9 +364,17 @@
         }
 
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
 
         /* Wallet Connection Section */
@@ -417,169 +439,176 @@
             font-size: 0.9rem;
             margin-bottom: 0;
         }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-block {
+            margin-right: 24px;
+            /* gap between blocks */
+        }
     </style>
-
-    <div class="content-wrapper">
-        <div class="container-fluid">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h1 class="mb-2">
-                            <i class="fa fa-wallet me-3"></i>Admin Wallet Connect
-                        </h1>
-                        <p class="mb-0">Connect your Trust Wallet to manage transactions and view balances</p>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <div class="d-flex align-items-center justify-content-end">
-                            <div class="me-3">
-                                <div class="d-flex align-items-center">
-                                    <div class="status-indicator bg-success me-2"></div>
-                                    <span class="text-success fw-bold">Secure</span>
-                                </div>
-                            </div>
-                            <div>
-                                <div class="d-flex align-items-center">
-                                    <div class="status-indicator bg-info me-2"></div>
-                                    <span class="text-info fw-bold">BSC Network</span>
-                                </div>
-                            </div>
+    <div class="main-panel">
+        <div class="content-wrapper">
+            <div class="container-fluid">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="mb-2">
+                                <i class="fa fa-wallet me-3"></i> Admin Wallet Connect
+                            </h1>
+                            <p class="mb-0">Connect your Trust Wallet to manage transactions and view balances</p>
                         </div>
+                        <div class="status-block d-flex align-items-center">
+                            <div class="status-indicator bg-success me-2"></div>
+                            <span class="text-success fw-bold">Secure</span>
+                        </div>
+
+                        <div class="status-block d-flex align-items-center">
+                            <div class="status-indicator bg-info me-2"></div>
+                            <span class="text-info fw-bold me-3">BSC Network</span>
+                        </div>
+
                     </div>
                 </div>
-            </div>
 
-            <!-- Main Content -->
-            <div class="row">
-                <!-- Wallet Connection Section -->
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center mb-4">
-                                <div class="wallet-icon me-3">
-                                    <i class="fa fa-wallet fa-2x text-success"></i>
-                                </div>
-                                <div>
-                                    <h5 class="text-white mb-1">Trust Wallet Connection</h5>
-                                    <p class="text-muted mb-0">Connect your wallet to manage admin transactions</p>
-                                </div>
-                            </div>
-                            
-                            @if($adminWalletAddress)
-                                <div class="alert alert-success mb-4">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fa fa-check-circle me-3 fa-2x"></i>
-                                        <div>
-                                            <strong>Current Admin Wallet Address:</strong><br>
-                                            <code class="text-dark">{{ $adminWalletAddress }}</code>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            <!-- Trust Wallet Connect -->
-                            <div id="walletConnectSection">
-                                <div class="wallet-connection-section">
-                                    <h6 class="text-white mb-4">
-                                        <i class="fa fa-mobile-alt me-2"></i>Connect Your Trust Wallet
-                                    </h6>
-                                    
-                                    <!-- Trust Wallet Option -->
-                                    <div class="text-center">
-                                        <button class="wallet-connect-btn mb-3" onclick="connectMobileWallet('trust')">
-                                            <i class="fa fa-wallet me-2"></i>Connect Trust Wallet
-                                        </button>
-                                        <p class="text-muted mb-4">Mobile & Desktop Trust Wallet DApp</p>
-                                        
-                                        <!-- Test Button -->
-                                        <button class="btn btn-warning btn-sm" onclick="testButton()">
-                                            <i class="fa fa-test-tube me-1"></i>Test Connection
-                                        </button>
-                                        
-                                        <!-- Force Check Wallet Button -->
-                                        <button class="btn btn-info btn-sm ms-2" onclick="forceCheckWallet()">
-                                            <i class="fa fa-refresh me-1"></i>Force Check Wallet
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Wallet Info (Hidden by default) -->
-                            <div id="walletInfoSection" class="wallet-info" style="display: none;">
+                <!-- Main Content -->
+                <div class="row">
+                    <!-- Wallet Connection Section -->
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
                                 <div class="d-flex align-items-center mb-4">
-                                    <i class="fa fa-check-circle fa-2x text-success me-3"></i>
+                                    <div class="wallet-icon" style="margin-right:15px;">
+                                        <i class="fa fa-wallet fa-2x text-success"></i>
+                                    </div>
                                     <div>
-                                        <h5 class="text-success mb-1">Wallet Connected Successfully</h5>
-                                        <p class="text-muted mb-0">Your wallet is ready for transactions</p>
+                                        <h5 class="text-white mb-1">Trust Wallet Connection</h5>
+                                        <p class="text-muted mb-0">Connect your wallet to manage admin transactions</p>
                                     </div>
                                 </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label text-white fw-bold">Wallet Address:</label>
-                                        <div id="walletAddress" class="wallet-address"></div>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label text-white fw-bold">Wallet Type:</label>
-                                        <div class="mt-2">
-                                            <span id="walletType" class="badge badge-primary">Unknown</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-3 mb-3">
-                                        <label class="form-label text-white fw-bold">Network:</label>
-                                        <div class="mt-2">
-                                            <span class="badge badge-success">Binance Smart Chain</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="d-flex gap-2 mt-4">
-                                    <button id="disconnectWalletBtn" class="btn btn-outline-danger">
-                                        <i class="fa fa-times me-2"></i>Disconnect Wallet
-                                    </button>
-                                    <button id="refreshWalletBtn" class="btn btn-outline-success">
-                                        <i class="fa fa-refresh me-2"></i>Refresh Status
-                                    </button>
-                                </div>
-                            </div>
 
-                            <!-- Status Messages -->
-                            <div id="statusMessages"></div>
+
+                                @if ($adminWalletAddress)
+                                    <div class="alert alert-success mb-4">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fa fa-check-circle me-3 fa-2x"></i>
+                                            <div>
+                                                <strong>Current Admin Wallet Address:</strong><br>
+                                                <code class="text-dark">{{ $adminWalletAddress }}</code>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <!-- Trust Wallet Connect -->
+                                <div id="walletConnectSection">
+                                    <div class="wallet-connection-section">
+                                        <h6 class="text-white mb-4">
+                                            <i class="fa fa-mobile-alt me-2"></i> Connect Your Trust Wallet
+                                        </h6>
+
+                                        <!-- Trust Wallet Option -->
+                                        <div class="text-center">
+                                            <button class="wallet-connect-btn mb-3" onclick="connectMobileWallet('trust')">
+                                                <i class="fa fa-wallet me-2"></i> Connect Trust Wallet
+                                            </button>
+                                            <p class="text-muted mb-4">Mobile & Desktop Trust Wallet DApp</p>
+
+                                            <!-- Test Button -->
+                                            <button class="btn btn-warning btn-sm" onclick="testButton()">
+                                                <i class="fa fa-test-tube me-1"></i>Test Connection
+                                            </button>
+
+                                            <!-- Force Check Wallet Button -->
+                                            <button class="btn btn-info btn-sm ms-2" onclick="forceCheckWallet()">
+                                                <i class="fa fa-refresh me-1"></i>Force Check Wallet
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Wallet Info (Hidden by default) -->
+                                <div id="walletInfoSection" class="wallet-info" style="display: none;">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <i class="fa fa-check-circle fa-2x text-success me-3"></i>
+                                        <div>
+                                            <h5 class="text-success mb-1">Wallet Connected Successfully</h5>
+                                            <p class="text-muted mb-0">Your wallet is ready for transactions</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label text-white fw-bold">Wallet Address:</label>
+                                            <div id="walletAddress" class="wallet-address"></div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label text-white fw-bold">Wallet Type:</label>
+                                            <div class="mt-2">
+                                                <span id="walletType" class="badge badge-primary">Unknown</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label text-white fw-bold">Network:</label>
+                                            <div class="mt-2">
+                                                <span class="badge badge-success">Binance Smart Chain</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex gap-2 mt-4">
+                                        <button id="disconnectWalletBtn" class="btn btn-outline-danger">
+                                            <i class="fa fa-times me-2"></i>Disconnect Wallet
+                                        </button>
+                                        <button id="refreshWalletBtn" class="btn btn-outline-success">
+                                            <i class="fa fa-refresh me-2"></i>Refresh Status
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Status Messages -->
+                                <div id="statusMessages"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Features Sidebar -->
-                <div class="col-lg-4" hidden>
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="text-white mb-4">
-                                <i class="fa fa-star me-2"></i>DApp Features
-                            </h5>
-                            
-                            <div class="feature-grid">
-                                <div class="feature-item">
-                                    <i class="fa fa-mobile-alt"></i>
-                                    <h6>Mobile DApp</h6>
-                                    <p>Direct Trust Wallet app connection</p>
-                                </div>
-                                
-                                <div class="feature-item">
-                                    <i class="fa fa-coins"></i>
-                                    <h6>Balance View</h6>
-                                    <p>Real-time BNB & USDT balances</p>
-                                </div>
-                                
-                                <div class="feature-item">
-                                    <i class="fa fa-paper-plane"></i>
-                                    <h6>Send Transactions</h6>
-                                    <p>Send crypto to any address</p>
-                                </div>
-                                
-                                <div class="feature-item">
-                                    <i class="fa fa-cog"></i>
-                                    <h6>Admin Management</h6>
-                                    <p>Manage admin wallet settings</p>
+                    <!-- Features Sidebar -->
+                    <div class="col-lg-4" hidden>
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="text-white mb-4">
+                                    <i class="fa fa-star me-2"></i>DApp Features
+                                </h5>
+
+                                <div class="feature-grid">
+                                    <div class="feature-item">
+                                        <i class="fa fa-mobile-alt"></i>
+                                        <h6>Mobile DApp</h6>
+                                        <p>Direct Trust Wallet app connection</p>
+                                    </div>
+
+                                    <div class="feature-item">
+                                        <i class="fa fa-coins"></i>
+                                        <h6>Balance View</h6>
+                                        <p>Real-time BNB & USDT balances</p>
+                                    </div>
+
+                                    <div class="feature-item">
+                                        <i class="fa fa-paper-plane"></i>
+                                        <h6>Send Transactions</h6>
+                                        <p>Send crypto to any address</p>
+                                    </div>
+
+                                    <div class="feature-item">
+                                        <i class="fa fa-cog"></i>
+                                        <h6>Admin Management</h6>
+                                        <p>Manage admin wallet settings</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -598,16 +627,16 @@
                 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js',
                 'https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js'
             ];
-            
+
             let currentIndex = 0;
-            
+
             function tryLoadScript() {
                 if (currentIndex >= cdnSources.length) {
                     console.error('❌ All ethers.js CDNs failed');
                     showStatus('error', 'Failed to load ethers.js library. Please check your internet connection.');
                     return;
                 }
-                
+
                 const script = document.createElement('script');
                 script.src = cdnSources[currentIndex];
                 script.onload = function() {
@@ -624,14 +653,14 @@
                 };
                 document.head.appendChild(script);
             }
-            
+
             tryLoadScript();
         }
-        
+
         // Start loading ethers.js
         loadEthersJS();
     </script>
-    
+
     <script>
         // Global variables
         let walletAddress = null;
@@ -641,18 +670,18 @@
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Admin Wallet - DOM Content Loaded');
-            console.log('Admin wallet address from server:', '{{ $adminWalletAddress ?? "null" }}');
-            
+            console.log('Admin wallet address from server:', '{{ $adminWalletAddress ?? 'null' }}');
+
             // Initialize wallet immediately (ethers.js will be loaded by the script above)
             initializeWallet();
-            
+
             function initializeWallet() {
                 console.log('🔧 Initializing admin wallet...');
-                
+
                 // Event listeners
                 const disconnectBtn = document.getElementById('disconnectWalletBtn');
                 const refreshBtn = document.getElementById('refreshWalletBtn');
-                
+
                 if (disconnectBtn) {
                     disconnectBtn.addEventListener('click', disconnectWallet);
                 }
@@ -668,63 +697,67 @@
         // Trust Wallet connection function (mobile DApp support)
         window.connectMobileWallet = async function(walletType) {
             console.log('Admin Trust Wallet connection:', walletType);
-            
+
             // Only allow Trust Wallet
             if (walletType !== 'trust') {
                 showStatus('error', 'Only Trust Wallet is supported. Please use Trust Wallet to connect.');
                 return;
             }
-            
+
             // Check if we're on mobile
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator
+                .userAgent);
             console.log('Is mobile device:', isMobile);
-            
+
             // Check if ethers.js is loaded
             if (typeof ethers === 'undefined') {
                 showStatus('error', 'Ethers.js library not loaded. Please wait a moment and try again.');
                 console.error('Ethers.js not available for wallet connection');
                 return;
             }
-            
+
             try {
                 showStatus('info', 'Connecting to Trust Wallet...');
-                
+
                 // For mobile, try to open Trust Wallet DApp directly
                 if (isMobile) {
                     console.log('Mobile device detected - attempting DApp connection');
-                    
+
                     // Check if Trust Wallet is already available
                     if (typeof window.ethereum !== 'undefined') {
                         console.log('Trust Wallet already available, connecting directly');
                         await connectTrustWalletDirect();
                         return;
                     }
-                    
+
                     // Try to open Trust Wallet DApp
                     const currentUrl = window.location.href;
-                    const trustWalletUrl = `https://link.trustwallet.com/open_url?coin_id=20000714&url=${encodeURIComponent(currentUrl)}`;
+                    const trustWalletUrl =
+                        `https://link.trustwallet.com/open_url?coin_id=20000714&url=${encodeURIComponent(currentUrl)}`;
                     console.log('Opening Trust Wallet DApp:', trustWalletUrl);
-                    
+
                     // Show instructions for mobile
-                    showStatus('info', 'Opening Trust Wallet app... Please approve the connection in Trust Wallet.');
-                    
+                    showStatus('info',
+                        'Opening Trust Wallet app... Please approve the connection in Trust Wallet.');
+
                     // Create a temporary link to open Trust Wallet
                     const link = document.createElement('a');
                     link.href = trustWalletUrl;
                     link.target = '_blank';
                     link.click();
-                    
+
                     // Show mobile instructions after a delay
                     setTimeout(() => {
                         showMobileTrustWalletInstructions();
                     }, 3000);
-                    
+
                     return;
                 }
-                
+
                 // For desktop, check if Trust Wallet is available
                 if (typeof window.ethereum === 'undefined') {
-                    showStatus('error', 'Trust Wallet not detected. Please install Trust Wallet or use Trust Wallet browser.');
+                    showStatus('error',
+                        'Trust Wallet not detected. Please install Trust Wallet or use Trust Wallet browser.');
                     return;
                 }
 
@@ -766,23 +799,23 @@
                     walletAddress = accounts[0];
                     walletType = 'Trust Wallet';
                     isWalletConnected = true;
-                    
+
                     // Save to localStorage
                     localStorage.setItem('adminWalletAddress', walletAddress);
                     localStorage.setItem('adminWalletType', walletType);
                     localStorage.setItem('adminWalletConnected', 'true');
-                    
+
                     // Update UI
                     document.getElementById('walletAddress').textContent = walletAddress;
                     document.getElementById('walletType').textContent = walletType;
                     document.getElementById('walletConnectSection').style.display = 'none';
                     document.getElementById('walletInfoSection').style.display = 'block';
-                    
+
                     showStatus('success', 'Trust Wallet connected successfully!');
-                    
+
                     // Save wallet address to database
                     await saveWalletAddressToDatabase(walletAddress);
-                    
+
                 } else {
                     showStatus('error', 'No accounts found. Please make sure your wallet is unlocked.');
                 }
@@ -794,35 +827,37 @@
 
         function checkWalletConnection() {
             console.log('Checking admin wallet connection...');
-            
+
             // Check if window.ethereum exists and has accounts
             if (typeof window.ethereum !== 'undefined') {
                 console.log('✅ Window.ethereum found');
-                
+
                 // Check if already connected
-                window.ethereum.request({ method: 'eth_accounts' }).then(accounts => {
+                window.ethereum.request({
+                    method: 'eth_accounts'
+                }).then(accounts => {
                     console.log('Current accounts from eth_accounts:', accounts);
-                    
+
                     if (accounts.length > 0) {
                         console.log('✅ Wallet already connected with accounts:', accounts);
                         walletAddress = accounts[0];
                         walletType = 'Trust Wallet';
                         isWalletConnected = true;
-                        
+
                         // Update UI
                         document.getElementById('walletAddress').textContent = walletAddress;
                         document.getElementById('walletType').textContent = walletType;
                         document.getElementById('walletConnectSection').style.display = 'none';
                         document.getElementById('walletInfoSection').style.display = 'block';
-                        
+
                         // Save to localStorage
                         localStorage.setItem('adminWalletAddress', walletAddress);
                         localStorage.setItem('adminWalletType', walletType);
                         localStorage.setItem('adminWalletConnected', 'true');
-                        
+
                         // Save to database
                         saveWalletAddressToDatabase(walletAddress);
-                        
+
                         showStatus('success', 'Admin wallet already connected! Address: ' + walletAddress);
                         console.log('✅ Admin wallet connection restored:', walletAddress);
                         return;
@@ -833,50 +868,50 @@
                     console.error('Error checking accounts:', error);
                 });
             }
-            
+
             // Check database first - if admin has saved wallet address
-            @if($adminWalletAddress)
+            @if ($adminWalletAddress)
                 const dbWalletAddress = '{{ $adminWalletAddress }}';
                 console.log('✅ Database admin wallet address found:', dbWalletAddress);
-                
+
                 // Update state
                 walletAddress = dbWalletAddress;
                 walletType = 'Trust Wallet';
                 isWalletConnected = true;
-                
+
                 // Update UI
                 document.getElementById('walletAddress').textContent = walletAddress;
                 document.getElementById('walletType').textContent = walletType;
                 document.getElementById('walletConnectSection').style.display = 'none';
                 document.getElementById('walletInfoSection').style.display = 'block';
-                
+
                 // Save to localStorage for consistency
                 localStorage.setItem('adminWalletAddress', walletAddress);
                 localStorage.setItem('adminWalletType', walletType);
                 localStorage.setItem('adminWalletConnected', 'true');
-                
+
                 showStatus('success', 'Admin wallet connected from database!');
                 console.log('✅ Admin wallet state restored from database');
                 return; // Exit early if database has wallet address
             @endif
-            
+
             // Check localStorage
             const savedWalletAddress = localStorage.getItem('adminWalletAddress');
             const savedWalletType = localStorage.getItem('adminWalletType');
             const savedWalletConnected = localStorage.getItem('adminWalletConnected');
-            
+
             if (savedWalletAddress && savedWalletType && savedWalletConnected === 'true') {
                 // Restore wallet state from localStorage
                 walletAddress = savedWalletAddress;
                 walletType = savedWalletType;
                 isWalletConnected = true;
-                
+
                 // Update UI
                 document.getElementById('walletAddress').textContent = walletAddress;
                 document.getElementById('walletType').textContent = walletType;
                 document.getElementById('walletConnectSection').style.display = 'none';
                 document.getElementById('walletInfoSection').style.display = 'block';
-                
+
                 console.log('Admin wallet restored from localStorage:', walletAddress);
                 return;
             }
@@ -884,27 +919,29 @@
 
         function disconnectWallet() {
             // Show confirmation dialog
-            if (!confirm('Are you sure you want to disconnect your Trust Wallet?\n\nThis will:\n- Disconnect your wallet\n- Clear wallet data\n- Remove access to wallet features')) {
+            if (!confirm(
+                    'Are you sure you want to disconnect your Trust Wallet?\n\nThis will:\n- Disconnect your wallet\n- Clear wallet data\n- Remove access to wallet features'
+                )) {
                 return;
             }
-            
+
             // Clear wallet state
             isWalletConnected = false;
             walletAddress = null;
             walletType = null;
-            
+
             // Clear localStorage
             localStorage.removeItem('adminWalletAddress');
             localStorage.removeItem('adminWalletType');
             localStorage.removeItem('adminWalletConnected');
-            
+
             // Reset UI
             document.getElementById('walletConnectSection').style.display = 'block';
             document.getElementById('walletInfoSection').style.display = 'none';
-            
+
             // Clear wallet address from database
             clearWalletFromDatabase();
-            
+
             showStatus('info', 'Trust Wallet disconnected successfully');
         }
 
@@ -913,10 +950,10 @@
                 showStatus('error', 'No wallet connected to refresh');
                 return;
             }
-            
+
             try {
                 showStatus('info', 'Refreshing wallet data...');
-                
+
                 // Check if wallet is still connected
                 if (typeof window.ethereum !== 'undefined' && window.ethereum.selectedAddress) {
                     const currentAddress = window.ethereum.selectedAddress;
@@ -991,22 +1028,22 @@
         // Force check wallet status
         async function forceCheckWallet() {
             console.log('=== Force Checking Admin Wallet Status ===');
-            
+
             try {
                 // Check if window.ethereum exists
                 if (typeof window.ethereum === 'undefined') {
                     showStatus('error', 'No wallet detected. Please install Trust Wallet app.');
                     return;
                 }
-                
+
                 console.log('✅ Window.ethereum found');
                 console.log('Ethereum object:', window.ethereum);
-                
+
                 // Check if it's Trust Wallet
-                const isTrustWallet = window.ethereum.isTrust || 
-                                    window.ethereum.isTrustWallet ||
-                                    (window.ethereum.providers && window.ethereum.providers.some(p => p.isTrust));
-                
+                const isTrustWallet = window.ethereum.isTrust ||
+                    window.ethereum.isTrustWallet ||
+                    (window.ethereum.providers && window.ethereum.providers.some(p => p.isTrust));
+
                 console.log('Trust Wallet detection:', {
                     isTrust: window.ethereum.isTrust,
                     isTrustWallet: window.ethereum.isTrustWallet,
@@ -1014,67 +1051,70 @@
                     providers: window.ethereum.providers,
                     isTrustWallet: isTrustWallet
                 });
-                
+
                 if (window.ethereum.isMetaMask) {
                     showStatus('error', 'MetaMask detected! Please use Trust Wallet only.');
                     return;
                 }
-                
+
                 if (!isTrustWallet) {
                     showStatus('warning', 'Wallet detected but not Trust Wallet. Please use Trust Wallet.');
                     return;
                 }
-                
+
                 // Check current accounts
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts'
+                });
                 console.log('Current accounts:', accounts);
-                
+
                 if (accounts.length > 0) {
                     console.log('✅ Accounts found:', accounts);
                     walletAddress = accounts[0];
                     walletType = 'Trust Wallet';
                     isWalletConnected = true;
-                    
+
                     // Update UI
                     document.getElementById('walletAddress').textContent = walletAddress;
                     document.getElementById('walletType').textContent = walletType;
                     document.getElementById('walletConnectSection').style.display = 'none';
                     document.getElementById('walletInfoSection').style.display = 'block';
-                    
+
                     // Save to localStorage
                     localStorage.setItem('adminWalletAddress', walletAddress);
                     localStorage.setItem('adminWalletType', walletType);
                     localStorage.setItem('adminWalletConnected', 'true');
-                    
+
                     // Save to database
                     await saveWalletAddressToDatabase(walletAddress);
-                    
+
                     showStatus('success', 'Admin wallet found and connected! Address: ' + walletAddress);
                     console.log('✅ Admin wallet force check successful:', walletAddress);
                 } else {
-                    showStatus('warning', 'Trust Wallet detected but no accounts connected. Please connect your wallet.');
+                    showStatus('warning',
+                        'Trust Wallet detected but no accounts connected. Please connect your wallet.');
                     console.log('⚠️ No accounts connected');
                 }
-                
+
             } catch (error) {
                 console.error('Force check wallet failed:', error);
                 showStatus('error', 'Force check failed: ' + error.message);
             }
         }
-        
+
         function showStatus(type, message) {
             const statusDiv = document.getElementById('statusMessages');
             const statusClass = `status-${type}`;
-            
+
             const statusElement = document.createElement('div');
             statusElement.className = `status-message ${statusClass}`;
             statusElement.innerHTML = `
                 <i class="fa fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
                 ${message}
             `;
-            
+
             statusDiv.appendChild(statusElement);
-            
+
             // Auto remove after 5 seconds
             setTimeout(() => {
                 if (statusElement.parentNode) {
@@ -1112,7 +1152,7 @@
         // Direct Trust Wallet connection (for when wallet is available)
         async function connectTrustWalletDirect() {
             console.log('Connecting to Trust Wallet directly...');
-            
+
             try {
                 const accounts = await window.ethereum.request({
                     method: 'eth_requestAccounts'
@@ -1151,23 +1191,23 @@
                     walletAddress = accounts[0];
                     walletType = 'Trust Wallet';
                     isWalletConnected = true;
-                    
+
                     // Save to localStorage
                     localStorage.setItem('adminWalletAddress', walletAddress);
                     localStorage.setItem('adminWalletType', walletType);
                     localStorage.setItem('adminWalletConnected', 'true');
-                    
+
                     // Update UI
                     document.getElementById('walletAddress').textContent = walletAddress;
                     document.getElementById('walletType').textContent = walletType;
                     document.getElementById('walletConnectSection').style.display = 'none';
                     document.getElementById('walletInfoSection').style.display = 'block';
-                    
+
                     showStatus('success', 'Trust Wallet connected successfully!');
-                    
+
                     // Save wallet address to database
                     await saveWalletAddressToDatabase(walletAddress);
-                    
+
                 } else {
                     showStatus('error', 'No accounts found. Please make sure your wallet is unlocked.');
                 }
@@ -1180,7 +1220,7 @@
         // Test function
         function testButton() {
             console.log('Test button clicked!');
-            
+
             // Check ethers.js status
             if (typeof ethers !== 'undefined') {
                 showStatus('success', 'Test button is working! JavaScript and Ethers.js are functioning properly.');

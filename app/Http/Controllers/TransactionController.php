@@ -543,7 +543,7 @@ class TransactionController extends Controller
                 ->whereNotNull('wallet_address')
                 ->first();
 
-            // Create transaction record
+            // Create transaction record (store GROSS amount received)
             $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'tx_hash' => $txHash,
@@ -557,8 +557,24 @@ class TransactionController extends Controller
                 'confirmed_at' => now()
             ]);
 
-            // Update user wallet balance
-            $this->updateUserWalletBalance($user->id, $amount);
+            // Apply flat $1 deposit fee; credit NET amount
+            $depositFee = 1.00;
+            if ($amount <= $depositFee) {
+                Log::warning('Topup below or equal to fee - no credit applied', [
+                    'user_id' => $user->id,
+                    'amount' => $amount,
+                    'fee' => $depositFee,
+                ]);
+            } else {
+                $netAmount = round($amount - $depositFee, 2);
+                $this->updateUserWalletBalance($user->id, $netAmount);
+                Log::info('Topup credited with fee deducted', [
+                    'user_id' => $user->id,
+                    'gross' => $amount,
+                    'fee' => $depositFee,
+                    'net' => $netAmount,
+                ]);
+            }
 
             // Log for admin
             Log::info("Auto-detected topup transaction", [
@@ -632,7 +648,16 @@ class TransactionController extends Controller
                 ], 400);
             }
 
-            // Create transaction record
+            // Enforce minimum gross greater than fee
+            $depositFee = 1.00;
+            if ($amount <= $depositFee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Amount must be greater than $1 deposit fee.'
+                ], 400);
+            }
+
+            // Create transaction record (store GROSS amount)
             $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'tx_hash' => $txHash,
@@ -648,14 +673,17 @@ class TransactionController extends Controller
                 'confirmed_at' => $verificationResult['confirmed'] ? now() : null
             ]);
 
-            // Update user wallet balance
-            $this->updateUserWalletBalance($user->id, $amount);
+            // Credit NET amount after $1 fee
+            $netAmount = round($amount - $depositFee, 2);
+            $this->updateUserWalletBalance($user->id, $netAmount);
 
             // Log transaction for admin
             Log::info("Topup transaction processed", [
                 'user_id' => $user->id,
                 'tx_hash' => $txHash,
-                'amount' => $amount,
+                'gross_amount' => $amount,
+                'fee' => $depositFee,
+                'net_credited' => $netAmount,
                 'from' => $fromAddress,
                 'to' => $toAddress
             ]);

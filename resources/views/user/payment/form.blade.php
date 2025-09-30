@@ -302,6 +302,22 @@
                                         </div>
                                     </div>
 
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-3">
+                                                <label for="depositFee" class="form-label">Deposit Fee (Flat)</label>
+                                                <input type="text" class="form-control" id="depositFee" value="$1.00" readonly>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-1">
+                                                <label for="payableAmount" class="form-label">Payable (You Send)</label>
+                                                <input type="text" class="form-control" id="payableAmount" value="" readonly>
+                                            </div>
+                                            <small class="form-text text-muted">You send Net + $1 fee. Net amount is credited to your balance wallet.</small>
+                                        </div>
+                                    </div>
+
                                     <div class="form-group mb-3">
                                         <label for="adminWalletAddress" class="form-label">Admin Wallet Address</label>
                                         <div class="input-group">
@@ -488,7 +504,8 @@
         let walletAddress = null;
         let walletService = null;
         let userBalance = 0;
-        let planAmount = {{ $plan['amount'] }}; // This is in dollars, we need to convert to USDT
+        let planAmount = {{ $plan['amount'] }}; // Net amount in USD
+        const depositFee = 1.00; // Flat $1 fee
         
         // Auto-fill payment amount function
         function autoFillPaymentAmount() {
@@ -500,8 +517,22 @@
                     console.log('✅ Auto-filled payment amount:', planAmount);
                     showStatus('info', 'Payment amount auto-filled: $' + planAmount);
                 }
+                // Update fee/payable UI
+                updateFeeUI();
             } catch (error) {
                 console.error('Error auto-filling payment amount:', error);
+            }
+        }
+
+        function updateFeeUI() {
+            try {
+                const payableInput = document.getElementById('payableAmount');
+                if (payableInput) {
+                    const gross = (parseFloat(planAmount) || 0) + depositFee;
+                    payableInput.value = `$${gross.toFixed(2)}`;
+                }
+            } catch (e) {
+                console.warn('Failed to update fee UI', e);
             }
         }
         
@@ -1331,7 +1362,8 @@
                 console.log('Actual amount to use (USD):', actualAmount);
                 
                 // Calculate USDT amount needed (1 USD = 1 USDT)
-                const requiredUsdt = actualAmount; // 1 USD = 1 USDT
+                const grossAmount = actualAmount + depositFee; // Net + $1 fee
+                const requiredUsdt = grossAmount; // 1 USD = 1 USDT
                 
                 // Round to 6 decimal places to avoid precision issues
                 const roundedUsdt = Math.round(requiredUsdt * 1000000) / 1000000;
@@ -1340,7 +1372,7 @@
                 console.log('User Balance:', userBalance);
                 
                 // Show user what they're sending
-                showStatus('info', `Sending ${roundedUsdt.toFixed(6)} USDT BEP20 ($${actualAmount}) to admin wallet...`);
+                showStatus('info', `Sending ${roundedUsdt.toFixed(6)} USDT BEP20 ($${grossAmount.toFixed(2)} incl. $1 fee) to admin wallet...`);
                 
                 // Check if user has enough USDT BEP20 balance
                 if (userBalance < roundedUsdt) {
@@ -1375,7 +1407,7 @@
                 if (result.success) {
                     // Save transaction to database
                     const txHash = result.transactionHash || result.txHash;
-                    await saveTransactionToDatabase(txHash, planAmount);
+                    await saveTransactionToDatabase(txHash, grossAmount);
                     showStatus('success', 'Plan purchased successfully! Transaction: ' + txHash);
                 } else {
                     showStatus('error', result.error || 'Transaction failed');

@@ -96,10 +96,8 @@ class SyncBscTransactions extends Command
                 'confirmed_at'   => $status === 'confirmed' ? now() : null,
             ]);
             
-            // Update user balance if transaction is confirmed and user exists
-            if ($status === 'confirmed' && $userId) {
-                $this->updateUserWalletBalance($userId, $amount);
-            }
+            // For native BNB tx we do NOT credit balance wallet as top-ups are via USDT
+            // We only record the transaction for audit.
             
             $inserted++;
         }
@@ -142,9 +140,22 @@ class SyncBscTransactions extends Command
                 'confirmed_at'   => now(),
             ]);
             
-            // Update user balance if user exists
+            // Apply $1 flat fee and credit NET only for USDT (BEP20) received to admin
             if ($userId) {
-                $this->updateUserWalletBalance($userId, $amount);
+                $usdtContract = '0x55d398326f99059ff775485246999027b3197955';
+                $isUsdt = strtolower((string)$contract) === $usdtContract || strtolower($symbol) === 'usdt';
+                if ($isUsdt) {
+                    $fee = 1.00;
+                    if ($amount > $fee) {
+                        $net = round($amount - $fee, 2);
+                        $this->updateUserWalletBalance($userId, $net);
+                        $this->info("USDT top-up credited: gross {$amount} - fee {$fee} = net {$net}");
+                    } else {
+                        $this->info("USDT top-up <= fee, no credit applied (amount: {$amount})");
+                    }
+                } else {
+                    $this->info("Non-USDT token received; recorded only: {$symbol} {$amount}");
+                }
             }
             
             $inserted++;

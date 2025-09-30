@@ -16,7 +16,8 @@ class WithdrawalRequest extends Model
         'transaction_hash',
         'admin_notes',
         'processed_by',
-        'processed_at'
+        'processed_at',
+        'withdrawal_source'
     ];
 
     protected $casts = [

@@ -284,7 +284,7 @@
             </div>
             <div class="row mb-4">
                 <!-- Wallet Connection Status (Full Width) -->
-                <div class="col-lg-12">
+                <div class="col-lg-12" hidden>
                     @if (auth()->user()->wallet_address)
                         <div class="card mb-3"
                             style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
@@ -349,15 +349,15 @@
                         <div class="d-flex flex-column">
                             <button class="btn btn-light btn-sm mb-2" style="border-radius: 20px; min-width: 120px;"
                                 data-toggle="modal" data-target="#topUpModal">
-                                <i class="fas fa-arrow-down mr-1"></i> Top Up
+                               <i class="fas fa-arrow-up mr-1"></i> Top Up
                             </button>
-                            <button class="btn btn-light btn-sm mb-2" style="border-radius: 20px; min-width: 120px;"
+                            <!-- <button class="btn btn-light btn-sm mb-2" style="border-radius: 20px; min-width: 120px;"
                                 data-toggle="modal" data-target="#sendModal">
                                 <i class="fas fa-paper-plane mr-1"></i> Send
-                            </button>
-                            <button class="btn btn-light btn-sm" style="border-radius: 20px; min-width: 120px;">
+                            </button> -->
+                            <!-- <button class="btn btn-light btn-sm"  style="border-radius: 20px; min-width: 120px;">
                                 <i class="fas fa-arrow-up mr-1"></i> Cash Out
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                 </div>
@@ -426,14 +426,14 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="col-sm-6 mb-3">
+                        <!-- <div class="col-sm-6 mb-3" >
                             <a href="{{ url('pools') }}" class="text-decoration-none">
                                 <div class="card text-center p-3  h-100 clickable-card">
                                     <i class="fas fa-layer-group fa-2x text-primary mb-2"></i>
                                     <h6 class="mb-1">Pools</h6>
                                 </div>
                             </a>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>
@@ -492,10 +492,10 @@
                                             onclick="copyAdminWalletAddress()">Copy</button>
                                     </div>
                                 </div>
-                                <small class="text-muted">Admin Wallet Address for USDT deposits</small>
+                                <small class="text-white">Admin Wallet Address for USDT deposits</small>
                                 @if($adminWalletAddress)
                                     <div class="mt-1 admin-wallet-status">
-                                        <small class="text-success">
+                                        <small class="text-success" hidden>
                                             <i class="fas fa-check-circle me-1"></i>Live admin wallet address
                                         </small>
                                     </div>
@@ -509,13 +509,13 @@
                             </div>
 
                             <!-- QR Code -->
-                            <div class="mb-3">
+                            <!-- <div class="mb-3">
                                 <img src="{{ asset('assets/images/qr-sample.png') }}" alt="QR Code" class="img-fluid"
                                     style="max-width: 180px;">
-                            </div>
+                            </div> -->
 
                             <!-- Simple Instructions -->
-                            <div class="mb-4">
+                            <div class="mb-4" hidden>
                                 <h6 style="color: #3bd17a;">How to Top Up - Simple Steps</h6>
                                 <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid #3bd17a;">
                                     <div class="card-body">
@@ -553,33 +553,93 @@
                             <!-- Amount Input Section -->
                             <div class="mb-4">
                                 <h6 style="color: #3bd17a;">Transaction Details</h6>
+                                <!-- Net desired input (auto adds $1 to Amount to Send) -->
+                                <div class="form-group mb-3">
+                                    <label for="topupNetDesired" class="form-label" style="color: #3bd17a;">I want to receive (Net USD)</label>
+                                    <input type="number" id="topupNetDesired" class="form-control"
+                                           placeholder="0.00" step="0.01" min="0.01"
+                                           style="background: rgba(255,255,255,0.1); border: 1px solid #3bd17a; color: #fff;">
+                                    <small class="form-text text-muted">Type net amount you want credited. We will add $1 fee to the amount you send.</small>
+                                </div>
                                 <div class="form-group mb-3">
                                     <label for="topupAmount" class="form-label" style="color: #3bd17a;">Amount to Send (USDT)</label>
                                     <input type="number" id="topupAmount" class="form-control" 
                                            placeholder="0.00" step="0.01" min="0.01"
                                            style="background: rgba(255,255,255,0.1); border: 1px solid #3bd17a; color: #fff;">
-                                    <small class="form-text text-muted">Enter the amount you want to send to admin wallet</small>
+                                <small class="form-text text-muted">Enter the gross amount. $1 fee will be deducted; rest will be credited.</small>
+                            </div>
+
+                            <!-- Fee and Net Receive Preview -->
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <div class="form-group mb-2">
+                                        <label class="form-label" style="color:#3bd17a;">Deposit Fee (Flat)</label>
+                                        <input type="text" id="topupFee" class="form-control" value="$1.00" readonly
+                                               style="background: rgba(255,255,255,0.08); border: 1px solid #3bd17a; color: #fff;">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-group mb-2">
+                                        <label class="form-label" style="color:#3bd17a;">You Will Receive</label>
+                                        <input type="text" id="topupNetReceive" class="form-control" value="$0.00" readonly
+                                               style="background: rgba(255,255,255,0.08); border: 1px solid #3bd17a; color: #fff;">
+                                        <small class="form-text text-muted">Net credited = Amount to Send − $1</small>
+                                    </div>
+                                </div>
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-6">
-                                        <button class="btn btn-success btn-block" onclick="sendUSDTDirect()">
+                                        <button class="btn btn-success btn-block" hidden onclick="sendUSDTDirect()">
                                             <i class="fas fa-paper-plane me-2"></i>Send USDT (Auto)
                                         </button>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-12">
                                         <button class="btn btn-primary btn-block" onclick="sendUSDTSimple()">
-                                            <i class="fas fa-send me-2"></i>Send USDT (Simple)
+                                            <i class="fas fa-send me-2"></i>Send USDT
                                         </button>
                                     </div>
                                 </div>
-                                <small class="text-muted d-block text-center">
+                                <!-- <small class="text-muted d-block text-center">
                                     <i class="fas fa-info-circle me-1"></i>
                                     Try "Send USDT (Simple)" if approve button doesn't work
-                                </small>
+                                </small> -->
                             </div>
 
+                            <script>
+                                (function() {
+                                    const FEE = 1.00;
+                                    const amountEl = document.getElementById('topupAmount');
+                                    const netReceiveEl = document.getElementById('topupNetReceive');
+                                    const netDesiredEl = document.getElementById('topupNetDesired');
+
+                                    function updateNetFromAmount() {
+                                        const amt = parseFloat(amountEl && amountEl.value ? amountEl.value : '0') || 0;
+                                        const net = Math.max(0, amt - FEE);
+                                        if (netReceiveEl) netReceiveEl.value = `$${net.toFixed(2)}`;
+                                        if (netDesiredEl && document.activeElement !== netDesiredEl) {
+                                            netDesiredEl.value = net > 0 ? net.toFixed(2) : '';
+                                        }
+                                    }
+
+                                    function updateAmountFromNet() {
+                                        const desired = parseFloat(netDesiredEl && netDesiredEl.value ? netDesiredEl.value : '0') || 0;
+                                        const send = desired + FEE;
+                                        if (amountEl) amountEl.value = send > 0 ? send.toFixed(2) : '';
+                                        updateNetFromAmount();
+                                    }
+
+                                    if (amountEl) {
+                                        amountEl.addEventListener('input', updateNetFromAmount);
+                                        updateNetFromAmount();
+                                    }
+                                    if (netDesiredEl) {
+                                        netDesiredEl.addEventListener('input', updateAmountFromNet);
+                                    }
+                                })();
+                            </script>
+
                             <!-- Auto Detection Status -->
-                            <div class="mb-4">
+                            <div class="mb-4" hidden>
                                 <h6 style="color: #3bd17a;">Transaction Status</h6>
                                 <div class="card" style="background: rgba(255,255,255,0.05); border: 1px solid #3bd17a;">
                                     <div class="card-body text-center">
@@ -605,7 +665,7 @@
                             </div>
 
                             <!-- Instructions -->
-                            <div class="p-3 rounded text-warning mt-3" style="background: rgba(255,255,255,0.1);">
+                            <div class="p-3 rounded text-warning mt-3" style="background: rgba(255,255,255,0.1);" hidden>
                                 <strong>Simple Process:</strong>
                                 <ul class="mb-0 mt-2">
                                     <li>Enter USDT amount you want to send</li>

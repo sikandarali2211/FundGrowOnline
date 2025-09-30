@@ -72,6 +72,16 @@ class PaymentController extends Controller
                 'to_address' => $request->to_address,
             ]);
 
+            // Flat $1 deposit fee on every payment
+            $depositFee = 1.00;
+            if ($request->amount <= $depositFee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Amount must be greater than the $1 deposit fee.',
+                ], 422);
+            }
+            $netAmount = round($request->amount - $depositFee, 2);
+
             // Handle temporary plan data
             if (strpos($request->plan_id, 'temp') === 0) {
                 // For temporary plans, find or create a default plan
@@ -80,7 +90,7 @@ class PaymentController extends Controller
                     // Create a default plan if it doesn't exist
                     $defaultPlan = InvestmentPlan::create([
                         'name' => 'Grower Plan',
-                        'amount' => $request->amount,
+                        'amount' => $netAmount,
                         'return_percentage' => 0,
                         'duration_days' => 30,
                         'is_active' => true,
@@ -89,7 +99,7 @@ class PaymentController extends Controller
                 $planData = [
                     'id' => $defaultPlan->id,
                     'name' => $defaultPlan->name,
-                    'amount' => $request->amount,
+                    'amount' => $netAmount,
                     'return_percentage' => $defaultPlan->return_percentage,
                     'duration_days' => $defaultPlan->duration_days,
                 ];
@@ -98,7 +108,8 @@ class PaymentController extends Controller
                 $planData = [
                     'id' => $plan->id,
                     'name' => $plan->name,
-                    'amount' => $plan->amount,
+                    // Credit net amount to the investment
+                    'amount' => $netAmount,
                     'return_percentage' => $plan->return_percentage,
                     'duration_days' => $plan->duration_days,
                 ];
@@ -106,7 +117,7 @@ class PaymentController extends Controller
 
             $user = Auth::user();
 
-            // Create payment transaction
+            // Create payment transaction (store GROSS amount as sent by user)
             $transaction = PaymentTransaction::create([
                 'user_id' => $user->id,
                 'plan_id' => $planData['id'],
@@ -123,7 +134,7 @@ class PaymentController extends Controller
             $userInvestment = UserInvestment::create([
                 'user_id' => $user->id,
                 'investment_plan_id' => $planData['id'] ?? 1, // Use investment_plan_id (correct column name)
-                'amount' => $planData['amount'],
+                'amount' => $planData['amount'], // net amount after $1 fee
                 'status' => 'pending',
                 'payment_transaction_id' => $transaction->id,
             ]);
@@ -132,7 +143,7 @@ class PaymentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Payment submitted successfully! Waiting for confirmation.',
+                'message' => 'Payment submitted successfully! A flat $1 deposit fee has been applied.',
                 'transaction_id' => $transaction->id,
                 'transaction_hash' => $transaction->transaction_hash,
             ]);
@@ -215,11 +226,19 @@ class PaymentController extends Controller
     /**
      * Admin: Get all pending payments
      */
-    public function getPendingPayments()
+    public function getPendingPayments(Request $request)
     {
         $transactions = PaymentTransaction::with(['user', 'plan'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
+
+        // If the client requests JSON (AJAX/fetch), return data instead of HTML
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'transactions' => $transactions,
+            ]);
+        }
 
         return view('admin.payments.index', compact('transactions'));
     }

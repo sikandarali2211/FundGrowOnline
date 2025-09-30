@@ -277,49 +277,20 @@
     </style>
 
     @php
-        $level1 = $level1 ?? collect();
-        $level2 = $level2 ?? collect();
-
-        /** flat nodes for charts - Level 1 and Level 2 */
-        $nodes = [];
-        $nodes[] = [
-            'id' => (int) $me->id,
-            'parentId' => null,
-            'name' => (string) $me->name,
-            'code' => (string) $me->referral_code,
-            'joined' => optional($me->created_at)->format('d M Y'),
-            'type' => 'me',
-            'g' => 'g-me',
-        ];
-        $palette = ['g-a', 'g-b', 'g-c', 'g-a', 'g-b'];
-        $i = 0;
-        foreach ($level1 as $l1) {
-            $g = $palette[$i % count($palette)];
-            $nodes[] = [
-                'id' => (int) $l1->id,
-                'parentId' => (int) $me->id,
-                'name' => (string) $l1->name,
-                'code' => (string) $l1->referral_code,
-                'joined' => optional($l1->created_at)->format('d M Y'),
-                'type' => 'l1',
-                'g' => $g,
-            ];
-            $i++;
-        }
-
-        // Level 2 users (those who purchased second plan) under me
-        foreach ($level2 as $l2) {
-            $nodes[] = [
-                'id' => (int) $l2->id,
-                'parentId' => (int) $me->id,
-                'name' => (string) $l2->name,
-                'code' => (string) $l2->referral_code,
-                'joined' => optional($l2->created_at)->format('d M Y'),
-                'type' => 'l2',
-                'g' => 'g-b',
-            ];
-        }
+        // just enhance, don’t reset
+        $nodes = collect($nodes ?? [])->map(function($n, $i) {
+            if ($n['type'] === 'me') {
+                $n['g'] = 'g-me';
+            } elseif ($n['type'] === 'l1') {
+                $palette = ['g-a','g-b','g-c'];
+                $n['g'] = $palette[$i % count($palette)];
+            } else {
+                $n['g'] = 'g-b';
+            }
+            return $n;
+        })->all();
     @endphp
+
     <div class="main-panel">
         <div class="container py-4" style="background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); margin-top:4rem;">
             <div class="row justify-content-center">
@@ -362,7 +333,7 @@
                     </div>
 
                     {{-- ========== CHART: ALL LEVELS ========== --}}
-                    <div class="card card-dark mb-4 chart-container" data-level="all">
+                    <div class="card card-dark mb-4 chart-container" data-level="all" hidden>
                         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
                             <h6 class="mb-0">All Levels</h6>
                             <div class="org-toolbar">
@@ -425,305 +396,142 @@
         </div>
     </div>
     <script type="module">
-        (async () => {
-            // ====== CDN loader ======
-            const D3 = ['https://esm.sh/d3@7', 'https://unpkg.com/d3@7?module'];
-            const ORG = ['https://esm.sh/d3-org-chart@3', 'https://unpkg.com/d3-org-chart@3.2.0?module'];
-            async function tryImport(list) {
-                let e;
-                for (const u of list) {
-                    try {
-                        return await import(u);
-                    } catch (err) {
-                        e = err;
-                    }
-                }
-                throw e;
-            }
+(async () => {
+    const D3 = ['https://esm.sh/d3@7','https://unpkg.com/d3@7?module'];
+    const ORG = ['https://esm.sh/d3-org-chart@3','https://unpkg.com/d3-org-chart@3.2.0?module'];
+    async function tryImport(list){
+        let e; for(const u of list){try{return await import(u);}catch(err){e=err;}}
+        throw e;
+    }
 
-            // Chart canvases - Level 1 and Level 2
-            const boxes = {
-                all: document.getElementById('chart-all'),
-                l1: document.getElementById('chart-l1'),
-                l2: document.getElementById('chart-l2'),
-            };
-            Object.values(boxes).forEach(b => {
-                if (!b) return;
-                if (!b.querySelector('.status-pill')) {
-                    const pill = document.createElement('span');
-                    pill.className = 'status-pill';
-                    pill.textContent = 'Loading…';
-                    b.appendChild(pill);
-                }
-            });
+    const boxes = {
+        all: document.getElementById('chart-all'),
+        l1: document.getElementById('chart-l1'),
+        l2: document.getElementById('chart-l2'),
+    };
 
-            let OrgModule;
-            try {
-                await tryImport(D3);
-                OrgModule = await tryImport(ORG);
-            } catch (e) {
-                Object.values(boxes).forEach(b => b.innerHTML =
-                    '<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">CDN blocked</div>');
+    let OrgModule;
+    try {
+        await tryImport(D3);
+        OrgModule = await tryImport(ORG);
+    } catch {
+        Object.values(boxes).forEach(b=>b.innerHTML='<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">CDN blocked</div>');
+        return;
+    }
+    const Chart = OrgModule.OrgChart || OrgModule.default;
+    if(!Chart){
+        Object.values(boxes).forEach(b=>b.innerHTML='<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">OrgChart missing</div>');
+        return;
+    }
+
+    // ====== Data from PHP ======
+    let raw = @json($nodes ?? []);
+    let data = (Array.isArray(raw)?raw:[]).map(n=>({
+        ...n,
+        id: n?.id ?? null,
+        parentId: n?.parentId ?? null,
+        name: n?.name ?? ''
+    })).filter(n=>n && n.id!=null);
+
+
+    // Ensure single root
+    if(!data.some(n => n.parentId === null)){
+        if(data.length){
+            data[0].parentId = null;
+        }
+    }
+
+    // Deduplicate IDs
+    const seen=new Set();
+    data=data.filter(n=>{
+        if(seen.has(n.id)) return false;
+        seen.add(n.id); return true;
+    });
+
+    if(!data.length){
+        Object.values(boxes).forEach(b=>b.innerHTML='<div style="height:100%;display:grid;place-items:center;color:#9bb3c7">No team data</div>');
+        return;
+    }
+
+    const root = data.find(n => n.parentId == null);
+
+    const esc=s=>(s??'').replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    const initials=name=>{
+        const p=(name||'').trim().split(/\s+/);
+        return (((p[0]||'?')[0]||'?')+(p.length>1?(p[p.length-1][0]||''):'' )).toUpperCase();
+    };
+    const nodeHTML=d=>{
+        const n=d.data||d, g=n.g||'g-a', me=n.type==='me';
+        return `<div class="org-node ${me?'me':''}">
+          <div class="avatar ${me?'g-me':g}">${initials(n.name)}</div>
+          <div class="info">
+            <div class="nm">${esc(n.name)}</div>
+            <div class="meta">Code: ${esc(n.code||'-')}</div>
+            ${n.joined?`<div class="meta">Joined: ${esc(n.joined)}</div>`:``}
+            ${me?`<span class="tag">YOU</span>`:``}
+          </div>
+        </div>`;
+    };
+
+    // Subsets
+    const subsetAll=()=>data;
+    const subsetLevel1Only=()=>[root,...data.filter(n=>n.type==='l1')];
+    const subsetLevel2Only=()=>{
+        const L2=data.filter(n=>n.type==='l2');
+        const L1withL2=data.filter(n=>n.type==='l1' && L2.some(l2=>l2.parentId===n.id));
+        return [root,...L1withL2,...L2];
+    };
+
+    // Chart init
+    function initChart(suffix,getSubset){
+        const hostId=`chart-${suffix}`,host=document.getElementById(hostId);
+        if(!host) return;
+        const pill=host.querySelector('.status-pill');
+        const chart=new Chart()
+            .container('#'+hostId)
+            .nodeId(d=>d.id)
+            .parentNodeId(d=>d.parentId)
+            .nodeWidth(()=>280)
+            .nodeHeight(d=>d?.data?.type==='me'?110:92)
+            .childrenMargin(()=>40)
+            .compact(false)
+            .nodeContent(nodeHTML);
+        const render=()=>{
+            const ds=getSubset();
+            if(!ds.length){
+                host.innerHTML='<div style="height:100%;display:grid;place-items:center;color:#9bb3c7">No nodes</div>';
                 return;
             }
-            const Chart = OrgModule.OrgChart || OrgModule.default || (OrgModule.default && OrgModule.default
-                .OrgChart);
-            if (!Chart) {
-                Object.values(boxes).forEach(b => b.innerHTML =
-                    '<div style="height:100%;display:grid;place-items:center;color:#ffb3b3">OrgChart export missing</div>'
-                );
-                return;
+            chart.data(ds).render().fit();
+            if(pill) pill.textContent=`Users: ${ds.length}`;
+        };
+        render();
+        return {render};
+    }
+
+    const charts={
+        all:initChart('all',subsetAll),
+        l1:initChart('l1',subsetLevel1Only),
+        l2:initChart('l2',subsetLevel2Only),
+    };
+
+    const levelFilter=document.getElementById('levelFilter');
+    const chartContainers=document.querySelectorAll('.chart-container');
+    function filterCharts(level){
+        chartContainers.forEach(c=>{
+            if(level==='all' || c.getAttribute('data-level')===level){
+                c.classList.remove('hidden'); c.style.display='block';
+            } else {
+                c.classList.add('hidden'); c.style.display='none';
             }
-
-            // ====== Data from PHP ======
-            const RAW = @json($nodes ?? []);
-            console.log('Raw data from PHP:', RAW);
-            
-            const data = (Array.isArray(RAW) ? RAW : []).map(n => ({
-                ...n,
-                id: n?.id != null ? parseInt(n.id, 10) : null,
-                parentId: n?.parentId != null ? parseInt(n.parentId, 10) : null,
-                name: n?.name ?? ''
-            })).filter(n => n && n.id != null);
-            
-            console.log('Processed data:', data);
-            console.log('Data length:', data.length);
-
-            const esc = s => (s == null) ? '' : (s + '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g,
-                '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-            const initials = name => {
-                const p = (name || '').trim().split(/\s+/);
-                return (((p[0] || '?')[0] || '?') + (p.length > 1 ? (p[p.length - 1][0] || '') : ''))
-                    .toUpperCase();
-            };
-            const nodeHTML = d => {
-                const n = d.data || d,
-                    g = n.g || 'g-a',
-                    me = n.type === 'me';
-                return `<div class="org-node ${me?'me':''}">
-      <div class="avatar ${me?'g-me':g}">${initials(n.name)}</div>
-      <div class="info">
-        <div class="nm">${esc(n.name)}</div>
-        <div class="meta">Code: ${esc(n.code||'-')}</div>
-        ${n.joined ? `<div class="meta">Joined: ${esc(n.joined)}</div>` : ``}
-        ${me ? `<span class="tag">YOU</span>` : ``}
-      </div>
-    </div>`;
-            };
-
-            if (!data.length) {
-                console.log('❌ No data found!');
-                console.log('RAW data:', RAW);
-                Object.values(boxes).forEach(b => b.innerHTML =
-                    '<div style="height:100%;display:grid;place-items:center;color:#9bb3c7">No team data</div>');
-                return;
-            }
-            
-            console.log('✅ Data found, length:', data.length);
-
-            // ====== Build ordered children map (data order preserve) ======
-            const root = data.find(n => n.parentId == null) || data[0];
-            const childrenMap = new Map(); // parentId -> [childNodeObjects in display order]
-            for (const n of data) {
-                if (n.parentId != null) {
-                    const arr = childrenMap.get(n.parentId) || [];
-                    arr.push(n);
-                    childrenMap.set(n.parentId, arr);
-                }
-            }
-            const L1 = childrenMap.get(root.id) || [];
-
-            // ====== Subset makers ======
-            // All levels (no limit)
-            const subsetAll = () => data;
-
-            // Level-1 requirement: exactly first 2 directs (if available) + YOU
-            const subsetLevel1_Min2 = () => {
-                const set = [root];
-                set.push(...L1.slice(0, 2));
-                return set;
-            };
-
-            // Level-2 requirement: 3 directs (A,B,C) + each 3 kids => 12 nodes + YOU on top
-            const subsetLevel2_3x3 = () => {
-                const set = [root];
-                const top3 = L1.slice(0, 3);
-                set.push(...top3);
-                for (const p of top3) {
-                    const kids = (childrenMap.get(p.id) || []).slice(0, 3);
-                    set.push(...kids);
-                }
-                return set;
-            };
-
-            // Level 1 only: Show only Level 1 direct referrals + YOU
-            const subsetLevel1Only = () => {
-                const set = [root];
-                set.push(...L1);
-                return set;
-            };
-
-            // Level 2 only: Show Level 2 users + their Level 1 parents + YOU
-            const subsetLevel2Only = () => {
-                const set = [root];
-                const L2 = data.filter(n => n.type === 'l2');
-                // Include L1 parents that have any L2 children
-                const L1_with_L2 = data.filter(n => n.type === 'l1' && L2.some(l2 => l2.parentId === n.id));
-                set.push(...L1_with_L2);
-                set.push(...L2);
-                return set;
-            };
+        });
+    }
+    if(levelFilter){
+        levelFilter.addEventListener('change',function(){filterCharts(this.value);});
+    }
+    filterCharts('all');
+})();
+</script>
 
 
-            // Level progression system - Level 1 only
-            const checkLevelProgression = () => {
-                const level1Count = L1.length;
-                
-                // Update level status display
-                const level1Status = document.getElementById('level1Status');
-                
-                if (level1Status) {
-                    level1Status.textContent = `Level 1: ${level1Count} users`;
-                }
-                
-                // Always show Level 1
-                document.querySelector('[data-level="1"]').style.display = 'block';
-                document.querySelector('[data-level="all"]').style.display = 'block';
-                
-                return true;
-            };
-
-            // Show level progression message
-            const showLevelProgressionMessage = (message) => {
-                // Create or update progress message
-                let progressDiv = document.getElementById('levelProgressMessage');
-                if (!progressDiv) {
-                    progressDiv = document.createElement('div');
-                    progressDiv.id = 'levelProgressMessage';
-                    progressDiv.className = 'alert alert-success alert-dismissible fade show';
-                    progressDiv.style.marginBottom = '1rem';
-                    
-                    const closeBtn = document.createElement('button');
-                    closeBtn.type = 'button';
-                    closeBtn.className = 'btn-close';
-                    closeBtn.setAttribute('data-bs-dismiss', 'alert');
-                    progressDiv.appendChild(closeBtn);
-                    
-                    // Insert after header
-                    const header = document.querySelector('.card.card-dark.mb-4');
-                    header.parentNode.insertBefore(progressDiv, header.nextSibling);
-                }
-                
-                progressDiv.innerHTML = `
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <i class="fa fa-check-circle me-2"></i>${message}
-                `;
-            };
-
-            // ====== Generic chart initializer ======
-            function initChart(suffix, getSubset) {
-                const hostId = `chart-${suffix}`;
-                const host = document.getElementById(hostId);
-                if (!host) return;
-
-                const pill = host.querySelector('.status-pill');
-
-                const chart = new Chart()
-                    .container('#' + hostId)
-                    .nodeId(d => d.id)
-                    .parentNodeId(d => d.parentId)
-                    .nodeWidth(() => 280)
-                    .nodeHeight(d => (d?.data?.type === 'me' ? 110 : 92))
-                    .childrenMargin(() => 40)
-                    .compact(false)
-                    .nodeContent(nodeHTML);
-
-                const render = () => {
-                    const ds = getSubset();
-                    console.log(`Rendering chart ${suffix} with data:`, ds);
-                    console.log(`Data length for ${suffix}:`, ds.length);
-                    chart.data(ds).render().fit();
-                    if (pill) pill.textContent = `Users: ${ds.length}`;
-                };
-
-                // Initial render
-                render();
-
-                // Toolbar binds
-                const bind = (id, fn) => document.getElementById(id)?.addEventListener('click', fn);
-                bind(`fit-${suffix}`, () => chart.fit());
-                bind(`zin-${suffix}`, () => chart.zoomIn());
-                bind(`zout-${suffix}`, () => chart.zoomOut());
-                bind(`exp-${suffix}`, () => chart.expandAll());
-                bind(`col-${suffix}`, () => chart.collapseAll());
-                bind(`me-${suffix}`, () => chart.setCentered(root.id).fit());
-                window.addEventListener('resize', () => chart.fit(), {
-                    passive: true
-                });
-
-                return {
-                    render
-                };
-            }
-
-            // ====== Create the charts - Level 1 and Level 2 ======
-            console.log('Initializing charts...');
-            const chartInstances = {
-                all: initChart('all', subsetAll),
-                l1: initChart('l1', subsetLevel1Only),
-                l2: initChart('l2', subsetLevel2Only),
-            };
-            console.log('Charts initialized:', chartInstances);
-
-            // ====== Level Filter Functionality ======
-            const levelFilter = document.getElementById('levelFilter');
-            const chartContainers = document.querySelectorAll('.chart-container');
-
-            function filterCharts(selectedLevel) {
-                console.log('Filtering charts for level:', selectedLevel);
-
-                chartContainers.forEach(container => {
-                    const level = container.getAttribute('data-level');
-                    console.log('Processing container with level:', level);
-
-                    if (selectedLevel === 'all') {
-                        // Show all charts
-                        container.classList.remove('hidden');
-                        container.style.display = 'block';
-                        console.log('Showing all charts');
-                    } else if (level === selectedLevel) {
-                        // Show only the selected level
-                        container.classList.remove('hidden');
-                        container.style.display = 'block';
-                        console.log('Showing level:', level);
-                    } else {
-                        // Hide other levels
-                        container.classList.add('hidden');
-                        container.style.display = 'none';
-                        console.log('Hiding level:', level);
-                    }
-                });
-            }
-
-            // Add event listener for level filter
-            if (levelFilter) {
-                levelFilter.addEventListener('change', function() {
-                    console.log('Level filter changed to:', this.value);
-                    filterCharts(this.value);
-                });
-            }
-
-            // Initialize level progression system
-            checkLevelProgression();
-            
-            // Always show all levels by default
-            filterCharts('all');
-            
-            // Debug: Show data in console and add fallback display
-            console.log('=== FINAL DEBUG INFO ===');
-            console.log('Total data nodes:', data.length);
-            console.log('Level 1 users:', L1.length);
-            console.log('Children map size:', childrenMap.size);
-        })();
-    </script>
 @endsection

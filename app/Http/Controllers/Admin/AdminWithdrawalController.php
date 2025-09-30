@@ -255,9 +255,20 @@ class AdminWithdrawalController extends Controller
                 $withdrawal->processed_at = now();
                 $withdrawal->save();
 
-                // Refund amount back to user's pool commission
+                // Refund gross amount (net + 10% fee) to original source(s)
                 $user = $withdrawal->user;
-                $user->referral_commission_balance = ($user->referral_commission_balance ?? 0) + $withdrawal->amount;
+                $net = (float) $withdrawal->amount; // stored as NET
+                $gross = round($net / 0.90, 2); // assume 10% fee policy
+
+                $source = $withdrawal->withdrawal_source ?? 'pool_commission';
+                if ($source === 'pool_commission') {
+                    $user->referral_commission_balance = ($user->referral_commission_balance ?? 0) + $gross;
+                } elseif ($source === 'balance_wallet') {
+                    $user->balance_wallet = ($user->balance_wallet ?? 0) + $gross;
+                } else {
+                    // both: refund entirely to balance wallet to ensure funds are returned
+                    $user->balance_wallet = ($user->balance_wallet ?? 0) + $gross;
+                }
                 $user->save();
 
                 Log::info('Withdrawal request rejected', [

@@ -282,14 +282,14 @@
                     </a>
                 </li>
                 <!-- Automated Withdrawal System - Only for Admin -->
-                <li class="nav-item">
+                <!-- <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="/auto-transfer">
                         <i class="fa fa-robot menu-icon mr-2" style="color: #3bd17a;"></i>
                         <span class="menu-title" style="color: #3bd17a;">Auto Transfer</span>
                         <span class="badge badge-success badge-pill ml-auto">NEW</span>
                     </a>
-                </li>
+                </li> -->
                 <!-- Global Pool Management - Only for Admin -->
                 <li class="nav-item">
                     <a class="nav-link d-flex align-items-center px-3 py-2"

@@ -221,7 +221,7 @@
                                     </thead>
                                     <tbody>
                                         @foreach($referrals as $referral)
-                                            <tr data-level="{{ $referral->level }}" data-plan-status="{{ $referral->plan_status }}">
+                                            <tr data-level="{{ $referral->plan_level ?? $referral->tree_level }}" data-plan-status="{{ $referral->plan_status }}">
                                                 <td>
                                                     <span class="badge badge-referral">#{{ $referral->id }}</span>
                                                 </td>
