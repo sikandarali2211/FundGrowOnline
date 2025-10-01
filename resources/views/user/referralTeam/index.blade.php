@@ -192,8 +192,9 @@
                         <div class="d-flex gap-2">
                             <select class="form-select form-select-sm" id="levelFilter" style="width: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
                                 <option value="all">All Levels</option>
-                                <option value="1">Level 1 Only</option>
-                                <option value="2">Level 2 Only</option>
+                                @for($i = 1; $i <= 15; $i++)
+                                    <option value="{{ $i }}">Level {{ $i }} Only</option>
+                                @endfor
                             </select>
                             <select class="form-select form-select-sm" id="planStatusFilter" style="width: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
                                 <option value="all">All Plans</option>
@@ -215,13 +216,14 @@
                                             <th>Referral Code</th>
                                             <th>Referral Level</th>
                                             <th>Plan Status</th>
+                                            <th>Commission</th>
                                             <th>Joined Date</th>
                                             <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($referrals as $referral)
-                                            <tr data-level="{{ $referral->plan_level ?? $referral->tree_level }}" data-plan-status="{{ $referral->plan_status }}">
+                                            <tr data-level="{{ $referral->level }}" data-plan-status="{{ $referral->plan_status }}">
                                                 <td>
                                                     <span class="badge badge-referral">#{{ $referral->id }}</span>
                                                 </td>
@@ -251,6 +253,13 @@
                                                         <span class="badge bg-warning">Pending Plan</span>
                                                     @else
                                                         <span class="badge bg-secondary">No Plan</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if($referral->total_commission > 0)
+                                                        <span class="text-success fw-bold">${{ number_format($referral->total_commission, 2) }}</span>
+                                                    @else
+                                                        <span class="text-muted">$0.00</span>
                                                     @endif
                                                 </td>
                                                 <td>
@@ -359,14 +368,18 @@
         const rows = document.querySelectorAll('tbody tr[data-level]');
         
         rows.forEach(row => {
-            const level = row.getAttribute('data-level');
+            const userLevel = parseInt(row.getAttribute('data-level')) || 0;
             const planStatus = row.getAttribute('data-plan-status');
             
             let showRow = true;
             
-            // Level filter
-            if (selectedLevel !== 'all' && level !== selectedLevel) {
-                showRow = false;
+            // Level filter: Show user if their level is >= selected level
+            // (e.g., Level 5 user appears in Level 1, 2, 3, 4, 5 filters)
+            if (selectedLevel !== 'all') {
+                const filterLevel = parseInt(selectedLevel);
+                if (userLevel < filterLevel) {
+                    showRow = false;
+                }
             }
             
             // Plan status filter

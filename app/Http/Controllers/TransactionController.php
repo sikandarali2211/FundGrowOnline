@@ -990,4 +990,77 @@ private function getUserBalanceWalletAmount($user)
     }
 }
 
+    /**
+     * Exchange Pool Commission to Pool Wallet
+     */
+    public function exchangeCommissionToPool(Request $request)
+    {
+        try {
+            Log::info('Commission exchange request received', [
+                'amount' => $request->amount,
+                'user_id' => Auth::id(),
+            ]);
+
+            $request->validate(['amount' => 'required|numeric|min:0.01']);
+
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'User not authenticated'], 401);
+            }
+
+            $amount = round($request->amount, 2);
+            $currentCommission = (float) ($user->referral_commission_balance ?? 0);
+            $currentPool = (float) ($user->pool_wallet_amount ?? 0);
+
+            if ($amount > $currentCommission) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Insufficient pool commission. Available: $' . number_format($currentCommission, 2)
+                ], 400);
+            }
+
+            DB::transaction(function () use ($user, $amount) {
+                $fresh = \App\Models\User::where('id', $user->id)->lockForUpdate()->first();
+                
+                // Add to pool wallet
+                $fresh->pool_wallet_amount = (float) ($fresh->pool_wallet_amount ?? 0) + $amount;
+                
+                // Deduct from pool commission
+                $fresh->referral_commission_balance = (float) ($fresh->referral_commission_balance ?? 0) - $amount;
+                
+                $fresh->save();
+            });
+
+            $userAfter = \App\Models\User::find($user->id);
+            $newPool = (float) ($userAfter->pool_wallet_amount ?? 0);
+            $newCommission = (float) ($userAfter->referral_commission_balance ?? 0);
+
+            Log::info("Commission exchanged to pool", [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'previous_commission' => $currentCommission,
+                'previous_pool' => $currentPool,
+                'new_commission' => $newCommission,
+                'new_pool' => $newPool,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Commission transferred to Pool Wallet successfully!',
+                'data' => [
+                    'exchange_amount' => $amount,
+                    'previous_commission' => round($currentCommission, 2),
+                    'previous_pool' => round($currentPool, 2),
+                    'new_commission' => round($newCommission, 2),
+                    'new_pool' => round($newPool, 2),
+                ]
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['success' => false, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            Log::error("Failed to exchange commission to pool: " . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Exchange failed. Please try again.'], 500);
+        }
+    }
+
 }

@@ -126,7 +126,7 @@ class AdminWithdrawalController extends Controller
     {
         try {
             // Get admin wallet address
-            $adminAddress = config('services.bscscan.admin_address', '0x3Bb750C42f9B80CbEd7003c004eaeAdc76c9b4Fd');
+            $adminAddress = config('services.bscscan.admin_address', '0x42b289f5cc30a2bacd86cf57ee03b3fb94884e53');
             
             // USDT BEP-20 contract address
             $usdtContract = '0x55d398326f99059fF775485246999027B3197955';
@@ -360,7 +360,7 @@ class AdminWithdrawalController extends Controller
 
         try {
             // Get admin wallet address
-            $adminAddress = config('services.bscscan.admin_address', '0x3Bb750C42f9B80CbEd7003c004eaeAdc76c9b4Fd');
+            $adminAddress = config('services.bscscan.admin_address', '0x42b289f5cc30a2bacd86cf57ee03b3fb94884e53');
             
             // This will be handled by JavaScript on the frontend
             // The actual blockchain transfer happens in the browser

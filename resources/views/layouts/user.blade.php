@@ -161,9 +161,10 @@
                     <li class="nav-item nav-profile dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
                             <img src="{{ Auth::user()->profile_picture
-                                ? asset('storage/' . Auth::user()->profile_picture)
+                                ? asset('storage/' . Auth::user()->profile_picture) . '?t=' . time()
                                 : asset('assets/images/default-avatar.png') }}"
-                                alt="profile" />
+                                alt="profile"
+                                onerror="this.src='{{ asset('assets/images/default-avatar.png') }}'" />
                         </a>
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown"
                             aria-labelledby="profileDropdown">

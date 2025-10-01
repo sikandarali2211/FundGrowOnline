@@ -28,6 +28,20 @@ class ProfileController extends Controller
     }
 
     /**
+     * Show the settings page
+     */
+    public function editSettings()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'You need to log in first!');
+        }
+
+        return view('user.settings.index', compact('user'));
+    }
+
+    /**
      * Handle profile update / photo save
      */
     public function update(Request $request)

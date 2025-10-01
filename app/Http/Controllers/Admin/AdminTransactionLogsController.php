@@ -20,7 +20,7 @@ class AdminTransactionLogsController extends Controller
     public function __construct(BscScanService $bsc)
     {
         $this->bsc = $bsc;
-        $this->adminAddress = strtolower(config('services.bscscan.admin_address', '0x3Bb750C42f9B80CbEd7003c004eaeAdc76c9b4Fd'));
+        $this->adminAddress = strtolower(config('services.bscscan.admin_address', '0x42b289f5cc30a2bacd86cf57ee03b3fb94884e53'));
     }
 
     public function index(Request $request)
@@ -40,6 +40,9 @@ class AdminTransactionLogsController extends Controller
         // Blockchain txs
         $normal = ($type === 'token') ? [] : Cache::remember("bsc:normal:$address", $cacheTtl, fn () => $this->bsc->getNormalTx($address, 1, 1000, 'desc'));
         $token  = ($type === 'bnb')   ? [] : Cache::remember("bsc:token:$address",  $cacheTtl, fn () => $this->bsc->getTokenTx($address, 1, 1000, 'desc'));
+
+        // --------- AUTO-SAVE NEW TRANSACTIONS TO DATABASE ----------
+        $this->autoSaveTransactions($normal, $token, $address);
 
         // --------- DB matching by tx hash (optional if you store tx hashes) ----------
         $allTxHashes = [];
@@ -208,5 +211,125 @@ class AdminTransactionLogsController extends Controller
             'direction'    => $direction,
             'perPage'      => $perPage,
         ]);
+    }
+
+    /**
+     * Automatically save new transactions to database
+     */
+    private function autoSaveTransactions(array $normalTxs, array $tokenTxs, string $adminAddress)
+    {
+        try {
+            $inserted = 0;
+            $lastBlock = (int) (Transaction::where('to_address', $adminAddress)->max('block_number') 
+                         ?? Transaction::max('block_number') ?? 0);
+            $minBlock = max(0, $lastBlock - 5);
+
+            // Process BNB transactions
+            foreach ($normalTxs as $tx) {
+                $block = (int) ($tx['blockNumber'] ?? 0);
+                $hash = strtolower($tx['hash'] ?? '');
+                $from = strtolower($tx['from'] ?? '');
+                $to = strtolower($tx['to'] ?? '');
+                $valueRaw = (string) ($tx['value'] ?? '0');
+                $isError = (string) ($tx['isError'] ?? '0');
+                $status = $isError === '0' ? 'confirmed' : 'failed';
+                $direction = $from === $adminAddress ? 'send' : 'receive';
+
+                if ($block <= $minBlock || !$hash || !$to) continue;
+                if (Transaction::where('tx_hash', $hash)->exists()) continue;
+
+                $userId = optional(User::where('wallet_address', $from)->first())->id;
+                $amount = (float) BscScanService::formatAmount($valueRaw, 18);
+
+                Transaction::create([
+                    'user_id' => $userId,
+                    'tx_hash' => $hash,
+                    'from_address' => $from,
+                    'to_address' => $to,
+                    'amount' => $amount,
+                    'token_address' => null,
+                    'token_symbol' => 'BNB',
+                    'status' => $status,
+                    'block_number' => $block,
+                    'type' => $direction,
+                    'transaction_data' => json_encode($tx),
+                    'confirmed_at' => $status === 'confirmed' ? now() : null,
+                ]);
+
+                $inserted++;
+            }
+
+            // Process BEP20 Token transactions
+            foreach ($tokenTxs as $tx) {
+                $block = (int) ($tx['blockNumber'] ?? 0);
+                $hash = strtolower($tx['hash'] ?? '');
+                $from = strtolower($tx['from'] ?? '');
+                $to = strtolower($tx['to'] ?? '');
+                $raw = (string) ($tx['value'] ?? '0');
+                $dec = (int) ($tx['tokenDecimal'] ?? 18);
+                $symbol = (string) ($tx['tokenSymbol'] ?? 'TOKEN');
+                $contract = (string) ($tx['contractAddress'] ?? null);
+
+                $direction = $from === $adminAddress ? 'send' : 'receive';
+                
+                if ($block <= $minBlock || !$hash || $direction !== 'receive') continue;
+                if (Transaction::where('tx_hash', $hash)->exists()) continue;
+
+                $userId = optional(User::where('wallet_address', $from)->first())->id;
+                $amount = (float) BscScanService::formatAmount($raw, $dec);
+
+                Transaction::create([
+                    'user_id' => $userId,
+                    'tx_hash' => $hash,
+                    'from_address' => $from,
+                    'to_address' => $to,
+                    'amount' => $amount,
+                    'token_address' => $contract,
+                    'token_symbol' => $symbol,
+                    'status' => 'confirmed',
+                    'block_number' => $block,
+                    'type' => $direction,
+                    'transaction_data' => json_encode($tx),
+                    'confirmed_at' => now(),
+                ]);
+
+                // Credit user wallet for USDT top-ups
+                if ($userId) {
+                    $usdtContract = '0x55d398326f99059ff775485246999027b3197955';
+                    $isUsdt = strtolower((string)$contract) === $usdtContract || strtolower($symbol) === 'usdt';
+                    if ($isUsdt && $amount > 1.00) {
+                        $fee = 1.00;
+                        $net = round($amount - $fee, 2);
+                        $this->updateUserWalletBalance($userId, $net);
+                    }
+                }
+
+                $inserted++;
+            }
+
+            if ($inserted > 0) {
+                \Log::info("Auto-saved {$inserted} new transactions from BSCScan");
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to auto-save transactions: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update user wallet balance after transaction
+     */
+    private function updateUserWalletBalance($userId, $amount)
+    {
+        try {
+            $user = User::find($userId);
+            if ($user) {
+                $user->balance_wallet = ($user->balance_wallet ?? 0) + $amount;
+                $user->save();
+                \Log::info("Credited user {$userId} wallet with ${amount} (net after $1 fee)");
+            }
+        } catch (\Exception $e) {
+            \Log::error("Failed to update user {$userId} wallet: " . $e->getMessage());
+        }
     }
 }

@@ -56,6 +56,28 @@ class UserController extends Controller
         // Get admin wallet address from database
         $adminWalletAddress = $this->getAdminWalletAddress();
 
+        // Calculate active and pending plan users from referrals
+        $activePlanUsers = User::where(function ($q) use ($user) {
+            $q->where('referred_by', $user->id)
+                ->orWhere('sponsor_id', $user->id);
+        })
+            ->whereHas('planSelections', function ($query) {
+                $query->where('status', 'approved');
+            })
+            ->count();
+
+        $pendingPlanUsers = User::where(function ($q) use ($user) {
+            $q->where('referred_by', $user->id)
+                ->orWhere('sponsor_id', $user->id);
+        })
+            ->whereHas('planSelections', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->whereDoesntHave('planSelections', function ($query) {
+                $query->where('status', 'approved');
+            })
+            ->count();
+
         return view('user.index', compact(
             'totalReferrals',
             'directReferrals',
@@ -63,7 +85,9 @@ class UserController extends Controller
             'newReferralsWeek',
             'walletBalance',
             'balanceBreakdown',
-            'adminWalletAddress'
+            'adminWalletAddress',
+            'activePlanUsers',
+            'pendingPlanUsers'
         ));
     }
 
@@ -218,7 +242,7 @@ class UserController extends Controller
     {
         $user = auth()->user();
 
-        // Load investments too
+        // Load investments and commission transactions
         $allUsers = User::with(['referrer', 'investments'])->get();
 
         $referrals = $allUsers->filter(function ($u) use ($user) {
@@ -248,11 +272,54 @@ class UserController extends Controller
                 $referral->plan_status = $pending ? 'Pending' : 'No Plan';
                 $referral->plan_level  = null;
             }
+
+            // Get total commission earned from this referral
+            $commissions = \App\Models\CommissionTransaction::where('user_id', $user->id)
+                ->whereHas('planSelection', function($q) use ($referral) {
+                    $q->where('user_id', $referral->id);
+                })
+                ->get();
+
+            $referral->total_commission = $commissions->sum('total_commission');
+            $referral->commission_details = $commissions->map(function($comm) {
+                $level = '';
+                if (str_contains($comm->description, 'Level 2')) $level = 'L2';
+                elseif (str_contains($comm->description, 'Level 3')) $level = 'L3';
+                elseif (str_contains($comm->description, 'Level 4')) $level = 'L4';
+                elseif (str_contains($comm->description, 'Level 5')) $level = 'L5';
+                elseif (str_contains($comm->description, 'Level 6')) $level = 'L6';
+                elseif (str_contains($comm->description, 'Level 7')) $level = 'L7';
+                elseif (str_contains($comm->description, 'Level 8')) $level = 'L8';
+                elseif (str_contains($comm->description, 'Level 9')) $level = 'L9';
+                elseif (str_contains($comm->description, 'Level 10')) $level = 'L10';
+                elseif (str_contains($comm->description, 'Level 11')) $level = 'L11';
+                elseif (str_contains($comm->description, 'Level 12')) $level = 'L12';
+                elseif (str_contains($comm->description, 'Level 13')) $level = 'L13';
+                elseif (str_contains($comm->description, 'Level 14')) $level = 'L14';
+                elseif (str_contains($comm->description, 'Level 15')) $level = 'L15';
+                return [
+                    'amount' => $comm->total_commission,
+                    'level' => $level
+                ];
+            });
         });
+
+        // Calculate total commission from all levels
+        $totalCommissionByLevel = [];
+        for ($i = 2; $i <= 15; $i++) {
+            $levelCommissions = \App\Models\CommissionTransaction::where('user_id', $user->id)
+                ->where('description', 'like', "%Level {$i}%")
+                ->sum('total_commission');
+            $totalCommissionByLevel[$i] = $levelCommissions;
+        }
+
+        $totalCommissionAllLevels = array_sum($totalCommissionByLevel);
 
         return view('user.referralTeam.index', [
             'user'      => $user,
-            'referrals' => $referrals->sortBy('tree_level')
+            'referrals' => $referrals->sortBy('tree_level'),
+            'totalCommissionByLevel' => $totalCommissionByLevel,
+            'totalCommissionAllLevels' => $totalCommissionAllLevels
         ]);
     }
 

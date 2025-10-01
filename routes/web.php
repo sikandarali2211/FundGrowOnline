@@ -163,18 +163,12 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::get('/referral-plan', [ReferralPlanController::class, 'index'])->name('referralplan.index');
 
     // NEW: User Profile page
-    Route::get('/profile', function () {
-        return view('user.profile.index');
-    })->name('profile.index');
-
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.index');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-
-    // NEW: User Settings page
-    Route::get('/settings', function () {
-        return view('user.settings.index');
-    })->name('settings.index');
+    // NEW: User Settings page (using same ProfileController)
+    Route::get('/settings', [ProfileController::class, 'editSettings'])->name('settings.index');
+    Route::post('/settings', [ProfileController::class, 'update'])->name('profile.update');
 
     // NEW: Withdrawal routes
     Route::get('/withdrawal', [WithdrawalController::class, 'index'])->name('withdrawal.index');
@@ -222,6 +216,11 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::post('/wallet/exchange-to-pool', [TransactionController::class, 'exchangeToPool'])
         ->name('wallet.exchange')
         ->withoutMiddleware(['require.pin.verification']);
+    
+    Route::post('/wallet/commission-exchange', [TransactionController::class, 'exchangeCommissionToPool'])
+        ->name('wallet.commission-exchange')
+        ->withoutMiddleware(['require.pin.verification']);
+    
     // Payment Routes (require PIN verification for sensitive operations)
     Route::middleware(['require.pin.verification'])->group(function () {
         Route::post('/payment/verify', [PaymentController::class, 'verifyPayment'])->name('payment.verify');

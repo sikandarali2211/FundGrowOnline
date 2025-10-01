@@ -20,13 +20,18 @@
 
                                 {{-- Profile Picture --}}
                                 <div class="mb-3 text-center">
-                                    <img src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) : asset('assets/images/default-avatar.png') }}"
-                                        alt="Profile Picture" class="rounded-circle mb-3" width="100" height="100">
+                                    <img id="profilePreview" 
+                                        src="{{ $user->profile_picture ? asset('storage/' . $user->profile_picture) . '?t=' . time() : asset('assets/images/default-avatar.png') }}"
+                                        alt="Profile Picture" 
+                                        class="rounded-circle mb-3" 
+                                        width="100" 
+                                        height="100"
+                                        style="object-fit: cover; border: 2px solid #3bd17a;">
 
                                     <div class="d-flex justify-content-center" style="gap: 0.75rem;">
                                         <!-- Hidden file input -->
-                                        <input type="file" id="profileInput" name="profile_picture" class="d-none"
-                                            onchange="document.getElementById('fileName').innerText = this.files[0].name">
+                                        <input type="file" id="profileInput" name="profile_picture" class="d-none" accept="image/*"
+                                            onchange="previewImage(this)">
 
                                         <!-- Upload button -->
                                         <button type="button" class="btn btn-outline-light" style="border-radius: 10px;"
@@ -92,4 +97,22 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('profilePreview');
+            const fileName = document.getElementById('fileName');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+                fileName.innerText = input.files[0].name;
+            }
+        }
+    </script>
 @endsection
