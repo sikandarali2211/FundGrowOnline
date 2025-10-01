@@ -80,6 +80,11 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Transaction::class);
     }
 
+    public function investments()
+    {
+        return $this->hasMany(\App\Models\UserInvestment::class, 'user_id');
+    }
+
     /** Unique referral code */
     public static function generateReferralCode(int $length = 8): string
     {

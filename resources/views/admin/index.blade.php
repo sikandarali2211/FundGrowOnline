@@ -195,7 +195,7 @@
             <div class="col-md-6 col-lg-7 d-flex">
                 <div class="row w-100 h-100">
                     <div class="col-sm-6 mb-3 d-flex">
-                        <a href="{{ url('balance-wallet') }}" class="text-decoration-none w-100">
+                        <a href="#" class="text-decoration-none w-100">
                             <div
                                 class="card text-center p-3 shadow-sm h-100 w-100 d-flex flex-column align-items-center justify-content-center clickable-card">
                                 <i class="fas fa-wallet fa-2x text-info mb-2"></i>
@@ -205,7 +205,7 @@
                         </a>
                     </div>
                     <div class="col-sm-6 mb-3 d-flex">
-                        <a href="{{ url('pool-wallet') }}" class="text-decoration-none w-100">
+                        <a href="#" class="text-decoration-none w-100">
                             <div class="card text-center p-3 shadow-sm h-100 w-100 d-flex flex-column align-items-center justify-content-center clickable-card">
                                 <i class="fas fa-coins fa-2x text-warning mb-2"></i>
                                 <h6 class="mb-1">BNB Balance</h6>

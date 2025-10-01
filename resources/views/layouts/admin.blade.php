@@ -307,7 +307,7 @@
                     </a>
                 </li>
                 <!-- Payments - Only for Admin -->
-                <li class="nav-item">
+                <li class="nav-item" hidden>
                     <a class="nav-link d-flex align-items-center px-3 py-2"
                         href="{{ route('admin.payments.index') }}">
                         <i class="fa fa-credit-card menu-icon mr-2" style="color: #3bd17a;"></i>

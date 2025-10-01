@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('pool_commission', 15, 2); // 60% - Pool commission
             $table->decimal('profit_commission', 15, 2); // 30% - Profit commission
             $table->decimal('global_pool_commission', 15, 2); // 10% - Global pool
-            $table->enum('commission_type', ['second_plan', 'referral_chain']); // Type of commission
+            $table->enum('commission_type', ['second_plan', 'third_plan', 'fourth_plan', 'fifth_plan', 'sixth_plan', 'seventh_plan', 'eighth_plan', 'ninth_plan', 'tenth_plan', 'eleventh_plan', 'twelfth_plan', 'thirteenth_plan', 'fourteenth_plan', 'fifteenth_plan', 'referral_chain']); // Type of commission
             $table->string('description')->nullable(); // Description of the commission
             $table->timestamps();
 

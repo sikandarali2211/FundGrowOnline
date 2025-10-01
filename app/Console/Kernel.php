@@ -28,6 +28,12 @@ class Kernel extends ConsoleKernel
         $schedule->command('withdrawals:process --stats')
             ->hourly()
             ->runInBackground();
+
+        // Process BFS Matrix commissions every 30 minutes
+        $schedule->command('commissions:process-bfs-matrix')
+            ->everyThirtyMinutes()
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     /**
