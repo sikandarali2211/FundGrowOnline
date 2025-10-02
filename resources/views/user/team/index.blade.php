@@ -299,14 +299,22 @@
                     <div class="card card-dark mb-4">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 head-stat">
-                                <div>
-                                    <h5 class="mb-1">My Team</h5>
-                                    <div class="text-muted small">Current Level: <span class="badge-soft">Level
-                                            {{ $me->level }}</span></div>
-                                    <div id="levelProgressStatus" class="text-muted small mt-1">
-                                        <span id="level1Status">Level 1: {{ $directCount ?? 0 }}/3 users</span>
+                                    <div>
+                                        <h5 class="mb-1">My Team</h5>
+                                        <div class="text-muted small">Current Level: <span class="badge-soft">Level
+                                                {{ $me->level }}</span></div>
+                                        <div id="levelProgressStatus" class="text-muted small mt-1">
+                                            <span id="level1Status">Level 1: {{ $directCount ?? 0 }}/3 users</span>
+                                        </div>
+                                        @php
+                                            $isChildOfSomeone = $me->referred_by !== null;
+                                            $level2NodeCount = collect($nodes ?? [])->where('type', 'l2')->count();
+                                        @endphp
+                                        <div class="text-muted small mt-1">
+                                            <span class="badge-soft">{{ $isChildOfSomeone ? 'Child Dashboard' : 'Root Dashboard' }}</span>
+                                            <span class="badge-soft ms-1">L2 Nodes: {{ $level2NodeCount }}</span>
+                                        </div>
                                     </div>
-                                </div>
                                 <div class="d-flex align-items-center gap-3">
                                     {{-- Level Filter Dropdown --}}
                                     <div class="level-filter">
@@ -767,6 +775,11 @@
     const subsetLevel2Only=()=>{
         const L2=data.filter(n=>n.type==='l2');
         const L1withL2=data.filter(n=>n.type==='l1' && L2.some(l2=>l2.parentId===n.id));
+        const rootWithL2=L2.some(l2=>l2.parentId===root.id);
+        // For child dashboards, show root + all L2 nodes (they're children of the child user)
+        if(rootWithL2) {
+            return [root,...L2];
+        }
         return [root,...L1withL2,...L2];
     };
     const subsetLevel3Only=()=> {

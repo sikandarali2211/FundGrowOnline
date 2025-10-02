@@ -40,6 +40,78 @@
             padding: 4px 10px;
         }
 
+        /* Pagination Styling */
+        .pagination-container {
+            background: rgba(12, 18, 26, 0.9);
+            border: 1px solid rgba(59, 209, 122, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .pagination {
+            gap: 8px;
+            margin: 0;
+        }
+
+        .pagination .page-link {
+            background: rgba(7, 45, 66, 0.6);
+            border: 1px solid rgba(59, 209, 122, 0.2);
+            color: #3bd17a;
+            border-radius: 8px;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .pagination .page-link:hover {
+            background: rgba(59, 209, 122, 0.2);
+            border-color: #3bd17a;
+            transform: translateY(-2px);
+        }
+
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, #3bd17a, #28a745);
+            border-color: #3bd17a;
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 209, 122, 0.4);
+        }
+
+        .pagination .page-item.disabled .page-link {
+            background: rgba(255, 255, 255, 0.02);
+            color: #666;
+            border-color: rgba(255, 255, 255, 0.1);
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+
+        .pagination-links {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .pagination-container .d-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .pagination-info {
+                text-align: center;
+            }
+
+            .pagination .page-link {
+                padding: 6px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
         /* Buttons */
         .copy-btn {
             background: #072d42;
@@ -402,14 +474,27 @@
                 </div>
 
 
-                {{-- <div style="margin-top: 12px;">
-                    {{ $transactions->appends([
-                            'address' => $address,
-                            'type' => $type,
-                            'direction' => $direction,
-                            'perPage' => $perPage,
-                        ])->links() }}
-                </div> --}}
+                <!-- Pagination -->
+                @if($transactions->hasPages())
+                <div class="pagination-container mt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="pagination-info">
+                            <small class="text-muted">
+                                Showing {{ $transactions->firstItem() ?? 0 }} to {{ $transactions->lastItem() ?? 0 }} 
+                                of {{ $transactions->total() }} transactions
+                            </small>
+                        </div>
+                        <div class="pagination-links">
+                            {{ $transactions->appends([
+                                'address' => $address,
+                                'type' => $type,
+                                'direction' => $direction,
+                                'perPage' => $perPage,
+                            ])->links('pagination::bootstrap-4') }}
+                        </div>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>

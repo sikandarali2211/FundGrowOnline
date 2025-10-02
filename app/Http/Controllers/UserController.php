@@ -196,6 +196,7 @@ class UserController extends Controller
                 'balance_wallet' => number_format($userOwnMoney, 2),
                 'pool_wallet' => number_format($userOwnPoolMoney, 2),
                 'pool_commission' => number_format($poolCommission, 2),
+                'total_balance' => number_format($userOwnMoney, 2), // Same as balance_wallet
                 'total_sent' => number_format($totalSentAmount, 2),
                 'total_investment' => '0.00', // Not shown
                 'total_returns' => '0.00', // Not shown
@@ -207,6 +208,7 @@ class UserController extends Controller
                 'balance_wallet' => '0.00',
                 'pool_wallet' => '0.00',
                 'pool_commission' => '0.00',
+                'total_balance' => '0.00',
                 'total_sent' => '0.00',
                 'total_investment' => '0.00',
                 'total_returns' => '0.00',

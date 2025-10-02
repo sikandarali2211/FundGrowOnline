@@ -337,7 +337,7 @@
                             style="position: absolute; top: 5px; left: 15px; height: 60px;">
                         <div style="margin-top:70px;">
                             <h5 style="color: #3bd17a;">Total Balance</h5>
-                            <h2 style="color: #3bd17a" class="font-weight-bold mb-0">${{ number_format((float)($balanceBreakdown['balance_wallet'] ?? 0), 2) }}</h2>
+                            <h2 style="color: #3bd17a" class="font-weight-bold mb-0">${{ $balanceBreakdown['total_balance'] ?? '0.00' }}</h2>
                             @if(isset($balanceBreakdown))
                                 <div style="margin-top: 10px; font-size: 0.8rem;">
                                     <div style="color: #28a745;">Sent: ${{ $balanceBreakdown['total_sent'] }}</div>
@@ -832,7 +832,7 @@
           <div class="d-flex justify-content-between">
             <div>
               <div><small id="sourceWalletLabel">Balance Wallet</small></div>
-              <div class="h5 mb-0" id="exSourceBalance">${{ number_format($walletBalance ?? 0, 2) }}</div>
+              <div class="h5 mb-0" id="exSourceBalance">${{ $walletBalance ?? '0.00' }}</div>
             </div>
             <div class="text-right">
               <div><small>Pool Wallet</small></div>
@@ -847,13 +847,13 @@
         <label for="exAmount" class="form-label text-warning">Amount to transfer (USDT)</label>
         <input type="number" class="form-control mb-2" id="exAmount" min="0.01" step="0.01"
                placeholder="Enter amount" style="background:rgba(255,255,255,0.1);border:1px solid #3bd17a;color:#fff;">
-        <small class="text-muted">Max: <span id="exMax">{{ number_format($walletBalance ?? 0, 2) }}</span> USDT</small>
+        <small class="text-muted">Max: <span id="exMax">{{ $walletBalance ?? '0.00' }}</span> USDT</small>
 
         <div class="mt-3 card" style="background:rgba(255,255,255,0.05);border:1px solid #3bd17a;">
           <div class="card-body py-2">
             <div class="d-flex justify-content-between">
               <span id="previewSourceLabel">Preview Balance Wallet</span>
-              <strong id="exPreviewSource">${{ number_format($walletBalance ?? 0, 2) }}</strong>
+              <strong id="exPreviewSource">${{ $walletBalance ?? '0.00' }}</strong>
             </div>
             <div class="d-flex justify-content-between">
               <span>Preview Pool Wallet</span>
@@ -2183,7 +2183,7 @@ After sending, your balance will be updated automatically.`;
     
     if (sourceType === 'balance') {
       // Get balance wallet amount from the original data
-      const balanceAmount = num('{{ number_format($walletBalance ?? 0, 2) }}');
+      const balanceAmount = num('{{ $walletBalance ?? '0.00' }}');
       sourceWalletLabel.textContent = 'Balance Wallet';
       previewSourceLabel.textContent = 'Preview Balance Wallet';
       exSourceEl.textContent = '$' + fmt(balanceAmount);
@@ -2242,27 +2242,32 @@ After sending, your balance will be updated automatically.`;
   }
 
   // Step 1: Open PIN modal
-  btnExchange && btnExchange.addEventListener('click', () => {
-    console.log('Exchange button clicked!');
-    const amt = num(exAmount.value);
-    const max = num(exMaxEl.textContent.replace(/[$,]/g,''));
-    console.log('Amount:', amt, 'Max:', max);
-    if (!amt || amt <= 0) {
-      showMsg(exMsg, 'Please enter a valid amount (min 0.01).', 'danger');
-      return;
-    }
-    if (amt > max) {
-      showMsg(exMsg, `Insufficient balance. Available: $${fmt(max)}`, 'danger');
-      return;
-    }
-    console.log('Opening PIN modal...');
-    pinInput.value = '';
-    clearMsg(pinMsg);
-    pinModal.modal('show');
-  });
+  if (btnExchange) {
+    btnExchange.addEventListener('click', () => {
+      console.log('Exchange button clicked!');
+      const amt = num(exAmount.value);
+      const max = num(exMaxEl.textContent.replace(/[$,]/g,''));
+      console.log('Amount:', amt, 'Max:', max);
+      if (!amt || amt <= 0) {
+        showMsg(exMsg, 'Please enter a valid amount (min 0.01).', 'danger');
+        return;
+      }
+      if (amt > max) {
+        showMsg(exMsg, `Insufficient balance. Available: $${fmt(max)}`, 'danger');
+        return;
+      }
+      console.log('Opening PIN modal...');
+      pinInput.value = '';
+      clearMsg(pinMsg);
+      pinModal.modal('show');
+    });
+  } else {
+    console.error('btnExchange button not found!');
+  }
 
   // Step 2: Verify PIN → if ok, perform exchange
-  btnVerifyPin && btnVerifyPin.addEventListener('click', async () => {
+  if (btnVerifyPin) {
+    btnVerifyPin.addEventListener('click', async () => {
     clearMsg(pinMsg);
     const pin = (pinInput.value || '').trim();
 
@@ -2301,9 +2306,9 @@ const verifyRes = await fetch('{{ route("security.pin.verify.ajax") }}', {
       // 2.2 If PIN OK → call exchange
       const amt = num(exAmount.value);
       const sourceType = exSourceSelect.value;
-      const exchangeUrl = sourceType === 'balance' 
-        ? '{{ route("user.wallet.exchange") }}' 
-        : '{{ route("user.wallet.commission-exchange") }}';
+        const exchangeUrl = sourceType === 'balance'
+          ? '{{ route("user.wallet.exchange") }}'
+          : '{{ route("user.wallet.commission-exchange") }}';
       
       const exchRes = await fetch(exchangeUrl, {
         method: 'POST',
@@ -2368,7 +2373,10 @@ const verifyRes = await fetch('{{ route("security.pin.verify.ajax") }}', {
       btnVerifyPin.disabled = false;
       btnVerifyPin.innerHTML = '<i class="fas fa-check mr-1"></i> Verify';
     }
-  });
+    });
+  } else {
+    console.error('btnVerifyPin button not found!');
+  }
 
   // Reset modal state when opened
   $('#exchangemodal').on('shown.bs.modal', function () {
