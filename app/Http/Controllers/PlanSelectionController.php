@@ -240,7 +240,20 @@ class PlanSelectionController extends Controller
     {
         $selections = PlanSelection::with(['user', 'processedBy'])
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString(); // Preserve query parameters
+
+        // Debug information
+        \Log::info('Plan Selections Pagination Debug', [
+            'total_selections' => $selections->total(),
+            'current_page' => $selections->currentPage(),
+            'last_page' => $selections->lastPage(),
+            'has_pages' => $selections->hasPages(),
+            'per_page' => $selections->perPage(),
+            'first_item' => $selections->firstItem(),
+            'last_item' => $selections->lastItem()
+        ]);
+
         return view('admin.plan-selections.index', compact('selections'));
     }
     /**

@@ -3,50 +3,73 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Services\LevelService;
 
 class TeamController extends Controller
 {
-private function assignReferral(array &$nodes, array &$childCount, array $possibleParents, $user, $maxChildren = 3)
+    private function buildMatrix($users, $rootId, $maxChildren = 3, $type = 'l2')
     {
-        $queue = $possibleParents;
+        $nodes = [];
+        $childCount = [$rootId => 0];
 
-        while (!empty($queue)) {
-            $parentId = array_shift($queue);
+        // Each queue item carries (parentId, depth)
+        $queue = [[$rootId, 0]]; 
 
-            $count = $childCount[$parentId] ?? 0;
+        foreach ($users as $user) {
+            while (!empty($queue)) {
+                [$parentId, $depth] = $queue[0]; // peek
 
-            if ($count < $maxChildren) {
-                // Place user under this parent (BFS style)
-                $nodes[] = [
-                    'id'       => "l2-{$user->id}", // unique id
-                    'real_id'  => $user->id,
-                    'name'     => $user->name,
-                    'code'     => $user->referral_code,
-                    'joined'   => $user->created_at->format('M d, Y'),
-                    'type'     => 'l2',
-                    'parentId' => $parentId,
-                ];
-                $childCount[$parentId] = $count + 1;
-                $childCount[$user->id] = 0; // init new child
-                return true;
-            }
+                $count = $childCount[$parentId] ?? 0;
 
-            // enqueue children of this parent
-            foreach ($nodes as $n) {
-                if ($n['parentId'] === $parentId) {
-                    $queue[] = $n['id'];
+                if ($count < $maxChildren) {
+                    $id = "{$type}-{$user->id}";
+                    $nodes[] = [
+                        'id'       => $id,
+                        'real_id'  => $user->id,
+                        'name'     => $user->name,
+                        'code'     => $user->referral_code,
+                        'joined'   => $user->created_at->format('M d, Y'),
+                        'type'     => $type,
+                        'parentId' => $parentId,
+                    ];
+
+                    // update counts
+                    $childCount[$parentId] = $count + 1;
+                    $childCount[$id] = 0;
+
+                    // only enqueue further if depth < 1 (root=0, children=1 → grandchildren=2 max)
+                    if ($depth < 1) {
+                        $queue[] = [$id, $depth + 1];
+                    }
+
+                    break;
+                } else {
+                    array_shift($queue); // parent full, pop
                 }
             }
         }
 
-        return false;
+        return $nodes;
     }
 
     public function index()
     {
         $me = auth()->user();
 
+        $level2 = User::where('referred_by', $me->id)->where('level', '>=', 2)->orderBy('created_at')->get();
+        $level3 = User::where('referred_by', $me->id)->where('level', '>=', 3)->orderBy('created_at')->get();
+        $level4 = User::where('referred_by', $me->id)->where('level', '>=', 4)->orderBy('created_at')->get();
+        $level5 = User::where('referred_by', $me->id)->where('level', '>=', 5)->orderBy('created_at')->get();
+        $level6 = User::where('referred_by', $me->id)->where('level', '>=', 6)->orderBy('created_at')->get();
+        $level7 = User::where('referred_by', $me->id)->where('level', '>=', 7)->orderBy('created_at')->get();
+        $level8 = User::where('referred_by', $me->id)->where('level', '>=', 8)->orderBy('created_at')->get();
+        $level9 = User::where('referred_by', $me->id)->where('level', '>=', 9)->orderBy('created_at')->get();
+        $level10 = User::where('referred_by', $me->id)->where('level', '>=', 10)->orderBy('created_at')->get();
+        $level11 = User::where('referred_by', $me->id)->where('level', '>=', 11)->orderBy('created_at')->get();
+        $level12 = User::where('referred_by', $me->id)->where('level', '>=', 12)->orderBy('created_at')->get();
+        $level13 = User::where('referred_by', $me->id)->where('level', '>=', 13)->orderBy('created_at')->get();
+        $level14 = User::where('referred_by', $me->id)->where('level', '>=', 14)->orderBy('created_at')->get();
+        $level15 = User::where('referred_by', $me->id)->where('level', '>=', 15)->orderBy('created_at')->get();
+        
         // --- Level 1 (all directs with ≥1 plan)
         $level1 = User::select('id','name','email','referral_code','created_at','referred_by')
             ->where('referred_by', $me->id)
@@ -54,14 +77,7 @@ private function assignReferral(array &$nodes, array &$childCount, array $possib
             ->orderBy('created_at')
             ->get();
 
-        // --- Level 2 (directs of root with ≥2 plans)
-        $level2 = User::select('id','name','email','referral_code','created_at','referred_by')
-            ->where('referred_by', $me->id) // ✅ only root’s directs
-            ->whereHas('planSelections', fn($q) => $q->where('status','approved'), '>=', 2)
-            ->orderBy('created_at')
-            ->get();
-
-        // --- Root node (always there)
+        // --- Root node
         $nodes = [[
             'id'       => $me->id,
             'real_id'  => $me->id,
@@ -72,7 +88,7 @@ private function assignReferral(array &$nodes, array &$childCount, array $possib
             'parentId' => null,
         ]];
 
-        // --- Level 1 chart nodes (for L1 chart only)
+        // --- Level 1 nodes (direct referrals)
         $l1Nodes = [];
         foreach ($level1 as $user) {
             $l1Nodes[] = [
@@ -86,22 +102,42 @@ private function assignReferral(array &$nodes, array &$childCount, array $possib
             ];
         }
 
-        // --- Level 2 BFS matrix ---
-        $l2Nodes = [];
-        $childCount = [$me->id => 0];
-        $possibleParents = [$me->id]; // ✅ start only with root
+        // --- Build pyramids
+        $l2Nodes = $this->buildMatrix($level2, $me->id, 3, 'l2');
+        $l3Nodes = $this->buildMatrix($level3, $me->id, 3, 'l3');
+        $l4Nodes = $this->buildMatrix($level4, $me->id, 3, 'l4');
+        $l5Nodes = $this->buildMatrix($level5, $me->id, 3, 'l5');
+        $l6Nodes = $this->buildMatrix($level6, $me->id, 3, 'l6');
+        $l7Nodes = $this->buildMatrix($level7, $me->id, 3, 'l7');
+        $l8Nodes = $this->buildMatrix($level8, $me->id, 3, 'l8');
+        $l9Nodes = $this->buildMatrix($level9, $me->id, 3, 'l9');
+        $l10Nodes = $this->buildMatrix($level10, $me->id, 3, 'l10');
+        $l11Nodes = $this->buildMatrix($level11, $me->id, 3, 'l11');
+        $l12Nodes = $this->buildMatrix($level12, $me->id, 3, 'l12');
+        $l13Nodes = $this->buildMatrix($level13, $me->id, 3, 'l13');
+        $l14Nodes = $this->buildMatrix($level14, $me->id, 3, 'l14');
+        $l15Nodes = $this->buildMatrix($level15, $me->id, 3, 'l15');
 
-        foreach ($level2 as $user) {
-            $this->assignReferral($l2Nodes, $childCount, $possibleParents, $user, 3);
-        }
-
-        // --- Merge
-        $nodes = array_merge($nodes, $l1Nodes, $l2Nodes);
+        // Merge all
+        $nodes = array_merge($nodes, $l1Nodes, $l2Nodes, $l3Nodes, $l4Nodes, $l5Nodes, $l6Nodes, $l7Nodes, $l8Nodes, $l9Nodes, $l10Nodes, $l11Nodes, $l12Nodes, $l13Nodes, $l14Nodes, $l15Nodes);
 
         return view('user.team.index', compact(
             'me',
             'level1',
             'level2',
+            'level3',
+            'level4',
+            'level5',
+            'level6',
+            'level7',
+            'level8',
+            'level9',
+            'level10',
+            'level11',
+            'level12',
+            'level13',
+            'level14',
+            'level15',
             'nodes'
         ));
     }

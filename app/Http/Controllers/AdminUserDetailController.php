@@ -25,7 +25,14 @@ class AdminUserDetailController extends Controller
                         ->orWhere('email', 'like', "%{$q}%")
                         ->orWhere('phone', 'like', "%{$q}%")
                         ->orWhere('referral_code', 'like', "%{$q}%")
-                        ->orWhere('referred_by', 'like', "%{$q}%");
+                        ->orWhere('referred_by', 'like', "%{$q}%")
+                        ->orWhere('wallet_address', 'like', "%{$q}%")
+                        ->orWhere('id', 'like', "%{$q}%")
+                        // Search in referrer's name and email
+                        ->orWhereHas('referrer', function ($referrerQuery) use ($q) {
+                            $referrerQuery->where('name', 'like', "%{$q}%")
+                                ->orWhere('email', 'like', "%{$q}%");
+                        });
                 });
             })
             ->latest('id')

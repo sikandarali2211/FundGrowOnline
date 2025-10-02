@@ -9,16 +9,28 @@ use Illuminate\Http\Request;
 
 class AdminInvestmentPlanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $plans = InvestmentPlan::with(['userInvestments.user'])
             ->withCount('userInvestments')
             ->get();
 
-        // Get user investments with user details
+        // Get user investments with user details - with pagination
         $userInvestments = UserInvestment::with(['user', 'investmentPlan'])
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(10) // Show 10 investments per page
+            ->withQueryString(); // Preserve query parameters
+
+        // Debug information
+        \Log::info('Investment Plans Pagination Debug', [
+            'total_investments' => $userInvestments->total(),
+            'current_page' => $userInvestments->currentPage(),
+            'last_page' => $userInvestments->lastPage(),
+            'has_pages' => $userInvestments->hasPages(),
+            'per_page' => $userInvestments->perPage(),
+            'first_item' => $userInvestments->firstItem(),
+            'last_item' => $userInvestments->lastItem()
+        ]);
 
         return view('admin.investmentplans.index', compact('plans', 'userInvestments'));
     }

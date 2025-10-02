@@ -213,6 +213,29 @@
         font-weight: 700;
     }
 
+    .badge.bg-secondary {
+        background: linear-gradient(90deg, var(--fg-surface-2), var(--fg-border)) !important;
+        color: var(--fg-text);
+        border: 1px solid var(--fg-border);
+        font-weight: 600;
+    }
+
+    .investment-summary {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pagination-info {
+        color: var(--fg-muted);
+        font-size: 0.9rem;
+    }
+
+    .pagination-links {
+        display: flex;
+        align-items: center;
+    }
+
     /* Status Badges */
     .status-badge {
         padding: 0.35rem 0.8rem;
@@ -300,6 +323,47 @@
         color: var(--fg-muted) !important;
     }
 
+    /* Pagination Styling */
+    .pagination-container {
+        background: linear-gradient(180deg, var(--fg-surface), var(--fg-surface-2));
+        border: 1px solid var(--fg-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: var(--fg-shadow);
+    }
+
+    .pagination .page-link {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--fg-border);
+        color: var(--fg-text);
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        margin: 0 0.3rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .pagination .page-link:hover {
+        background: var(--fg-hover);
+        color: var(--fg-accent);
+        border-color: var(--fg-accent);
+        transform: translateY(-2px);
+    }
+
+    .pagination .active .page-link {
+        background: linear-gradient(135deg, var(--fg-accent), var(--fg-accent-2));
+        color: #05241d;
+        border-color: transparent;
+        box-shadow: 0 4px 15px rgba(34, 227, 160, 0.4);
+    }
+
+    .pagination .disabled .page-link {
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--fg-muted);
+        border-color: var(--fg-border);
+        cursor: not-allowed;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .plans-grid {
@@ -308,6 +372,21 @@
 
         .plan-details {
             grid-template-columns: 1fr 1fr;
+        }
+        
+        .pagination .page-link {
+            padding: 0.4rem 0.8rem;
+            margin: 0 0.2rem;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-container .d-flex {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .pagination-info {
+            text-align: center;
         }
     }
 </style>
@@ -346,8 +425,20 @@
         </div>
 
         <!-- Users Investment Details -->
-        <div class="users-table" hidden>
-            <h3>User Investment Details</h3>
+        <div class="users-table">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>User Investment Details</h3>
+                <div class="investment-summary">
+                    <span class="badge bg-primary">
+                        Total: {{ $userInvestments->total() }} investments
+                    </span>
+                    @if($userInvestments->hasPages())
+                    <span class="badge bg-secondary ms-2">
+                        Page {{ $userInvestments->currentPage() }} of {{ $userInvestments->lastPage() }}
+                    </span>
+                    @endif
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table">
                     <thead>
@@ -424,6 +515,68 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container mt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="pagination-info">
+                        <small class="text-muted">
+                            Showing {{ $userInvestments->firstItem() ?? 0 }} to {{ $userInvestments->lastItem() ?? 0 }} 
+                            of {{ $userInvestments->total() }} investments
+                        </small>
+                        <!-- Debug info -->
+                        <br><small class="text-info">
+                            Debug: Page {{ $userInvestments->currentPage() }} of {{ $userInvestments->lastPage() }} | 
+                            Has Pages: {{ $userInvestments->hasPages() ? 'Yes' : 'No' }} | 
+                            Per Page: {{ $userInvestments->perPage() }}
+                        </small>
+                    </div>
+                    <div class="pagination-links">
+                        @if ($userInvestments->hasPages())
+                        <nav aria-label="Investment pagination">
+                            <ul class="pagination mb-0">
+                                {{-- Previous Page Link --}}
+                                @if ($userInvestments->onFirstPage())
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                @else
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $userInvestments->previousPageUrl() }}" rel="prev">&laquo;</a>
+                                    </li>
+                                @endif
+
+                                {{-- Pagination Elements --}}
+                                @foreach ($userInvestments->getUrlRange(1, $userInvestments->lastPage()) as $page => $url)
+                                    @if ($page == $userInvestments->currentPage())
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ $page }}</span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                        </li>
+                                    @endif
+                                @endforeach
+
+                                {{-- Next Page Link --}}
+                                @if ($userInvestments->hasMorePages())
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $userInvestments->nextPageUrl() }}" rel="next">&raquo;</a>
+                                    </li>
+                                @else
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                @endif
+                            </ul>
+                        </nav>
+                        @else
+                        <small class="text-muted">All {{ $userInvestments->total() }} investments on this page</small>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
     </div>

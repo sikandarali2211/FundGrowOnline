@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust Wallet Connection Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #3bd17a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #2ba85a;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #e9ecef;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔗 Trust Wallet Connection Debug</h1>
+        
+        <div class="status info">
+            <h3>Debug Information</h3>
+            <p>This page helps debug Trust Wallet connection issues. Open browser console (F12) to see detailed logs.</p>
+        </div>
+
+        <div>
+            <button class="btn" onclick="checkEthereumProvider()">Check Ethereum Provider</button>
+            <button class="btn" onclick="connectTrustWallet()">Connect Trust Wallet</button>
+            <button class="btn" onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <div id="status" class="status">
+            <h3>Status</h3>
+            <p>Click buttons above to test Trust Wallet connection</p>
+        </div>
+
+        <div id="logs" class="log">
+            <h4>Debug Logs:</h4>
+            <div id="logContent">Ready to test...\n</div>
+        </div>
+    </div>
+
+    <!-- Web3.js -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const logContent = document.getElementById('logContent');
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            logContent.textContent += logMessage;
+            
+            // Scroll to bottom
+            const logs = document.getElementById('logs');
+            logs.scrollTop = logs.scrollHeight;
+            
+            console.log(message);
+        }
+
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.innerHTML = `<h3>Status</h3><p>${message}</p>`;
+        }
+
+        function clearLogs() {
+            document.getElementById('logContent').textContent = 'Logs cleared...\n';
+        }
+
+        function checkEthereumProvider() {
+            log('🔍 Checking Ethereum provider...');
+            
+            if (typeof window.ethereum !== 'undefined') {
+                log('✅ Ethereum provider detected');
+                log(`Provider info: ${JSON.stringify({
+                    isTrust: window.ethereum.isTrust,
+                    isMetaMask: window.ethereum.isMetaMask,
+                    hasProviders: !!window.ethereum.providers,
+                    providersCount: window.ethereum.providers ? window.ethereum.providers.length : 0
+                }, null, 2)}`);
+                
+                updateStatus('Ethereum provider found! You can try connecting.', 'success');
+            } else {
+                log('❌ No Ethereum provider detected');
+                updateStatus('No Ethereum provider found. Please install Trust Wallet or MetaMask.', 'error');
+            }
+        }
+
+        async function connectTrustWallet() {
+            log('🔗 Starting Trust Wallet connection...');
+            updateStatus('Connecting to Trust Wallet...', 'info');
+            
+            try {
+                // Check if Trust Wallet is available
+                if (typeof window.ethereum !== 'undefined') {
+                    log('✅ Ethereum provider detected');
+                    
+                    // Check if it's Trust Wallet
+                    if (window.ethereum.isTrust) {
+                        log('✅ Trust Wallet detected via isTrust flag');
+                    } else {
+                        log('ℹ️ Not Trust Wallet, trying generic connection...');
+                        
+                        // Try to detect Trust Wallet by provider
+                        if (window.ethereum.providers) {
+                            log('🔍 Checking providers array...');
+                            const trustProvider = window.ethereum.providers.find(provider => provider.isTrust);
+                            if (trustProvider) {
+                                log('✅ Trust Wallet found in providers');
+                            } else {
+                                log('⚠️ Trust Wallet not found in providers, trying generic connection');
+                            }
+                        } else {
+                            log('⚠️ No providers array, trying generic connection');
+                        }
+                    }
+
+                    // Request account access
+                    log('📝 Requesting account access...');
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+
+                    log(`📝 Accounts received: ${JSON.stringify(accounts)}`);
+
+                    if (accounts.length > 0) {
+                        const walletAddress = accounts[0];
+                        log(`✅ Wallet connected successfully: ${walletAddress}`);
+                        
+                        // Save to localStorage
+                        localStorage.setItem('walletAccount', walletAddress);
+                        localStorage.setItem('isWalletConnected', 'true');
+                        localStorage.setItem('walletType', 'trust');
+                        
+                        updateStatus(`Trust Wallet connected successfully! Address: ${walletAddress}`, 'success');
+                    } else {
+                        log('❌ No accounts found');
+                        updateStatus('No accounts found. Please unlock your wallet.', 'error');
+                    }
+                } else {
+                    log('❌ No Ethereum provider detected');
+                    updateStatus('No Ethereum provider detected. Please install Trust Wallet.', 'error');
+                }
+            } catch (error) {
+                log(`❌ Connection error: ${error.message}`);
+                updateStatus(`Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check on page load
+        window.addEventListener('load', function() {
+            log('🚀 Debug page loaded');
+            checkEthereumProvider();
+        });
+    </script>
+</body>
+</html>

@@ -313,9 +313,22 @@
                                         <label for="levelFilter" class="form-label small text-muted mb-1">Filter by
                                             Level:</label>
                                         <select id="levelFilter" class="form-select level-dropdown">
-                                            <option value="all">All Levels</option>
-                                            <option value="1">Level 1 Only</option>
-                                            <option value="2">Level 2 Only</option>
+                                            <option value="all">All Levels</option> 
+                                            <option value="1">Level 1 Only</option> 
+                                            <option value="2">Level 2 Only</option> 
+                                            <option value="3">Level 3 Only</option> 
+                                            <option value="4">Level 4 Only</option> 
+                                            <option value="5">Level 5 Only</option> 
+                                            <option value="6">Level 6 Only</option> 
+                                            <option value="7">Level 7 Only</option> 
+                                            <option value="8">Level 8 Only</option> 
+                                            <option value="9">Level 9 Only</option> 
+                                            <option value="10">Level 10 Only</option>
+                                            <option value="11">Level 11 Only</option> 
+                                            <option value="12">Level 12 Only</option>
+                                            <option value="13">Level 13 Only</option> 
+                                            <option value="14">Level 14 Only</option> 
+                                            <option value="15">Level 15 Only</option>
                                         </select>
                                     </div>
                                     <div style="min-width:260px">
@@ -390,6 +403,268 @@
                             <div id="chart-l2" class="orgbox"><span class="status-pill">Loading…</span></div>
                         </div>
                     </div>
+                    {{-- ========== CHART: LEVEL 3 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="3">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 3 Users (Third Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l3">Fit</button>
+                                    <button class="btn" id="zin-l3">Zoom In</button>
+                                    <button class="btn" id="zout-l3">Zoom Out</button>
+                                    <button class="btn" id="exp-l3">Expand</button>
+                                    <button class="btn" id="col-l3">Collapse</button>
+                                    <button class="btn" id="me-l3">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l3" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 4 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="4">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 4 Users (Fourth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l4">Fit</button>
+                                    <button class="btn" id="zin-l4">Zoom In</button>
+                                    <button class="btn" id="zout-l4">Zoom Out</button>
+                                    <button class="btn" id="exp-l4">Expand</button>
+                                    <button class="btn" id="col-l4">Collapse</button>
+                                    <button class="btn" id="me-l4">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l4" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 5 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="5">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 5 Users (Fifth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l5">Fit</button>
+                                    <button class="btn" id="zin-l5">Zoom In</button>
+                                    <button class="btn" id="zout-l5">Zoom Out</button>
+                                    <button class="btn" id="exp-l5">Expand</button>
+                                    <button class="btn" id="col-l5">Collapse</button>
+                                    <button class="btn" id="me-l5">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l5" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 6 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="6">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 6 Users (Sixth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l6">Fit</button>
+                                    <button class="btn" id="zin-l6">Zoom In</button>
+                                    <button class="btn" id="zout-l6">Zoom Out</button>
+                                    <button class="btn" id="exp-l6">Expand</button>
+                                    <button class="btn" id="col-l6">Collapse</button>
+                                    <button class="btn" id="me-l6">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l6" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+                    {{-- ========== CHART: LEVEL 7 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="7">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 7 Users (Seventh Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l7">Fit</button>
+                                    <button class="btn" id="zin-l7">Zoom In</button>
+                                    <button class="btn" id="zout-l7">Zoom Out</button>
+                                    <button class="btn" id="exp-l7">Expand</button>
+                                    <button class="btn" id="col-l7">Collapse</button>
+                                    <button class="btn" id="me-l7">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l7" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 8 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="8">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 8 Users (Eighth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l8">Fit</button>
+                                    <button class="btn" id="zin-l8">Zoom In</button>
+                                    <button class="btn" id="zout-l8">Zoom Out</button>
+                                    <button class="btn" id="exp-l8">Expand</button>
+                                    <button class="btn" id="col-l8">Collapse</button>
+                                    <button class="btn" id="me-l8">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l8" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 9 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="9">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 9 Users (Ninth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l9">Fit</button>
+                                    <button class="btn" id="zin-l9">Zoom In</button>
+                                    <button class="btn" id="zout-l9">Zoom Out</button>
+                                    <button class="btn" id="exp-l9">Expand</button>
+                                    <button class="btn" id="col-l9">Collapse</button>
+                                    <button class="btn" id="me-l9">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l9" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 10 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="10">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 10 Users (Tenth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l10">Fit</button>
+                                    <button class="btn" id="zin-l10">Zoom In</button>
+                                    <button class="btn" id="zout-l10">Zoom Out</button>
+                                    <button class="btn" id="exp-l10">Expand</button>
+                                    <button class="btn" id="col-l10">Collapse</button>
+                                    <button class="btn" id="me-l10">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l10" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 11 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="11">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 11 Users (Eleventh Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l11">Fit</button>
+                                    <button class="btn" id="zin-l11">Zoom In</button>
+                                    <button class="btn" id="zout-l11">Zoom Out</button>
+                                    <button class="btn" id="exp-l11">Expand</button>
+                                    <button class="btn" id="col-l11">Collapse</button>
+                                    <button class="btn" id="me-l11">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l11" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 12 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="12">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 12 Users (Twelfth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l12">Fit</button>
+                                    <button class="btn" id="zin-l12">Zoom In</button>
+                                    <button class="btn" id="zout-l12">Zoom Out</button>
+                                    <button class="btn" id="exp-l12">Expand</button>
+                                    <button class="btn" id="col-l12">Collapse</button>
+                                    <button class="btn" id="me-l12">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l12" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 13 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="13">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 13 Users (Thirteenth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l13">Fit</button>
+                                    <button class="btn" id="zin-l13">Zoom In</button>
+                                    <button class="btn" id="zout-l13">Zoom Out</button>
+                                    <button class="btn" id="exp-l13">Expand</button>
+                                    <button class="btn" id="col-l13">Collapse</button>
+                                    <button class="btn" id="me-l13">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l13" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 14 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="14">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 14 Users (Fourteenth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l14">Fit</button>
+                                    <button class="btn" id="zin-l14">Zoom In</button>
+                                    <button class="btn" id="zout-l14">Zoom Out</button>
+                                    <button class="btn" id="exp-l14">Expand</button>
+                                    <button class="btn" id="col-l14">Collapse</button>
+                                    <button class="btn" id="me-l14">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l14" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+                    {{-- ========== CHART: LEVEL 15 ONLY ========== --}}
+                    <div class="card card-dark mb-4 chart-container" data-level="15">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">Level 15 Users (Fifteenth Plan Purchased)</h6>
+                            <div class="org-toolbar">
+                                <div class="d-flex gap-2">
+                                    <button class="btn" id="fit-l15">Fit</button>
+                                    <button class="btn" id="zin-l15">Zoom In</button>
+                                    <button class="btn" id="zout-l15">Zoom Out</button>
+                                    <button class="btn" id="exp-l15">Expand</button>
+                                    <button class="btn" id="col-l15">Collapse</button>
+                                    <button class="btn" id="me-l15">Center on Me</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="chart-l15" class="orgbox"><span class="status-pill">Loading…</span></div>
+                        </div>
+                    </div>
+
+
+                    
+                
 
                 </div>
             </div>
@@ -408,6 +683,19 @@
         all: document.getElementById('chart-all'),
         l1: document.getElementById('chart-l1'),
         l2: document.getElementById('chart-l2'),
+        l3: document.getElementById('chart-l3'),
+        l4: document.getElementById('chart-l4'),
+        l5: document.getElementById('chart-l5'),
+        l6: document.getElementById('chart-l6'),
+        l7: document.getElementById('chart-l7'),
+        l8: document.getElementById('chart-l8'),
+        l9: document.getElementById('chart-l9'),
+        l10: document.getElementById('chart-l10'),
+        l11: document.getElementById('chart-l11'),
+        l12: document.getElementById('chart-l12'),
+        l13: document.getElementById('chart-l13'),
+        l14: document.getElementById('chart-l14'),
+        l15: document.getElementById('chart-l15'),
     };
 
     let OrgModule;
@@ -481,6 +769,72 @@
         const L1withL2=data.filter(n=>n.type==='l1' && L2.some(l2=>l2.parentId===n.id));
         return [root,...L1withL2,...L2];
     };
+    const subsetLevel3Only=()=> {
+        const L3=data.filter(n=>n.type==='l3');
+        const L1L2withL3=data.filter(n=>(n.type==='l1'||n.type==='l2') && L3.some(l3=>l3.parentId===n.id));
+        return [root,...L1L2withL3,...L3];
+    };
+    const subsetLevel4Only=()=> {
+        const L4=data.filter(n=>n.type==='l4');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3') && L4.some(l4=>l4.parentId===n.id));
+        return [root,...parents,...L4];
+    };
+    const subsetLevel5Only=()=> {
+        const L5=data.filter(n=>n.type==='l5');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4') && L5.some(l5=>l5.parentId===n.id));
+        return [root,...parents,...L5];
+    };
+    const subsetLevel6Only=()=> {
+        const L6=data.filter(n=>n.type==='l6');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5') && L6.some(l6=>l6.parentId===n.id));
+        return [root,...parents,...L6];
+    };
+    const subsetLevel7Only=()=> {
+        const L7=data.filter(n=>n.type==='l7');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6') && L7.some(l7=>l7.parentId===n.id));
+        return [root,...parents,...L7];
+    };
+    const subsetLevel8Only=()=> {
+        const L8=data.filter(n=>n.type==='l8');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7') && L8.some(l8=>l8.parentId===n.id));
+        return [root,...parents,...L8];
+    };
+    const subsetLevel9Only=()=> {
+        const L9=data.filter(n=>n.type==='l9');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7'||n.type==='l8') && L9.some(l9=>l9.parentId===n.id));
+        return [root,...parents,...L9];
+    };
+    const subsetLevel10Only=()=> {
+        const L10=data.filter(n=>n.type==='l10');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7'||n.type==='l8'||n.type==='l9') && L10.some(l10=>l10.parentId===n.id));
+        return [root,...parents,...L10];
+    };
+    const subsetLevel11Only=()=> {
+        const L11=data.filter(n=>n.type==='l11');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7'||n.type==='l8'||n.type==='l9'||n.type==='l10') && L11.some(l11=>l11.parentId===n.id));
+        return [root,...parents,...L11];
+    };
+    const subsetLevel12Only=()=> {
+        const L12=data.filter(n=>n.type==='l12');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7'||n.type==='l8'||n.type==='l9'||n.type==='l10'||n.type==='l11') && L12.some(l12=>l12.parentId===n.id));
+        return [root,...parents,...L12];
+    };
+    const subsetLevel13Only=()=> {
+        const L13=data.filter(n=>n.type==='l13');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7'||n.type==='l8'||n.type==='l9'||n.type==='l10'||n.type==='l11'||n.type==='l12') && L13.some(l13=>l13.parentId===n.id));
+        return [root,...parents,...L13];
+    };
+    const subsetLevel14Only=()=> {
+        const L14=data.filter(n=>n.type==='l14');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7'||n.type==='l8'||n.type==='l9'||n.type==='l10'||n.type==='l11'||n.type==='l12'||n.type==='l13') && L14.some(l14=>l14.parentId===n.id));
+        return [root,...parents,...L14];
+    };
+    const subsetLevel15Only=()=> {
+        const L15=data.filter(n=>n.type==='l15');
+        const parents=data.filter(n=>(n.type==='l1'||n.type==='l2'||n.type==='l3'||n.type==='l4'||n.type==='l5'||n.type==='l6'||n.type==='l7'||n.type==='l8'||n.type==='l9'||n.type==='l10'||n.type==='l11'||n.type==='l12'||n.type==='l13'||n.type==='l14') && L15.some(l15=>l15.parentId===n.id));
+        return [root,...parents,...L15];
+    };
+
 
     // Chart init
     function initChart(suffix,getSubset){
@@ -513,6 +867,19 @@
         all:initChart('all',subsetAll),
         l1:initChart('l1',subsetLevel1Only),
         l2:initChart('l2',subsetLevel2Only),
+        l3:initChart('l3',subsetLevel3Only),
+        l4:initChart('l4',subsetLevel4Only),
+        l5:initChart('l5',subsetLevel5Only),
+        l6:initChart('l6',subsetLevel6Only),
+        l7:initChart('l7',subsetLevel7Only),
+        l8:initChart('l8',subsetLevel8Only),
+        l9:initChart('l9',subsetLevel9Only),
+        l10:initChart('l10',subsetLevel10Only),
+        l11:initChart('l11',subsetLevel11Only),
+        l12:initChart('l12',subsetLevel12Only),
+        l13:initChart('l13',subsetLevel13Only),
+        l14:initChart('l14',subsetLevel14Only),
+        l15:initChart('l15',subsetLevel15Only),
     };
 
     const levelFilter=document.getElementById('levelFilter');

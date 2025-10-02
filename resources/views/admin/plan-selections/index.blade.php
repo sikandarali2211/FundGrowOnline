@@ -485,8 +485,18 @@
     }
 
     /* Pagination */
+    .pagination-container {
+        background: rgba(7, 45, 66, 0.6);
+        border: 1px solid rgba(59, 209, 122, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
     .pagination {
         gap: 8px;
+        margin: 0;
     }
 
     .pagination .page-link {
@@ -496,17 +506,37 @@
         border-radius: 8px;
         padding: 8px 16px;
         transition: all 0.3s ease;
+        font-weight: 600;
     }
 
     .pagination .page-link:hover {
         background: rgba(59, 209, 122, 0.2);
         border-color: #3bd17a;
+        transform: translateY(-2px);
     }
 
     .pagination .page-item.active .page-link {
         background: linear-gradient(135deg, #3bd17a, #28a745);
         border-color: #3bd17a;
         color: white;
+        box-shadow: 0 4px 15px rgba(59, 209, 122, 0.4);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: rgba(255, 255, 255, 0.02);
+        color: #666;
+        border-color: rgba(255, 255, 255, 0.1);
+        cursor: not-allowed;
+    }
+
+    .pagination-info {
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+
+    .pagination-links {
+        display: flex;
+        align-items: center;
     }
 
     /* Responsive */
@@ -531,6 +561,20 @@
 
         .table-modern {
             min-width: 800px;
+        }
+
+        .pagination-container .d-flex {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            text-align: center;
+        }
+
+        .pagination .page-link {
+            padding: 6px 12px;
+            font-size: 0.9rem;
         }
     }
 </style>
@@ -677,9 +721,25 @@
                             </div>
 
                             <!-- Pagination -->
-                            <!-- <div class="d-flex justify-content-center mt-4">
-                                {{ $selections->links() }}
-                            </div> -->
+                            <div class="pagination-container mt-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="pagination-info">
+                                        <small class="text-muted">
+                                            Showing {{ $selections->firstItem() ?? 0 }} to {{ $selections->lastItem() ?? 0 }} 
+                                            of {{ $selections->total() }} plan selections
+                                        </small>
+                                    </div>
+                                    @if ($selections->hasPages())
+                                    <div class="pagination-links">
+                                        {{ $selections->links('pagination::bootstrap-4') }}
+                                    </div>
+                                    @else
+                                    <div class="pagination-links">
+                                        <small class="text-muted">All {{ $selections->total() }} selections on this page</small>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
                         @else
                             <div class="empty-state">
                                 <i class="fas fa-chart-line"></i>

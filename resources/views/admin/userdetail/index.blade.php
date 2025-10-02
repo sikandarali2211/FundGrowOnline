@@ -364,6 +364,21 @@
         border-color: #00d4aa;
     }
 
+    .btn-outline-secondary {
+        color: #bbb;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        padding: 0.5rem 0.8rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #bbb;
+        color: #fff;
+    }
+
     /* Wallet Info Styling */
     .wallet-info {
         background: rgba(59, 209, 122, 0.05);
@@ -534,17 +549,33 @@
 
         <!-- Search -->
         <div class="search-section">
-            <form method="GET" action="{{ url('/admin/user-details') }}">
+            <form method="GET" action="{{ url('/user-details') }}" id="searchForm">
                 <div class="search-container">
                     <i class="fas fa-search search-icon"></i>
-                    <input type="text" name="q" value="{{ $q ?? '' }}" class="search-input"
-                        placeholder="Search by name, email, phone, or referral...">
-                    <button class="search-btn" type="submit">
+                    <input type="text" name="q" value="{{ $q ?? '' }}" class="search-input" id="searchInput"
+                        placeholder="Search by name, email, phone, referral code, or referred by...">
+                    <button class="search-btn" type="submit" id="searchBtn">
                         <i class="fas fa-search me-2"></i>Search
                     </button>
+                    @if($q)
+                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="clearSearch()" title="Clear Search">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    @endif
                 </div>
             </form>
         </div>
+
+        <!-- Search Results Info -->
+        @if($q)
+        <div class="alert alert-info mb-3" style="background: rgba(0, 212, 170, 0.1); border: 1px solid rgba(0, 212, 170, 0.3); color: #00d4aa;">
+            <i class="fas fa-search me-2"></i>
+            <strong>Search Results:</strong> Found {{ $users->total() }} user(s) matching "{{ $q }}"
+            <button type="button" class="btn btn-sm btn-outline-info ms-2" onclick="clearSearch()">
+                <i class="fas fa-times me-1"></i>Clear Search
+            </button>
+        </div>
+        @endif
 
         <!-- Table -->
         <div class="table-container">
@@ -757,5 +788,33 @@
             showNotification('Wallet address copied to clipboard!', 'success');
         });
     }
+
+    // Search functionality enhancements
+    function clearSearch() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchForm').submit();
+    }
+
+    // Auto-submit search on Enter key
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('searchForm').submit();
+        }
+    });
+
+    // Show loading state on search
+    document.getElementById('searchForm').addEventListener('submit', function() {
+        const searchBtn = document.getElementById('searchBtn');
+        const originalText = searchBtn.innerHTML;
+        searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+        searchBtn.disabled = true;
+        
+        // Re-enable after 3 seconds (in case of slow response)
+        setTimeout(() => {
+            searchBtn.innerHTML = originalText;
+            searchBtn.disabled = false;
+        }, 3000);
+    });
 </script>
 @endsection
