@@ -154,7 +154,7 @@ class AdminUserDetailController extends Controller
             if ($userId <= $newReferrerId) {
                 return response()->json([
                     'success' => false,
-                    'message' => "You Can't update referral id because parent id {$newReferrerId} hai aur child id {$userId} hai"
+                    'message' => "Cannot update referral: Parent ID {$newReferrerId} must be less than Child ID {$userId}"
                 ], 400);
             }
 
