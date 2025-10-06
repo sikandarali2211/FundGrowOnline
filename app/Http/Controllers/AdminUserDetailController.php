@@ -108,7 +108,7 @@ class AdminUserDetailController extends Controller
             }
 
             // Check if user has investments
-            $investmentCount = $user->userInvestments()->count();
+            $investmentCount = $user->investments()->count();
             if ($investmentCount > 0) {
                 return back()->with('error', "Cannot delete {$user->name}. User has {$investmentCount} active investments. Please handle investments first.");
             }
@@ -119,7 +119,7 @@ class AdminUserDetailController extends Controller
 
             // Delete related data
             $user->activationInfo()->delete();
-            $user->userInvestments()->delete();
+            $user->investments()->delete();
             $user->transactions()->delete();
             $user->planSelections()->delete();
 
@@ -133,6 +133,93 @@ class AdminUserDetailController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', "Failed to delete {$user->name}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update user's referral
+     */
+    public function updateReferral(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'user_id' => 'required|integer|exists:users,id',
+                'new_referrer_id' => 'required|integer|exists:users,id'
+            ]);
+
+            $userId = $data['user_id'];
+            $newReferrerId = $data['new_referrer_id'];
+
+            // Rule 1: ID order validation (child ID must be greater than parent ID)
+            if ($userId <= $newReferrerId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User ID must be greater than referrer ID. Child user ID must be higher than parent user ID.'
+                ], 400);
+            }
+
+            $user = User::findOrFail($userId);
+            $newReferrer = User::findOrFail($newReferrerId);
+
+            // Rule 2: Plan lock validation - check if user has bought any plan
+            $hasPlan = $user->planSelections()->where('status', 'approved')->exists() || 
+                      $user->investments()->where('status', 'active')->exists();
+
+            if ($hasPlan) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "User's referral cannot be updated. User has already purchased a plan."
+                ], 400);
+            }
+
+            // Update the referral
+            $user->referred_by = $newReferrerId;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully updated {$user->name}'s referrer to {$newReferrer->name} (ID: {$newReferrerId})"
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed: ' . implode(', ', $e->validator->errors()->all())
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update referral: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Search users for referral assignment
+     */
+    public function searchUsers(Request $request)
+    {
+        try {
+            $query = $request->get('q', '');
+            
+            if (strlen($query) < 2) {
+                return response()->json(['users' => []]);
+            }
+
+            $users = User::where('id', '!=', $request->get('exclude_id', 0)) // Exclude current user
+                ->where(function($q) use ($query) {
+                    $q->where('name', 'like', "%{$query}%")
+                      ->orWhere('email', 'like', "%{$query}%")
+                      ->orWhere('id', 'like', "%{$query}%");
+                })
+                ->select('id', 'name', 'email')
+                ->limit(10)
+                ->get();
+
+            return response()->json(['users' => $users]);
+
+        } catch (\Exception $e) {
+            return response()->json(['users' => []]);
         }
     }
 }

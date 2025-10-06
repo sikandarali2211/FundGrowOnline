@@ -692,6 +692,12 @@
                             <td>
                                 @if(Auth::user()->role === 'admin')
                                 <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-sm btn-outline-info"
+                                        onclick="openReferralModal({{ $user->id }}, '{{ $user->name }}', {{ $user->referred_by ?? 'null' }})"
+                                        title="Update Referral">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+
                                     <form method="POST" action="{{ url('/admin/user-details/' . $user->id . '/login') }}" style="display: inline;">
                                         @csrf
                                         <button type="submit" class="btn btn-sm btn-outline-primary"
@@ -741,6 +747,66 @@
         @endif
     </main>
 </div>
+
+<!-- Referral Update Modal -->
+<div class="modal fade" id="referralModal" tabindex="-1" role="dialog" aria-labelledby="referralModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid rgba(59, 209, 122, 0.3); border-radius: 20px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="referralModalLabel" style="color: #3bd17a; font-weight: 700;">
+                    <i class="fas fa-user-plus me-2"></i>Update Referral
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: invert(1);">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="referralUpdateForm">
+                    @csrf
+                    <input type="hidden" id="userId" name="user_id">
+                    
+                    <div class="mb-3">
+                        <label class="form-label" style="color: #3bd17a; font-weight: 600;">User</label>
+                        <div class="form-control" id="userName" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(59, 209, 122, 0.3); color: #fff; border-radius: 10px; padding: 0.8rem;">
+                            <!-- User name will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="newReferrerId" class="form-label" style="color: #3bd17a; font-weight: 600;">New Referrer ID</label>
+                        <input type="number" class="form-control" id="newReferrerId" name="new_referrer_id" 
+                               placeholder="Enter user ID of new referrer" 
+                               style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(59, 209, 122, 0.3); color: #fff; border-radius: 10px; padding: 0.8rem;">
+                        <div class="form-text" style="color: #aaa;">Enter the user ID of the person who will be the new referrer</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="referrerSearch" class="form-label" style="color: #3bd17a; font-weight: 600;">Search Referrer</label>
+                        <input type="text" class="form-control" id="referrerSearch" 
+                               placeholder="Search by name or email..." 
+                               style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(59, 209, 122, 0.3); color: #fff; border-radius: 10px; padding: 0.8rem;">
+                        <div id="referrerResults" class="mt-2" style="max-height: 200px; overflow-y: auto; display: none;">
+                            <!-- Search results will appear here -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" style="border-radius: 10px; padding: 0.6rem 1.5rem;">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick="updateReferral()" style="background: linear-gradient(135deg, #3bd17a, #00d4aa); border: none; border-radius: 10px; padding: 0.6rem 1.5rem; font-weight: 600;">
+                    <i class="fas fa-save me-2"></i>Update Referral
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toastify CSS -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<!-- Toastify JS -->
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
 <script>
     function confirmDelete(userName) {
@@ -816,5 +882,140 @@
             searchBtn.disabled = false;
         }, 3000);
     });
+
+    // Referral update functionality
+    let currentUserId = null;
+    let searchTimeout = null;
+
+    function openReferralModal(userId, userName, currentReferrerId) {
+        currentUserId = userId;
+        document.getElementById('userId').value = userId;
+        document.getElementById('userName').textContent = userName;
+        document.getElementById('newReferrerId').value = currentReferrerId || '';
+        document.getElementById('referrerSearch').value = '';
+        document.getElementById('referrerResults').style.display = 'none';
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('referralModal'));
+        modal.show();
+    }
+
+    // Search referrer functionality
+    document.getElementById('referrerSearch').addEventListener('input', function() {
+        const query = this.value.trim();
+        const resultsDiv = document.getElementById('referrerResults');
+        
+        if (query.length < 2) {
+            resultsDiv.style.display = 'none';
+            return;
+        }
+
+        // Clear previous timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        // Debounce search
+        searchTimeout = setTimeout(() => {
+            searchReferrers(query);
+        }, 300);
+    });
+
+    function searchReferrers(query) {
+        fetch(`/admin/search-users?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('referrerResults');
+                
+                if (data.users && data.users.length > 0) {
+                    resultsDiv.innerHTML = data.users.map(user => `
+                        <div class="search-result-item" onclick="selectReferrer(${user.id}, '${user.name}')" 
+                             style="padding: 0.5rem; border: 1px solid rgba(59, 209, 122, 0.2); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer; background: rgba(255, 255, 255, 0.05);">
+                            <div style="font-weight: 600; color: #fff;">${user.name}</div>
+                            <div style="font-size: 0.8rem; color: #aaa;">ID: ${user.id} | ${user.email}</div>
+                        </div>
+                    `).join('');
+                    resultsDiv.style.display = 'block';
+                } else {
+                    resultsDiv.innerHTML = '<div style="padding: 0.5rem; color: #aaa;">No users found</div>';
+                    resultsDiv.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                Toastify({
+                    text: "Error searching users",
+                    backgroundColor: "#ff6b6b"
+                }).showToast();
+            });
+    }
+
+    function selectReferrer(userId, userName) {
+        document.getElementById('newReferrerId').value = userId;
+        document.getElementById('referrerSearch').value = userName;
+        document.getElementById('referrerResults').style.display = 'none';
+    }
+
+    function updateReferral() {
+        const userId = document.getElementById('userId').value;
+        const newReferrerId = document.getElementById('newReferrerId').value;
+
+        if (!newReferrerId) {
+            Toastify({
+                text: "Please enter a referrer ID",
+                backgroundColor: "#ff6b6b"
+            }).showToast();
+            return;
+        }
+
+        // Show loading state
+        const updateBtn = document.querySelector('#referralModal .btn-primary');
+        const originalText = updateBtn.innerHTML;
+        updateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+        updateBtn.disabled = true;
+
+        fetch('/admin/update-referral', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                user_id: userId,
+                new_referrer_id: newReferrerId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Toastify({
+                    text: data.message,
+                    backgroundColor: "#3bd17a"
+                }).showToast();
+                
+                // Close modal and reload page
+                const modal = bootstrap.Modal.getInstance(document.getElementById('referralModal'));
+                modal.hide();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                Toastify({
+                    text: data.message,
+                    backgroundColor: "#ff6b6b"
+                }).showToast();
+            }
+        })
+        .catch(error => {
+            console.error('Update error:', error);
+            Toastify({
+                text: "Error updating referral",
+                backgroundColor: "#ff6b6b"
+            }).showToast();
+        })
+        .finally(() => {
+            // Restore button state
+            updateBtn.innerHTML = originalText;
+            updateBtn.disabled = false;
+        });
+    }
 </script>
 @endsection

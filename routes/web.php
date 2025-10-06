@@ -274,6 +274,10 @@ Route::middleware(['auth', AuthAdmin::class])->group(function () {
 
         // User delete functionality
         Route::delete('/admin/user-details/{user}/delete', [AdminUserDetailController::class, 'deleteUser'])->name('admin.user.delete');
+
+        // Referral update functionality
+        Route::post('/admin/update-referral', [AdminUserDetailController::class, 'updateReferral'])->name('admin.update.referral');
+        Route::get('/admin/search-users', [AdminUserDetailController::class, 'searchUsers'])->name('admin.search.users');
     });
 
     // User Plan Details
