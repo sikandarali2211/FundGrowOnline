@@ -6,6 +6,8 @@ use App\Http\Middleware\AuthAdmin;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use App\Models\User;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
@@ -62,6 +64,13 @@ Route::get('/test-email-otp', function () {
 
 // 
 Auth::routes();
+
+// Public AJAX route: check if email exists before sending reset link
+Route::post('/auth/check-email-exists', function (Request $request) {
+    $email = (string) ($request->input('email') ?? '');
+    $exists = $email !== '' && User::where('email', $email)->exists();
+    return response()->json(['exists' => $exists]);
+})->name('auth.check-email-exists');
 
 Route::get('auth/google', [GoogleAuthController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('auth/google/callback', [GoogleAuthController::class, 'handleGoogleCallback'])->name('google.callback');
