@@ -156,10 +156,9 @@
                         <p class="text-muted">Secure your account with a 6-digit PIN</p>
                     </div>
 
-                    <!-- Step Indicator -->
+                    <!-- Step Indicator (temporarily single step) -->
                     <div class="step-indicator">
-                        <div class="step active" id="step1">1</div>
-                        <div class="step" id="step2">2</div>
+                        <div class="step active" id="step2">1</div>
                     </div>
 
                     @if($errors->any())
@@ -181,68 +180,12 @@
                     <form id="pinSetupForm" method="POST" action="{{ route('security.pin.setup.store') }}">
                         @csrf
                         
-                        <!-- Step 1: OTP Verification -->
-                        <div id="otpStep" class="step-content">
+                        <!-- Step 1 removed temporarily: OTP Verification (hidden) -->
+
+                        <!-- PIN Setup -->
+                        <div id="pinStep" class="step-content" style="display: block;">
                             <div class="mb-4">
-                                <h5 class="text-center mb-3" style="color: #3bd17a">Step 1: Verify Your Email Address</h5>
-                                <p class="text-muted text-center small">
-                                    We'll send a 6-digit OTP to your registered email address to verify your identity.
-                                </p>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i style="color: #3bd17a" class="fas fa-envelope"></i>
-                                    </span>
-                                    <input type="text" class="form-control" value="{{ auth()->user()->email }}" readonly>
-                                </div>
-                            </div>
-
-                            <div  class="mb-3">
-                                <div class="text-center">
-                                    <div  class="d-inline-flex align-items-center bg-light rounded p-3">
-                                        <i style="color: #3bd17a" class="fas fa-envelope text-primary me-2"></i>
-                                        <span class="text-muted">OTP will be sent to your email address</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="text-center mb-4">
-                                <button type="button" class="btn btn-outline-primary" id="sendOTPBtn">
-                                    <i style="color: #3bd17a" class="fas fa-paper-plane me-2"></i>Send OTP
-                                </button>
-                                <div id="otpStatus" class="mt-2 small"></div>
-                            </div>
-
-                            <div class="mb-3" id="otpInputGroup" style="display: none;">
-                                <label for="otp_code" class="form-label text-white">Enter OTP Code</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i style="color: #3bd17a" class="fas fa-key"></i>
-                                    </span>
-                                    <input type="text" 
-                                           class="form-control pin-input" 
-                                           id="otp_code" 
-                                           name="otp_code" 
-                                           placeholder="000000"
-                                           maxlength="6"
-                                           pattern="[0-9]{6}"
-                                           required>
-                                </div>
-                            </div>
-
-                            <div class="text-center">
-                                <button type="button" class="btn btn-primary" id="verifyOTPBtn" style="display: none;">
-                                    <i class="fas fa-check me-2"></i>Verify OTP
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 2: PIN Setup -->
-                        <div id="pinStep" class="step-content" style="display: none;">
-                            <div class="mb-4">
-                                <h5 class="text-center mb-3"  style="color: #3bd17a">Step 2: Set Your Security PIN</h5>
+                                <h5 class="text-center mb-3"  style="color: #3bd17a">Set Your Security PIN</h5>
                                 <p class="text-muted text-center small">
                                     Create a 6-digit PIN that you'll use for sensitive operations.
                                 </p>
@@ -297,63 +240,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sendOTPBtn = document.getElementById('sendOTPBtn');
-            const verifyOTPBtn = document.getElementById('verifyOTPBtn');
-            const otpInputGroup = document.getElementById('otpInputGroup');
-            const otpStatus = document.getElementById('otpStatus');
-            const otpStep = document.getElementById('otpStep');
+            // OTP elements hidden/removed temporarily
             const pinStep = document.getElementById('pinStep');
-            const step1 = document.getElementById('step1');
             const step2 = document.getElementById('step2');
-            const otpInput = document.getElementById('otp_code');
-
-            // Send OTP
-            sendOTPBtn.addEventListener('click', function() {
-                sendOTPBtn.disabled = true;
-                sendOTPBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
-                
-                fetch('{{ route("security.pin.send-otp") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || document.querySelector('input[name="_token"]').value
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        otpStatus.innerHTML = '<span class="text-success"><i class="fas fa-check me-1"></i>OTP sent successfully!</span>';
-                        otpInputGroup.style.display = 'block';
-                        verifyOTPBtn.style.display = 'inline-block';
-                        sendOTPBtn.style.display = 'none';
-                    } else {
-                        otpStatus.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Failed to send OTP</span>';
-                        sendOTPBtn.disabled = false;
-                        sendOTPBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send OTP';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    otpStatus.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Error sending OTP</span>';
-                    sendOTPBtn.disabled = false;
-                    sendOTPBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send OTP';
-                });
-            });
-
-            // Verify OTP
-            verifyOTPBtn.addEventListener('click', function() {
-                if (otpInput.value.length === 6) {
-                    // Move to PIN setup step
-                    step1.classList.remove('active');
-                    step1.classList.add('completed');
-                    step2.classList.add('active');
-                    
-                    otpStep.style.display = 'none';
-                    pinStep.style.display = 'block';
-                } else {
-                    alert('Please enter a valid 6-digit OTP code.');
-                }
-            });
+            // Show PIN step by default
+            pinStep.style.display = 'block';
 
             // Allow only numbers in PIN inputs
             document.querySelectorAll('.pin-input').forEach(input => {

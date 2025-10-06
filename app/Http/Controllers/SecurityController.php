@@ -25,7 +25,7 @@ class SecurityController extends Controller
     }
 
     /**
-     * Handle PIN setup with OTP verification
+     * Handle PIN setup (temporarily without OTP verification)
      */
     public function setupPIN(Request $request)
     {
@@ -34,31 +34,21 @@ class SecurityController extends Controller
         $validator = Validator::make($request->all(), [
             'security_pin' => ['required', 'string', 'min:6', 'max:6', 'regex:/^[0-9]{6}$/'],
             'security_pin_confirmation' => ['required', 'same:security_pin'],
-            'otp_code' => ['required', 'string', 'min:6', 'max:6', 'regex:/^[0-9]{6}$/'],
         ], [
             'security_pin.required' => 'Security PIN is required.',
             'security_pin.min' => 'Security PIN must be exactly 6 digits.',
             'security_pin.max' => 'Security PIN must be exactly 6 digits.',
             'security_pin.regex' => 'Security PIN must contain only numbers.',
             'security_pin_confirmation.same' => 'PIN confirmation does not match.',
-            'otp_code.required' => 'OTP code is required.',
-            'otp_code.min' => 'OTP code must be exactly 6 digits.',
-            'otp_code.max' => 'OTP code must be exactly 6 digits.',
-            'otp_code.regex' => 'OTP code must contain only numbers.',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Verify OTP
-        if (!$user->verifyOTP($request->otp_code)) {
-            return back()->withErrors(['otp_code' => 'Invalid or expired OTP code.'])->withInput();
-        }
-
         // Set security PIN
         $user->setSecurityPIN($request->security_pin);
-        $user->clearOTP();
+        // temporarily skip OTP lifecycle
 
         return redirect()->route('user.index')->with('success', 'Security PIN has been set up successfully!');
     }
