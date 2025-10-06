@@ -161,7 +161,11 @@
             margin-right: 12px;
         }
 
-        .text-danger small { display: block; margin-top: 6px; }
+        .text-danger small {
+            display: block;
+            margin-top: 6px;
+        }
+
         .badge-lock {
             background: rgba(59, 209, 122, 0.15);
             border: 1px solid var(--light);
@@ -200,13 +204,13 @@
 
         {{-- Global validation errors (optional) --}}
         @if ($errors->any())
-            <div class="alert alert-danger text-start py-2">
-                <ul class="mb-0 ps-3">
-                    @foreach ($errors->all() as $error)
-                        <li class="small">{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
+        <div class="alert alert-danger text-start py-2">
+            <ul class="mb-0 ps-3">
+                @foreach ($errors->all() as $error)
+                <li class="small">{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
         @endif
 
         <form action="{{ route('register') }}" method="POST" novalidate>
@@ -214,20 +218,20 @@
 
             {{-- Lock referral if came from ?ref= --}}
             @php
-                $refParam = $ref ?? request('ref'); // $ref passed from controller showRegistrationForm
-                $isLocked = !empty($refParam);
+            $refParam = $ref ?? request('ref'); // $ref passed from controller showRegistrationForm
+            $isLocked = !empty($refParam);
             @endphp
             @if($isLocked)
-                <input type="hidden" name="ref_lock" value="1">
+            <input type="hidden" name="ref_lock" value="1">
             @endif
 
             <div class="form-group mb-3 text-start">
                 <label for="referral" class="form-label">
                     Referral Code
                     @if($isLocked)
-                        <span class="badge-lock"><i class="fa fa-lock me-1"></i>Locked</span>
+                    <span class="badge-lock"><i class="fa fa-lock me-1"></i>Locked</span>
                     @else
-                        (Optional)
+                    (Optional)
                     @endif
                 </label>
                 <input
@@ -237,10 +241,9 @@
                     class="form-control @error('referral') is-invalid @enderror"
                     placeholder="e.g. ABC123"
                     value="{{ old('referral', $refParam) }}"
-                    @if($isLocked) readonly @endif
-                >
+                    @if($isLocked) readonly @endif>
                 @error('referral')
-                    <div class="text-danger"><small>{{ $message }}</small></div>
+                <div class="text-danger"><small>{{ $message }}</small></div>
                 @enderror
             </div>
 
@@ -253,10 +256,9 @@
                     placeholder="Your full name"
                     required
                     class="form-control @error('name') is-invalid @enderror"
-                    value="{{ old('name') }}"
-                >
+                    value="{{ old('name') }}">
                 @error('name')
-                    <div class="text-danger"><small>{{ $message }}</small></div>
+                <div class="text-danger"><small>{{ $message }}</small></div>
                 @enderror
             </div>
 
@@ -270,9 +272,11 @@
                     required
                     class="form-control @error('email') is-invalid @enderror"
                     value="{{ old('email') }}"
-                >
+                    pattern="^[^\s@]+@(gmail\.com|googlemail\.com|yahoo\.(com|co\.[a-z]{2}|[a-z]{2})|hotmail\.com|outlook\.com|live\.com|msn\.com|icloud\.com|proton\.me|protonmail\.com|aol\.com|gmx\.(com|net)|mail\.com)$"
+                    title="Use Gmail, Yahoo, Hotmail/Outlook, iCloud, Proton, AOL, GMX (e.g., user@gmail.com)">
+
                 @error('email')
-                    <div class="text-danger"><small>{{ $message }}</small></div>
+                <div class="text-danger"><small>{{ $message }}</small></div>
                 @enderror
             </div>
 
@@ -285,10 +289,9 @@
                     placeholder="+92 3XX XXXXXXX"
                     required
                     class="form-control @error('phone') is-invalid @enderror"
-                    value="{{ old('phone') }}"
-                >
+                    value="{{ old('phone') }}">
                 @error('phone')
-                    <div class="text-danger"><small>{{ $message }}</small></div>
+                <div class="text-danger"><small>{{ $message }}</small></div>
                 @enderror
             </div>
 
@@ -300,12 +303,11 @@
                         type="password"
                         name="password"
                         required
-                        class="form-control @error('password') is-invalid @enderror"
-                    >
+                        class="form-control @error('password') is-invalid @enderror">
                     <span class="input-group-text" onclick="togglePassword('password', this)"><i class="fas fa-eye"></i></span>
                 </div>
                 @error('password')
-                    <div class="text-danger"><small>{{ $message }}</small></div>
+                <div class="text-danger"><small>{{ $message }}</small></div>
                 @enderror
             </div>
 
@@ -317,13 +319,12 @@
                         type="password"
                         name="password_confirmation"
                         required
-                        class="form-control"
-                    >
+                        class="form-control">
                     <span class="input-group-text" onclick="togglePassword('password-confirm', this)"><i class="fas fa-eye"></i></span>
                 </div>
             </div>
 
-           
+
             <a href="{{ route('google.login') }}{{ request('ref') ? '?ref=' . request('ref') : '' }}" class="google-signin-btn">
                 <img src="https://www.google.com/favicon.ico" class="google-icon" alt="Google"> Sign in with Google
             </a>
