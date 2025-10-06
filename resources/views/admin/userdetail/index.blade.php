@@ -986,18 +986,12 @@
             })
         })
         .then(response => {
-            if (!response.ok) {
-                // Try to parse error message from response
-                return response.text().then(text => {
-                    try {
-                        const errorData = JSON.parse(text);
-                        throw new Error(errorData.message || `Server error: HTTP status ${response.status}`);
-                    } catch (e) {
-                        throw new Error(text || `Server error: HTTP status ${response.status}`);
-                    }
-                });
-            }
-            return response.json();
+            return response.json().then(data => {
+                if (!response.ok) {
+                    throw new Error(data.message || `Server error: HTTP status ${response.status}`);
+                }
+                return data;
+            });
         })
         .then(data => {
             if (data.success) {
