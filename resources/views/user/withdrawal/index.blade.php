@@ -165,9 +165,81 @@
     .text-muted {
         color: var(--fg-muted) !important
     }
-</style>
 
-<div class="main-panel">
+
+    /* ===== Input & Dropdown Styling (Binance Style) ===== */
+    .form-control,
+    .form-select {
+        background: rgba(15, 40, 55, 0.85);
+        border: 1px solid rgba(34, 227, 160, 0.3);
+        color: #fff;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Placeholder fix */
+    .form-control::placeholder {
+        color: #7aa5a0;
+        opacity: 0.8;
+    }
+
+    /* Focus state glowing edge */
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #22e3a0;
+        box-shadow: 0 0 8px rgba(34, 227, 160, 0.6);
+        background: rgba(15, 40, 55, 0.95);
+        color: #fff;
+    }
+
+    /* Dropdown option colors */
+    .form-select option {
+        background: #0d2b33;
+        color: #fff;
+    }
+
+    /* Label styling */
+    .form-label {
+        font-weight: 600;
+        font-size: 14px;
+        color: #cfe7e3;
+        margin-bottom: 6px;
+    }
+
+    /* Button styling */
+    .btn-primary {
+        background: linear-gradient(90deg, #22e3a0, #20c9bb);
+        border: none;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px;
+        transition: 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(90deg, #20c9bb, #22e3a0);
+        box-shadow: 0 0 15px rgba(34, 227, 160, 0.5);
+    }
+
+    /* Make all inputs same height */
+    .form-control,
+    .form-select {
+        height: 45px;
+        font-size: 14px;
+    }
+
+    /* Labels */
+    .form-label {
+        font-weight: 600;
+        font-size: 13px;
+        color: #cfe7e3;
+        margin-bottom: 4px;
+    }
+</style>
+<div class="main-panel" style="margin-top:4rem; padding:20px;">
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
@@ -181,89 +253,106 @@
         <div class="col-lg-12">
             <div class="card">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="card-title">Request Withdrawal</h5>
+                    <h5 class="card-title" style="color: var(--fg-accent)">Request Withdrawal</h5>
                 </div>
                 <div class="card-body">
                     <!-- Balance tiles -->
                     <div class="row mb-4 g-3">
                         <div class="col-md-4">
                             <div class="stat">
-                                <h6><i class="fas fa-coins me-1"></i>Pool Commission</h6>
+                                <h6><i class="fas fa-coins me-1"></i> Pool Commission</h6>
                                 <h4 class="mb-0">${{ number_format($poolCommission, 2) }}</h4>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat">
-                                <h6><i class="fas fa-wallet me-1"></i>Balance Wallet</h6>
+                                <h6><i class="fas fa-wallet me-1"></i> Balance Wallet</h6>
                                 <h4 class="mb-0">${{ number_format($balanceWallet, 2) }}</h4>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="stat">
-                                <h6><i class="fas fa-layer-group me-1"></i>Total Available</h6>
+                                <h6><i class="fas fa-layer-group me-1"></i> Total Available</h6>
                                 <h4 class="mb-0">${{ number_format($totalAvailable, 2) }}</h4>
                             </div>
                         </div>
                     </div>
 
-                    @if($totalAvailable > 0)
+                    @if ($totalAvailable > 0)
                     <form id="withdrawalForm" novalidate>
                         @csrf
-                        <div class="row g-3">
-                            <div class="col-md-6">
+                        <div class="row g-3 align-items-center">
+                            <!-- Amount -->
+                            <div class="col-md-3">
                                 <label for="amount" class="form-label">Amount (USDT)</label>
                                 <input type="number" class="form-control" id="amount" name="amount"
-                                    min="1" max="{{ $totalAvailable }}" step="0.01" required placeholder="Enter amount">
-                                <div class="form-text" id="amountHelp">Minimum: $1.00, Maximum: ${{ number_format($totalAvailable, 2) }}</div>
+                                    min="1" max="{{ $totalAvailable }}" step="0.01" required
+                                    placeholder="Min $1.00 - Max ${{ number_format($totalAvailable, 2) }}">
                             </div>
-                            <div class="col-md-6">
+
+                            <!-- Withdrawal Source -->
+                            <div class="col-md-3">
                                 <label for="withdrawal_source" class="form-label">Withdrawal Source</label>
-                                <select class="form-select" id="withdrawal_source" name="withdrawal_source" required>
+                                <select class="form-select" id="withdrawal_source" name="withdrawal_source"
+                                    required>
                                     <option value="">Select Source</option>
-                                    @if($poolCommission > 0)
-                                    <option value="pool_commission">Pool Commission Only (${{ number_format($poolCommission, 2) }})</option>
+                                    @if ($poolCommission > 0)
+                                    <option value="pool_commission">Pool Commission
+                                        (${{ number_format($poolCommission, 2) }})</option>
                                     @endif
-                                    @if($balanceWallet > 0)
-                                    <option value="balance_wallet">Balance Wallet Only (${{ number_format($balanceWallet, 2) }})</option>
+                                    @if ($balanceWallet > 0)
+                                    <option value="balance_wallet">Balance Wallet
+                                        (${{ number_format($balanceWallet, 2) }})</option>
                                     @endif
-                                    @if($poolCommission > 0 && $balanceWallet > 0)
-                                    <option value="both">Both Wallets (${{ number_format($totalAvailable, 2) }})</option>
+                                    @if ($poolCommission > 0 && $balanceWallet > 0)
+                                    <option value="both">Both (${{ number_format($totalAvailable, 2) }})
+                                    </option>
                                     @endif
                                 </select>
                             </div>
-                            <!-- Fee summary -->
-                            <div class="col-md-6">
-                                <label class="form-label">Fee (10%)</label>
-                                <div id="feeAmount" class="fw-bold" style="color:#ff6b6b;">$0.00</div>
+
+                            <!-- Wallet Type -->
+                            <div class="col-md-3">
+                                <div class="d-flex flex-column">
+                                    <label for="wallet_type" class="form-label">Wallet Type</label>
+                                    <select class="form-select" id="wallet_type" name="wallet_type" required>
+                                        <option value="">Select Wallet</option>
+                                        <option value="trust">Trust Wallet</option>
+                                        <option value="metamask">MetaMask</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">You will receive</label>
-                                <div id="netAmount" class="fw-bold" style="color:#3bd17a;">$0.00</div>
-                            </div>
-                            <input type="hidden" name="fee_amount" id="fee_amount" value="0">
-                            <input type="hidden" name="net_amount" id="net_amount" value="0">
-                            <div class="col-md-6">
-                                <label for="wallet_type" class="form-label">Wallet Type</label>
-                                <select class="form-select" id="wallet_type" name="wallet_type" required>
-                                    <option value="">Select Wallet Type</option>
-                                    <option value="trust">Trust Wallet</option>
-                                    <option value="metamask">MetaMask</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
+
+                            <!-- Wallet Address -->
+                            <div class="col-md-3">
                                 <label for="wallet_address" class="form-label">Wallet Address (BEP-20)</label>
                                 <input type="text" class="form-control" id="wallet_address" name="wallet_address"
                                     placeholder="0x..." minlength="42" maxlength="42" required>
-                                <div class="form-text">Enter your BEP-20 address (starts with 0x, 42 characters).</div>
                             </div>
-                            <div class="col-12 pt-2">
-                                <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane me-1"></i> Submit Withdrawal Request</button>
+                        </div>
+
+                        <!-- Fee & Net Amount below -->
+                        <div class="row g-3 mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Fee (10%)</label>
+                                <div id="feeAmount" class="fw-bold text-danger">$0.00</div>
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">You will receive</label>
+                                <div id="netAmount" class="fw-bold text-success">$0.00</div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 pt-3">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-paper-plane me-1"></i> Submit Withdrawal Request
+                            </button>
                         </div>
                     </form>
                     @else
-                    <div class="alert alert-warning mb-0" style="background: rgba(245,200,75,.12); border:1px solid rgba(245,200,75,.25); color:#f5d26b; border-radius:12px;">
+                    <div class="alert alert-warning mb-0"
+                        style="background: rgba(245,200,75,.12); border:1px solid rgba(245,200,75,.25); color:#f5d26b; border-radius:12px;">
                         <i class="fas fa-exclamation-triangle me-2"></i> You don't have any balance to withdraw.
                     </div>
                     @endif
@@ -277,27 +366,59 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title">Recent Withdrawals</h5>
+                    <h5 class="card-title" style="color: var(--fg-accent)">Recent Withdrawals</h5>
                 </div>
-                <div class="card-body">
-                    @if($withdrawals->count() > 0)
-                    @foreach($withdrawals as $withdrawal)
-                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 withdrawal-item">
-                        <div>
-                            <h6 class="mb-1">${{ number_format($withdrawal->amount, 2) }}</h6>
-                            <small class="text-muted">{{ $withdrawal->created_at->format('M d, Y') }}</small>
-                        </div>
-                        <span class="badge badge-{{ $withdrawal->status_badge }}">{{ $withdrawal->status_text }}</span>
+                <div class="card-body p-0">
+                    @if ($withdrawals->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Date</th>
+                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Amount</th>
+                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Wallet Address</th>
+                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Type</th>
+                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($withdrawals as $withdrawal)
+                                <tr style="border-color: rgba(255, 255, 255, 0.08);">
+                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-text);">
+                                        {{ $withdrawal->created_at->format('M d, Y') }}
+                                    </td>
+                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-accent); font-weight: 600;">
+                                        ${{ number_format($withdrawal->amount, 2) }}
+                                    </td>
+                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-text);">
+                                        <code style="background: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">
+                                            {{ $withdrawal->wallet_address }}
+                                        </code>
+                                    </td>
+                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-text);">
+                                        <span class="badge" style="background: rgba(34, 227, 160, 0.12); color: #88f0cc; border: 1px solid rgba(34, 227, 160, 0.25); border-radius: 999px; font-weight: 800; padding: 0.45rem 0.7rem;">
+                                            {{ ucfirst($withdrawal->wallet_type) }}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 15px 12px; vertical-align: middle;">
+                                        <span class="badge badge-{{ $withdrawal->status_badge }}">{{ $withdrawal->status_text }}</span>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                    @endforeach
                     @else
-                    <p class="text-muted mb-0">No withdrawal requests yet.</p>
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No withdrawal requests yet.</p>
+                    </div>
                     @endif
                 </div>
             </div>
         </div>
     </div>
-</div> 
+</div>
 
 <script>
     (function() {
@@ -341,7 +462,7 @@
         sourceSel && sourceSel.addEventListener('change', setMaxBySource);
         setMaxBySource();
 
-        function recalcFeeNet(){
+        function recalcFeeNet() {
             const amt = parseFloat(amountInput.value || '0');
             const fee = Math.max(0, +(amt * 0.10).toFixed(2));
             const net = Math.max(0, +(amt - fee).toFixed(2));
@@ -371,7 +492,9 @@
 
             const addr = (addressInput.value || '').trim();
             if (!(addr.startsWith('0x') && addr.length === 42)) {
-                alert('Please enter a valid BEP-20 wallet address (starts with 0x and 42 characters long).');
+                alert(
+                    'Please enter a valid BEP-20 wallet address (starts with 0x and 42 characters long).'
+                );
                 addressInput.focus();
                 return;
             }
@@ -382,13 +505,15 @@
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing...';
             submitBtn.disabled = true;
 
-            fetch('{{ route("user.withdrawal.store") }}', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
+            fetch('{{ route('
+                    user.withdrawal.store ') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        }
+                    })
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
