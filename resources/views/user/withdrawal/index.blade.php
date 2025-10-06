@@ -238,6 +238,31 @@
         color: #cfe7e3;
         margin-bottom: 4px;
     }
+
+    /* Table styling for withdrawals */
+    .table-dark {
+        background: transparent !important;
+        color: var(--fg-text) !important;
+    }
+    
+    .table-dark th {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #fff !important;
+        font-weight: 600 !important;
+        padding: 15px 12px !important;
+    }
+    
+    .table-dark td {
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        padding: 15px 12px !important;
+        vertical-align: middle !important;
+        color: var(--fg-text) !important;
+    }
+    
+    .table-dark tbody tr:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+    }
 </style>
 <div class="main-panel" style="margin-top:4rem; padding:20px;">
     <div class="row">
@@ -371,7 +396,7 @@
                 <div class="card-body p-0">
                     @if ($withdrawals->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-dark table-hover mb-0">
+                        <table class="table table-dark table-hover mb-0" style="background: transparent;">
                             <thead>
                                 <tr>
                                     <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Date</th>
