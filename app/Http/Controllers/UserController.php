@@ -10,7 +10,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $user = auth()->user();
+        $user = auth()->user()->load('referrer');
 
         // Calculate total users referred by this user (all levels)
         $totalReferrals = $this->getTotalReferrals($user->id);

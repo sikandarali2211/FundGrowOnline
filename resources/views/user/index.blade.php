@@ -804,6 +804,45 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Statistics Cards Row -->
+            <div class="row grid-margin">
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center p-3 h-100" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                        <i class="fas fa-users fa-2x text-success mb-2"></i>
+                        <h6 class="mb-1 text-white">Total Referrals</h6>
+                        <span class="font-weight-bold text-success">{{ number_format($totalReferrals ?? 0) }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center p-3 h-100" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h6 class="mb-1 text-white">Active Plan Users</h6>
+                        <span class="font-weight-bold text-success">{{ number_format($activePlanUsers ?? 0) }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center p-3 h-100" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                        <h6 class="mb-1 text-white">Pending Plan Users</h6>
+                        <span class="font-weight-bold text-warning">{{ number_format($pendingPlanUsers ?? 0) }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center p-3 h-100" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                        <i class="fas fa-user-tie fa-2x text-info mb-2"></i>
+                        <h6 class="mb-1 text-white">Sponsor Name</h6>
+                        @if(auth()->user()->referrer)
+                            <div class="d-flex flex-column">
+                                <span class="font-weight-bold text-info">{{ auth()->user()->referrer->name }}</span>
+                                <small class="text-muted">ID: {{ auth()->user()->referrer->referral_code }}</small>
+                            </div>
+                        @else
+                            <span class="text-muted">No Sponsor</span>
+                        @endif
+                    </div>
+                </div>
+            </div>
        
         </div>
 
