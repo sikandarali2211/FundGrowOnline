@@ -138,13 +138,32 @@
 </div>
 
 <style>
+/* Main Container */
+.main-panel {
+    background: linear-gradient(135deg, #041a2f, #072d42 60%);
+    min-height: 100vh;
+}
+
 .card {
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+.card-body {
+    background: transparent;
+}
+
+/* Form Container */
+.card.border-0.shadow-sm {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(59, 209, 122, 0.2) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Form Controls */
 .form-control {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -152,6 +171,7 @@
     border-radius: 10px;
     padding: 12px 16px;
     transition: all 0.3s ease;
+    font-size: 14px;
 }
 
 .form-control:focus {
@@ -161,15 +181,30 @@
     color: #fff;
 }
 
+.form-control[readonly] {
+    background: rgba(255, 255, 255, 0.05);
+    color: #a0a0a0;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
 .form-control::placeholder {
     color: rgba(255, 255, 255, 0.6);
 }
 
+/* Labels */
 .form-label {
     color: #e0e0e0;
     margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
+/* Icons */
+.fa-envelope, .fa-envelope-open, .fa-envelope-check {
+    font-size: 16px;
+}
+
+/* Buttons */
 .btn-primary {
     background: linear-gradient(135deg, #3bd17a, #00d4aa);
     border: none;
@@ -177,6 +212,7 @@
     padding: 12px 24px;
     font-weight: 600;
     transition: all 0.3s ease;
+    font-size: 16px;
 }
 
 .btn-primary:hover {
@@ -190,6 +226,7 @@
     color: #e0e0e0;
     border-radius: 10px;
     transition: all 0.3s ease;
+    background: transparent;
 }
 
 .btn-outline-secondary:hover {
@@ -198,9 +235,11 @@
     color: #3bd17a;
 }
 
+/* Alerts */
 .alert {
     border-radius: 10px;
     border: none;
+    font-size: 14px;
 }
 
 .alert-success {
@@ -221,6 +260,7 @@
     border-left: 4px solid #ffc107;
 }
 
+/* Validation */
 .invalid-feedback {
     color: #ff6b6b;
     font-size: 0.875rem;
@@ -230,6 +270,81 @@
 .is-invalid {
     border-color: #ff6b6b !important;
     box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25) !important;
+}
+
+/* Text Colors */
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.text-primary {
+    color: #3bd17a !important;
+}
+
+.text-success {
+    color: #3bd17a !important;
+}
+
+.text-info {
+    color: #00d4aa !important;
+}
+
+/* Card Title */
+.card-title {
+    color: #fff !important;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+/* Icon Container */
+.bg-primary.bg-opacity-10 {
+    background: rgba(59, 209, 122, 0.2) !important;
+    border: 2px solid rgba(59, 209, 122, 0.3);
+}
+
+/* Security Notice */
+.alert-warning .alert-heading {
+    color: #ffc107 !important;
+    font-weight: 600;
+}
+
+/* Form Text */
+.form-text {
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-size: 0.875rem;
+}
+
+/* Page Title */
+h4.card-title {
+    color: #fff !important;
+}
+
+/* Back Button */
+.btn-outline-secondary {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #e0e0e0;
+}
+
+.btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #3bd17a;
+    color: #3bd17a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .form-control {
+        padding: 10px 14px;
+    }
+    
+    .btn-primary {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
 }
 </style>
 @endsection
