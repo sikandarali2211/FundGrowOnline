@@ -985,7 +985,12 @@
                 new_referrer_id: newReferrerId
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 Toastify({
@@ -1007,7 +1012,7 @@
         .catch(error => {
             console.error('Update error:', error);
             Toastify({
-                text: "Error updating referral",
+                text: `Network error: ${error.message}`,
                 backgroundColor: "#ff6b6b"
             }).showToast();
         })
