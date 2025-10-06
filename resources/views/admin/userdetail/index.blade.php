@@ -999,8 +999,7 @@
                 }).showToast();
                 
                 // Close modal and reload page
-                const modal = bootstrap.Modal.getInstance(document.getElementById('referralModal'));
-                modal.hide();
+                $('#referralModal').modal('hide');
                 setTimeout(() => location.reload(), 1000);
             } else {
                 Toastify({
