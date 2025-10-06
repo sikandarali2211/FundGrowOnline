@@ -244,7 +244,7 @@ class UserController extends Controller
     {
         $user = auth()->user();
 
-        // Load investments and commission transactions
+        // Load investments and commission transactions with referrer relationship
         $allUsers = User::with(['referrer', 'investments'])->get();
 
         $referrals = $allUsers->filter(function ($u) use ($user) {

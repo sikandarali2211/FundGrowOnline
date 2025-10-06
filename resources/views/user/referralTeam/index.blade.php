@@ -213,6 +213,7 @@
                                             <th>User ID</th>
                                             <th>Name</th>
                                             <th>Email</th>
+                                            <th>Sponsor Name</th>
                                             <th>Referral Code</th>
                                             <th>Referral Level</th>
                                             <th>Plan Status</th>
@@ -239,6 +240,16 @@
                                                 </td>
                                                 <td>
                                                     <span class="text-muted">{{ $referral->email }}</span>
+                                                </td>
+                                                <td>
+                                                    @if($referral->referrer)
+                                                        <div class="d-flex flex-column">
+                                                            <span class="text-white fw-semibold">{{ $referral->referrer->name }}</span>
+                                                            <small class="text-muted">ID: {{ $referral->referrer->referral_code }}</small>
+                                                        </div>
+                                                    @else
+                                                        <span class="text-muted">No Sponsor</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <code class="text-warning">{{ $referral->referral_code }}</code>
