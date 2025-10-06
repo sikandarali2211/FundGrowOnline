@@ -78,6 +78,11 @@ class UserController extends Controller
             })
             ->count();
 
+        // Calculate total withdrawals for the user
+        $totalWithdrawals = \App\Models\WithdrawalRequest::where('user_id', $user->id)
+            ->where('status', 'completed')
+            ->sum('amount');
+
         return view('user.index', compact(
             'totalReferrals',
             'directReferrals',
@@ -87,7 +92,8 @@ class UserController extends Controller
             'balanceBreakdown',
             'adminWalletAddress',
             'activePlanUsers',
-            'pendingPlanUsers'
+            'pendingPlanUsers',
+            'totalWithdrawals'
         ));
     }
 

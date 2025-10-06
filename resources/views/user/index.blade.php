@@ -782,7 +782,7 @@
                 </div>
             </div>
 
-            <div class="row grid-margin">
+            <div class="row grid-margin" hidden>
                 <div class="col-12">
                     <div class="card card-statistics">
                         <div class="card-body">
@@ -840,6 +840,13 @@
                         @else
                             <span class="text-muted">No Sponsor</span>
                         @endif
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-3">
+                    <div class="card text-center p-3 h-100" style="background: linear-gradient(145deg, #072d42, #22384e); border: 1px solid #3bd17a;">
+                        <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                        <h6 class="mb-1 text-white">Withdrawal</h6>
+                        <span class="font-weight-bold text-success">${{ number_format($totalWithdrawals ?? 0, 2) }}</span>
                     </div>
                 </div>
             </div>
