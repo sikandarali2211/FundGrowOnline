@@ -160,11 +160,11 @@
                 <ul class="navbar-nav navbar-nav-right ml-auto">
                     <li class="nav-item nav-profile dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" id="profileDropdown">
-                            <img src="{{ Auth::user()->profile_picture
+                            <!-- <img src="{{ Auth::user()->profile_picture
                                 ? asset('storage/' . Auth::user()->profile_picture) . '?t=' . time()
                                 : asset('assets/images/default-avatar.png') }}"
                                 alt="profile"
-                                onerror="this.src='{{ asset('assets/images/default-avatar.png') }}'" />
+                                onerror="this.src='{{ asset('assets/images/favicon.png') }}'" /> -->
                         </a>
                         <div class="dropdown-menu dropdown-menu-right navbar-dropdown"
                             aria-labelledby="profileDropdown">
@@ -305,6 +305,12 @@
                     <a class="nav-link" href="{{ route('security.pin.change') }}">
                         <i style="color: #3bd17a !important;" class="fa fa-shield-alt menu-icon"></i>
                         <span class="menu-title" >Security</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('user.change.email') }}">
+                        <i style="color: #3bd17a !important;" class="fa fa-envelope menu-icon"></i>
+                        <span class="menu-title" >Change Email</span>
                     </a>
                 </li>
                 <li class="nav-item">

@@ -365,4 +365,44 @@ class UserController extends Controller
             'referralUrl' => $referralUrl,
         ]);
     }
+
+    /**
+     * Show the change email form
+     */
+    public function changeEmail()
+    {
+        $user = auth()->user();
+        return view('user.change-email', compact('user'));
+    }
+
+    /**
+     * Update user's email
+     */
+    public function updateEmail(Request $request)
+    {
+        $user = auth()->user();
+        
+        $request->validate([
+            'current_email' => 'required|email|in:' . $user->email,
+            'new_email' => 'required|email|unique:users,email,' . $user->id,
+            'confirm_email' => 'required|email|same:new_email'
+        ], [
+            'current_email.in' => 'Current email does not match your account email.',
+            'new_email.unique' => 'This email is already taken by another user.',
+            'confirm_email.same' => 'Email confirmation does not match the new email.'
+        ]);
+
+        try {
+            // Update the email
+            $user->email = $request->new_email;
+            $user->save();
+
+            return redirect()->route('user.change.email')
+                ->with('success', 'Email updated successfully! Your new email is: ' . $request->new_email);
+
+        } catch (\Exception $e) {
+            return redirect()->route('user.change.email')
+                ->with('error', 'Failed to update email. Please try again.');
+        }
+    }
 }

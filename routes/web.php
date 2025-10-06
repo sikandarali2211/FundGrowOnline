@@ -162,6 +162,10 @@ Route::middleware(['auth', 'require.pin.setup'])->prefix('User-dashboard')->name
     Route::get('/referral-team', [UserController::class, 'referralTeam'])
         ->name('referral.team');
 
+    // Email change routes
+    Route::get('/change-email', [UserController::class, 'changeEmail'])->name('change.email');
+    Route::post('/update-email', [UserController::class, 'updateEmail'])->name('update.email');
+
     // NEW: Team tree page (YOU -> Level 1 -> Level 2)
     Route::get('/team', [TeamController::class, 'index'])->name('team.index');
 
