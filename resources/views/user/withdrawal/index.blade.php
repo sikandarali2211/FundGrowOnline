@@ -238,31 +238,6 @@
         color: #cfe7e3;
         margin-bottom: 4px;
     }
-
-    /* Table styling for withdrawals */
-    .table-dark {
-        background: transparent !important;
-        color: var(--fg-text) !important;
-    }
-    
-    .table-dark th {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: rgba(255, 255, 255, 0.12) !important;
-        color: #fff !important;
-        font-weight: 600 !important;
-        padding: 15px 12px !important;
-    }
-    
-    .table-dark td {
-        border-color: rgba(255, 255, 255, 0.08) !important;
-        padding: 15px 12px !important;
-        vertical-align: middle !important;
-        color: var(--fg-text) !important;
-    }
-    
-    .table-dark tbody tr:hover {
-        background: rgba(255, 255, 255, 0.05) !important;
-    }
 </style>
 <div class="main-panel" style="margin-top:4rem; padding:20px;">
     <div class="row">
@@ -393,51 +368,20 @@
                 <div class="card-header">
                     <h5 class="card-title" style="color: var(--fg-accent)">Recent Withdrawals</h5>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body">
                     @if ($withdrawals->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-dark table-hover mb-0" style="background: transparent;">
-                            <thead>
-                                <tr>
-                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Date</th>
-                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Amount</th>
-                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Wallet Address</th>
-                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Type</th>
-                                    <th style="background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.12); color: #fff; font-weight: 600; padding: 15px 12px;">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($withdrawals as $withdrawal)
-                                <tr style="border-color: rgba(255, 255, 255, 0.08);">
-                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-text);">
-                                        {{ $withdrawal->created_at->format('M d, Y') }}
-                                    </td>
-                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-accent); font-weight: 600;">
-                                        ${{ number_format($withdrawal->amount, 2) }}
-                                    </td>
-                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-text);">
-                                        <code style="background: rgba(255, 255, 255, 0.1); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">
-                                            {{ $withdrawal->wallet_address }}
-                                        </code>
-                                    </td>
-                                    <td style="padding: 15px 12px; vertical-align: middle; color: var(--fg-text);">
-                                        <span class="badge" style="background: rgba(34, 227, 160, 0.12); color: #88f0cc; border: 1px solid rgba(34, 227, 160, 0.25); border-radius: 999px; font-weight: 800; padding: 0.45rem 0.7rem;">
-                                            {{ ucfirst($withdrawal->wallet_type) }}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 15px 12px; vertical-align: middle;">
-                                        <span class="badge badge-{{ $withdrawal->status_badge }}">{{ $withdrawal->status_text }}</span>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    @foreach ($withdrawals as $withdrawal)
+                    <div class="d-flex justify-content-between align-items-center mb-3 p-2 withdrawal-item">
+                        <div>
+                            <h6 class="mb-1">${{ number_format($withdrawal->amount, 2) }}</h6>
+                            <small class="text-muted">{{ $withdrawal->created_at->format('M d, Y') }}</small>
+                        </div>
+                        <span
+                            class="badge badge-{{ $withdrawal->status_badge }}">{{ $withdrawal->status_text }}</span>
                     </div>
+                    @endforeach
                     @else
-                    <div class="text-center py-5">
-                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">No withdrawal requests yet.</p>
-                    </div>
+                    <p class="text-muted mb-0">No withdrawal requests yet.</p>
                     @endif
                 </div>
             </div>

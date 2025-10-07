@@ -28,27 +28,39 @@
             /* Prevent horizontal scroll */
         }
 
+        /* Desktop Floating Navbar */
         @media (min-width: 992px) {
+            :root {
+                --nav-h: 64px;
+            }
+
             .floating-nav {
                 position: fixed;
                 top: 20px;
                 left: 50%;
                 transform: translateX(-50%);
+                width: 95%;
+                max-width: 900px;
+
+                height: var(--nav-h);
+                padding-inline: 16px;
+                /* equal left/right */
+                padding-block: 0;
+                /* we center via flex, not padding */
+
                 background: rgba(7, 45, 66, 0.85);
                 backdrop-filter: blur(10px);
                 border: 1px solid rgba(59, 209, 122, 0.3);
                 border-radius: 50px;
-                height: 70px;
-                /* 👈 reduced from 95px */
-                width: 95%;
-                max-width: 900px;
-                padding: 0 20px;
+
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
+                /* ✨ vertically centers everything */
+                justify-content: center;
+                /* middle container will handle spacing */
                 box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
                 z-index: 1000;
-                transition: transform 0.3s ease, opacity 0.3s ease;
+                transition: transform .3s ease, opacity .3s ease;
             }
 
             .floating-nav.hidden-nav {
@@ -56,110 +68,271 @@
                 opacity: 0;
             }
 
+            .floating-nav .navbar {
+                height: 100%;
+                width: 100%;
+            }
+
+            .floating-nav .container-fluid {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                /* center brand + menu + auth */
+                justify-content: space-between;
+                gap: 16px;
+            }
+
+            .navbar-brand {
+                display: flex;
+                align-items: center;
+                height: 100%;
+            }
+
             .navbar-brand img {
-                height: 50px;
-                /* 👈 scaled down to match new nav height */
+                height: calc(var(--nav-h) - 10px);
+                /* nicely fits inside pill */
                 display: block;
             }
 
             .menu {
                 display: flex;
                 align-items: center;
-                gap: 25px;
+                /* ✨ nav items perfectly centered */
+                gap: 28px;
+                height: 100%;
                 margin: 0 !important;
                 padding: 0;
                 list-style: none;
-                height: 100%;
             }
 
             .menu .nav-item {
+                height: 100%;
                 display: flex;
                 align-items: center;
-                height: 100%;
             }
 
             .menu .nav-link {
-                font-size: 15px;
-                font-weight: 600;
-                color: #3bd17a !important;
-                padding: 0;
-                line-height: 1;
                 height: 100%;
                 display: flex;
                 align-items: center;
+                /* ✨ true vertical center */
                 justify-content: center;
+                padding-inline: 10px;
+                /* equal left/right on links */
+                line-height: 1;
+                font-size: 15px;
+                font-weight: 600;
+                color: #3bd17a !important;
             }
 
             .menu .nav-link:hover {
-                color: #fff !important;
+                color: #ffffff !important;
+            }
+
+            /* Right-side auth buttons wrapper */
+            .auth {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                /* ✨ centers Sign In / Sign Up vertically */
+                gap: 10px;
+            }
+
+            /* Buttons: compact padding as requested */
+            .cmn--btn {
+                background: #3bd17a;
+                color: #072d42;
+                border: none;
+                padding: 8px 18px;
+                /* 👈 smaller than before */
+                font-size: 14px;
+                border-radius: 24px;
+                font-weight: 600;
+                line-height: 1;
+                /* keeps height tight */
+                transition: all 0.3s;
+                text-decoration: none;
+            }
+
+            .floating-nav .cmn--btn1 {
+                padding: 8px 18px;
+                font-size: 15px;
+                border-radius: 26px;
+                background: #3bd17a;
+                color: #072d42;
+                border: none;
+                font-weight: 600;
+                line-height: 1;
+                transition: all 0.3s;
+                text-decoration: none;
+            }
+
+            .floating-nav .auth {
+                gap: 12px;
+            }
+
+            .cmn--btn1 {
+                background: #3bd17a;
+                color: #072d42;
+                border: none;
+                padding: 10px 18px;
+                font-size: 14px;
+                border-radius: 24px;
+                font-weight: 600;
+                line-height: 1;
+                transition: all 0.3s;
+                text-decoration: none;
+            }
+
+
+        }
+
+
+        /* ---- MOBILE COLLAPSE CLEANUP (<=991px) ---- */
+        @media (max-width: 991px) {
+            :root {
+                --mnav-h: 56px;
+            }
+
+            /* slim fixed bar */
+            .navbar.d-lg-none {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: var(--mnav-h);
+                padding: 0 12px;
+                background: rgba(7, 45, 66, .9);
+                backdrop-filter: blur(10px);
+                border-bottom: 1px solid rgba(59, 209, 122, .15);
+                z-index: 1000;
+            }
+
+            .navbar.d-lg-none .container-fluid {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                padding: 0;
+            }
+
+            .navbar.d-lg-none .navbar-brand img {
+                height: 40px !important;
+                width: auto;
+            }
+
+            .navbar.d-lg-none .navbar-toggler {
+                color: #fff;
+                border: 0;
+                padding: 6px;
+                line-height: 1;
+            }
+
+            .navbar.d-lg-none .navbar-toggler:focus {
+                box-shadow: none;
+            }
+
+
+            .navbar.d-lg-none .collapse {
+                display: none;
+            }
+
+            .navbar.d-lg-none .collapse.show {
+                display: block;
+            }
+
+
+            .navbar.d-lg-none .navbar-collapse {
+                position: absolute;
+                top: var(--mnav-h);
+                left: 0;
+                right: 0;
+                background: rgba(7, 45, 66, .98);
+                backdrop-filter: blur(12px);
+                border-bottom: 1px solid rgba(59, 209, 122, .2);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, .35);
+                padding: 12px;
+                max-height: calc(100vh - var(--mnav-h));
+                overflow-y: auto;
+                transform-origin: top;
+                transform: scaleY(0.96);
+                opacity: 0;
+                transition: transform .18s ease, opacity .18s ease;
+            }
+
+            .navbar.d-lg-none .navbar-collapse.show {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+
+
+            .navbar.d-lg-none .navbar-nav {
+                display: grid;
+                gap: 6px;
+                margin: 0;
+                padding: 0;
+            }
+
+            .navbar.d-lg-none .nav-link {
+                display: block;
+                width: 100%;
+                padding: 12px 14px;
+                border-radius: 10px;
+                color: #e9fff4 !important;
+                font-weight: 600;
+                text-align: left;
+                background: rgba(255, 255, 255, .02);
+                border: 1px solid rgba(59, 209, 122, .12);
+            }
+
+            .navbar.d-lg-none .nav-link:hover {
+                background: rgba(59, 209, 122, .12);
+                color: #3bd17a !important;
+            }
+
+
+            .navbar.d-lg-none .text-center {
+                text-align: left !important;
+            }
+
+            .navbar.d-lg-none .cmn--btn {
+                display: block;
+                width: 100%;
+                margin: 8px 0 0 0;
+                padding: 10px 16px;
+                border-radius: 12px;
+                background: #3bd17a;
+                color: #072d42;
+                font-weight: 700;
+                text-align: center;
             }
 
             .cmn--btn {
                 background: #3bd17a;
                 color: #072d42;
                 border: none;
-                padding: 6px 16px;
-                /* 👈 slightly smaller button to match nav height */
+                padding: 8px 18px;
                 font-size: 14px;
-                border-radius: 25px;
+                border-radius: 24px;
                 font-weight: 600;
+                line-height: 1;
                 transition: all 0.3s;
                 text-decoration: none;
             }
-        }
 
-
-        /* Mobile Navbar */
-        @media (max-width: 991px) {
-            .navbar {
-                background: rgba(7, 45, 66, 0.6);
-                /* Transparent background with slight opacity */
-                backdrop-filter: blur(10px);
-                /* Blurring the background */
-                position: fixed;
-                /* Keeps the navbar fixed at the top */
-                width: 100%;
-                /* Ensure navbar spans the entire width */
-                z-index: 999;
-                /* Keeps navbar above other content */
-                top: 0;
-                /* Aligns navbar to the top */
-                left: 0;
-                /* Aligns navbar to the left */
-                padding: 2px 10px;
-                /* Optional padding */
-            }
-
-            .navbar .nav-link {
-                color: #fff !important;
-                font-weight: 500;
-                text-align: center;
-            }
-
-            .navbar .nav-link:hover {
-                color: #3bd17a !important;
-            }
-
-            .cmn--btn {
+            .cmn--btn1 {
                 background: #3bd17a;
                 color: #072d42;
-                border-radius: 25px;
-                margin: 5px auto;
-                padding: 6px 16px;
-                display: block;
-                width: 80%;
-                text-align: center;
+                border: none;
+                padding: 10px 18px;
+                font-size: 14px;
+                border-radius: 24px;
+                font-weight: 600;
+                line-height: 1;
+                transition: all 0.3s;
+                text-decoration: none;
             }
-        }
-
-        /* Ensure the collapse class works */
-        .collapse {
-            display: none !important;
-        }
-
-        /* When the "show" class is added, the navbar content should be visible */
-        .collapse.show {
-            display: block !important;
         }
     </style>
 </head>
@@ -170,34 +343,35 @@
     <!-- Desktop Floating Navbar -->
     <header id="floatingNav" class="floating-nav d-none d-lg-block">
         <nav class="navbar navbar-expand-lg">
-            <div class="container-fluid justify-content-between">
+            <div class="container-fluid">
                 <a class="navbar-brand text-white" href="/">
-                    <img src="{{ asset('assets/images/favicon.png') }}" alt="logo" height="50">
+                    <img src="{{ asset('assets/images/favicon.png') }}" alt="logo">
                 </a>
+
                 <ul class="navbar-nav menu mx-auto">
                     <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="/services">Services</a></li>
                     <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
                 </ul>
-                <div class="d-flex align-items-center" style="gap: 0.75rem;">
+
+                <div class="auth">
                     @guest
-                        <a href="{{ route('login') }}" class="cmn--btn">Sign In</a>
-                        <a href="{{ route('register') }}" class="cmn--btn">Sign Up</a>
+                        <a href="{{ route('login') }}" class="cmn--btn1">Sign In</a>
+                        <a href="{{ route('register') }}" class="cmn--btn1">Sign Up</a>
                     @else
                         <a href="{{ Auth::user()->utype === 'ADM' ? route('admin.index') : route('user.index') }}"
                             class="cmn--btn">{{ Auth::user()->name }}</a>
-
                         <form method="POST" action="{{ route('logout') }}" class="m-0 p-0">
                             @csrf
                             <button type="submit" class="cmn--btn">Logout</button>
                         </form>
                     @endguest
                 </div>
-
             </div>
         </nav>
     </header>
+
 
     <!-- Mobile Navbar -->
     <nav class="navbar navbar-expand-lg d-lg-none">
@@ -322,7 +496,7 @@
                                     <input type="text" class="form-control form--control" name="email"
                                         placeholder="Enter Your Email">
                                 </div>
-                                <button class="cmn--btn " type="submit">Subscribe</button>
+                                <button class="cmn--btn1 " type="submit">Subscribe</button>
                             </form>
                         </div>
                     </div>

@@ -167,7 +167,7 @@
         .hero-button-group a {
             margin-right: 10px;
         }
-     
+
 
         /* Right Image Styling */
         .hero-img {
@@ -175,68 +175,70 @@
             height: auto;
         }
 
-        /* Mobile View Adjustments */
+        /* Mobile hero tweaks: smaller, tighter heading */
         @media (max-width: 767px) {
             .hero-section-10 {
-                min-height: 100vh;
-                padding: 100px 15px 20px;
+                min-height: 90vh;
+                padding: calc(56px + 16px) 15px 20px;
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
                 text-align: center;
             }
 
-            .hero-content {
-                margin-top: 15px;
-                margin-bottom: 15px;
+            /* 🔽 Smaller, readable H1 on phones */
+            .hero-section-10 .hero-title {
+                font-size: clamp(22px, 5.6vw, 28px) !important;
+                line-height: 1.25 !important;
+                font-weight: 700 !important;
+                margin-bottom: 12px !important;
+                letter-spacing: .2px;
+                word-break: break-word;
             }
 
-            .hero-title {
-                font-size: 8px;
-                font-weight: 150px;
-                line-height: 1.3;
-                margin-bottom: 10px;
+            .hero-section-10 .hero-title span {
+                display: block;
             }
 
-            .hero-txt {
-                font-size: 14px;
-                line-height: 1.5;
-                margin-bottom: 15px;
-                padding: 0 10px;
+
+
+            .hero-section-10 .hero-txt {
+                font-size: 23px;
+                line-height: 1.65;
+                margin-bottom: 14px;
+                padding: 0 8px;
             }
 
             .hero-button-group {
                 display: flex;
-                flex-direction: row;
                 justify-content: center;
                 gap: 12px;
                 margin-bottom: 20px;
             }
 
-            .cmn--btn {
+            .hero-button-group .cmn--btn {
                 flex: 1;
                 max-width: 160px;
-                padding: 10px 0;
+                padding: 12px 18px;
                 font-size: 12px;
+                border-radius: 9999px;
                 text-align: center;
             }
 
-
             .hero-img {
                 width: 100%;
-                max-width: 350px;
+                max-width: 340px;
                 height: auto;
-                margin: 20px auto 0;
+                margin: 18px auto 0;
                 display: block;
             }
 
-            .row {
+            /* keep columns stacked with image below */
+            .hero-section-10 .row {
                 flex-direction: column-reverse;
                 align-items: center;
             }
         }
-
-
 
 
         .sponsor-thumb {

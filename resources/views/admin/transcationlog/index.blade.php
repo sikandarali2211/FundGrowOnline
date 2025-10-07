@@ -518,5 +518,10 @@
             });
         }
     </script>
-
+<!-- 🔄 Auto Reload Script -->
+<script>
+    setInterval(function () {
+        location.reload();
+    }, 10000); // 10 sec
+</script>
 @endsection

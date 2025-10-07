@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\PlanSelection;
 use App\Models\GlobalPool;
 use App\Models\CommissionTransaction;
+use App\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -17,6 +18,313 @@ class CommissionService
     const GLOBAL_POOL_PERCENTAGE = 10; // 10% to global pool
 
     /**
+     * Find the root user of the matrix that contains the given user
+     */
+    private function findMatrixRootUser(User $user): ?User
+    {
+        $currentUser = $user;
+        $visited = []; // Prevent infinite loops
+        
+        while ($currentUser && !in_array($currentUser->id, $visited)) {
+            $visited[] = $currentUser->id;
+            
+            // If this user has no referrer, they are the root
+            if (!$currentUser->referred_by) {
+                return $currentUser;
+            }
+            
+            $referrer = User::find($currentUser->referred_by);
+            
+            // If referrer doesn't exist, current user is the root
+            if (!$referrer) {
+                return $currentUser;
+            }
+            
+            // If referrer is not at level 2+, current user is the root of the matrix
+            if ($referrer->level < 2) {
+                return $currentUser;
+            }
+            
+            $currentUser = $referrer;
+        }
+        
+        // Fallback: return the user's direct referrer if we can't find a proper root
+        return User::find($user->referred_by);
+    }
+
+
+    /**
+     * Find the 2 parents (parent and grandparent) in the Level 2 matrix for a user
+     */
+    private function findMatrixParents(User $user): array
+    {
+        try {
+            // Find the actual root user of the matrix that contains this user
+            $rootUser = $this->findMatrixRootUser($user);
+            
+            if (!$rootUser) {
+                return []; // No root user found
+            }
+            
+            // Use direct matrix structure approach - build the matrix and find the user's actual placement
+            $teamController = new TeamController();
+            $matrixNodes = $teamController->buildLevel2ForMainUser($rootUser->id, 3);
+            
+            // Find the user's node in the matrix
+            $userNodeId = "l2-{$user->id}";
+            $userNode = null;
+            
+            foreach ($matrixNodes as $node) {
+                if ($node['id'] === $userNodeId) {
+                    $userNode = $node;
+                    break;
+                }
+            }
+            
+            if (!$userNode) {
+                Log::error('User not found in matrix - user may not be at level 2 yet', [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'user_level' => $user->level,
+                    'matrix_nodes_count' => count($matrixNodes),
+                    'matrix_nodes' => array_map(function($n) { 
+                        return [
+                            'id' => $n['id'], 
+                            'real_id' => $n['real_id'], 
+                            'name' => $n['name']
+                        ]; 
+                    }, $matrixNodes)
+                ]);
+                
+                // If user is not in matrix, they might not be at level 2 yet
+                // Let's use the BFS logic to find where they would be placed
+                return $this->findBFSMatrixParents($user, $rootUser);
+            }
+            
+            // Find the parent and grandparent from the actual matrix structure
+            $parent = null;
+            $grandparent = null;
+            
+            Log::info('Matrix structure analysis', [
+                'user_node' => $userNode,
+                'user_parent_id' => $userNode['parentId'],
+                'all_matrix_nodes' => array_map(function($n) { 
+                    return [
+                        'id' => $n['id'], 
+                        'real_id' => $n['real_id'], 
+                        'name' => $n['name'], 
+                        'parentId' => $n['parentId']
+                    ]; 
+                }, $matrixNodes)
+            ]);
+            
+            // Find parent node - the node whose id matches the user's parentId
+            $parentNode = null;
+            foreach ($matrixNodes as $node) {
+                if ($node['id'] === $userNode['parentId']) {
+                    $parentNode = $node;
+                    $parent = User::find($node['real_id']);
+                    break;
+                }
+            }
+            
+            Log::info('Parent node found', [
+                'parent_node' => $parentNode,
+                'parent_user' => $parent ? ['id' => $parent->id, 'name' => $parent->name] : null
+            ]);
+            
+            // If parent is found, find grandparent
+            if ($parentNode) {
+                // Find the grandparent node - the node whose id matches the parent's parentId
+                foreach ($matrixNodes as $node) {
+                    if ($node['id'] === $parentNode['parentId']) {
+                        $grandparent = User::find($node['real_id']);
+                        break;
+                    }
+                }
+            }
+            
+            Log::info('Grandparent found', [
+                'grandparent_user' => $grandparent ? ['id' => $grandparent->id, 'name' => $grandparent->name] : null
+            ]);
+            
+            $parents = [];
+            
+            // Add parent (if found)
+            if ($parent) {
+                $parents[] = $parent;
+            }
+            
+            // Add grandparent (if found)
+            if ($grandparent) {
+                $parents[] = $grandparent;
+            }
+            
+            Log::info('Matrix parents found using direct matrix structure', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'root_user_id' => $rootUser->id,
+                'root_user_name' => $rootUser->name,
+                'user_node' => $userNode,
+                'parent_id' => $parent?->id,
+                'parent_name' => $parent?->name,
+                'grandparent_id' => $grandparent?->id,
+                'grandparent_name' => $grandparent?->name,
+                'parents_count' => count($parents),
+                'parents' => array_map(function($p) { return ['id' => $p->id, 'name' => $p->name]; }, $parents)
+            ]);
+            
+            return $parents;
+            
+        } catch (\Exception $e) {
+            Log::error('Error finding matrix parents', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            return [];
+        }
+    }
+
+    /**
+     * Find matrix parents using the exact same BFS logic as TeamController
+     */
+    private function findBFSMatrixParents(User $user, User $rootUser): array
+    {
+        try {
+            // Get all users referred by the root user who are at level 2 or above
+            // Also include the current user if they are reaching level 2
+            $allReferredUsers = User::where('referred_by', $rootUser->id)
+                ->where('level', '>=', 2)
+                ->orderBy('created_at')
+                ->get();
+            
+            // If the current user is not in the list (because they just reached level 2), add them
+            $currentUserInList = $allReferredUsers->contains('id', $user->id);
+            if (!$currentUserInList && $user->referred_by == $rootUser->id) {
+                $allReferredUsers->push($user);
+            }
+            
+            Log::info('BFS simulation starting', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'root_user_id' => $rootUser->id,
+                'root_user_name' => $rootUser->name,
+                'all_referred_users' => $allReferredUsers->pluck('name', 'id')->toArray()
+            ]);
+            
+            // Use the exact same BFS logic as TeamController
+            $childCount = [$rootUser->id => 0];
+            $queue = [[$rootUser->id, 0]]; // (parentId, depth)
+            $userParent = null;
+            $userGrandparent = null;
+            
+            foreach ($allReferredUsers as $referredUser) {
+                while (!empty($queue)) {
+                    [$parentId, $depth] = $queue[0];
+                    $count = $childCount[$parentId] ?? 0;
+                    
+                    if ($count < 3) {
+                        // This is where the user would be placed
+                        if ($referredUser->id == $user->id) {
+                            Log::info('Found target user in BFS placement', [
+                                'user_id' => $user->id,
+                                'user_name' => $user->name,
+                                'parent_id' => $parentId,
+                                'depth' => $depth,
+                                'root_user_id' => $rootUser->id
+                            ]);
+                            
+                            // Found our user! Now find the parent and grandparent
+                            if ($parentId == $rootUser->id) {
+                                // User is directly under root user
+                                $userParent = $rootUser; // Root user is the parent
+                                $userGrandparent = null; // No grandparent for direct children
+                                
+                                Log::info('User placed directly under root', [
+                                    'user_id' => $user->id,
+                                    'parent_id' => $userParent->id,
+                                    'parent_name' => $userParent->name
+                                ]);
+                            } else {
+                                // Parent is not root user - this is the actual matrix parent
+                                // The parentId is in format "l2-{user_id}", so we need to extract the user_id
+                                $parentUserId = str_replace('l2-', '', $parentId);
+                                $userParent = User::find($parentUserId);
+                                
+                                Log::info('User placed under child of root', [
+                                    'user_id' => $user->id,
+                                    'parent_id' => $parentId,
+                                    'parent_user_id' => $parentUserId,
+                                    'parent_name' => $userParent?->name,
+                                    'parent_referred_by' => $userParent?->referred_by
+                                ]);
+                                
+                                // Find the grandparent (parent of the parent)
+                                if ($userParent && $userParent->referred_by) {
+                                    $userGrandparent = User::find($userParent->referred_by);
+                                } else {
+                                    $userGrandparent = $rootUser; // Fallback to root user
+                                }
+                                
+                                Log::info('Grandparent identified', [
+                                    'grandparent_id' => $userGrandparent?->id,
+                                    'grandparent_name' => $userGrandparent?->name
+                                ]);
+                            }
+                            break 2; // Break out of both loops
+                        }
+                        
+                        $childCount[$parentId] = $count + 1;
+                        $childCount["l2-{$referredUser->id}"] = 0;
+                        
+                        // Only enqueue further if depth < 2
+                        if ($depth < 2) {
+                            $queue[] = ["l2-{$referredUser->id}", $depth + 1];
+                        }
+                        
+                        break;
+                    } else {
+                        array_shift($queue);
+                    }
+                }
+            }
+            
+            $parents = [];
+            
+            // Add parent (if found)
+            if ($userParent) {
+                $parents[] = $userParent;
+            }
+            
+            // Add grandparent (if found)
+            if ($userGrandparent) {
+                $parents[] = $userGrandparent;
+            }
+            
+            Log::info('BFS matrix parent finding result', [
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'root_user_id' => $rootUser->id,
+                'root_user_name' => $rootUser->name,
+                'user_parent_id' => $userParent?->id,
+                'user_parent_name' => $userParent?->name,
+                'user_grandparent_id' => $userGrandparent?->id,
+                'user_grandparent_name' => $userGrandparent?->name,
+                'parents_count' => count($parents)
+            ]);
+            
+            return $parents;
+            
+        } catch (\Exception $e) {
+            Log::error('Error in BFS matrix parent finding', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            return [];
+        }
+    }
+
+    /**
      * Process commission when user purchases second plan
      */
     public function processSecondPlanCommission(PlanSelection $planSelection): array
@@ -26,14 +334,23 @@ class CommissionService
             $planAmount = (float) $planSelection->plan_amount;
             
             // New L2 rule: Buyer gets NO commission on their own second plan.
-            // Only Global Pool receives 10% and user level is updated to 2.
+            // Commission distribution (ONLY for Level 2+ referrals):
+            // - Referrer gets 30% (60% pool commission, 40% pool wallet) - ONLY if user reaches Level 2+
+            // - Matrix parents (parent and grandparent) get 30% each (60% pool commission, 40% pool wallet)
+            // - Global Pool receives 10%
+            // - User level is updated to 2
+            // NOTE: Level 1 referrals remain completely untouched
             $globalPoolCommission = $planAmount * (self::GLOBAL_POOL_PERCENTAGE / 100);
+            
+            // Find matrix parents (parent and grandparent in Level 2 matrix)
+            $matrixParents = $this->findMatrixParents($user);
             
             DB::transaction(function () use (
                 $user, 
                 $planSelection, 
                 $planAmount, 
-                $globalPoolCommission
+                $globalPoolCommission,
+                $matrixParents
             ) {
                 // Update user level to 2 (no commission to buyer)
                 $user->level = 2;
@@ -54,6 +371,62 @@ class CommissionService
                     'description' => "Second plan (buyer gets 0). Global pool credited. Plan: {$planSelection->plan_name}"
                 ]);
                 
+                // Process commission for referrer (30% with 60/40 split) - ONLY for Level 2+ referrals
+                // Level 1 referrals should remain completely untouched
+                if ($user->referred_by && $user->level >= 2) {
+                    $referrer = User::find($user->referred_by);
+                    if ($referrer) {
+                        $referrerCommission = $planAmount * 0.30; // 30% commission
+                        $referrerPoolCommission = $referrerCommission * 0.60; // 60% to pool commission
+                        $referrerPoolWallet = $referrerCommission * 0.40; // 40% to pool wallet
+                        
+                        // Update referrer's balances
+                        $referrer->referral_commission_balance = ($referrer->referral_commission_balance ?? 0) + $referrerPoolCommission;
+                        $referrer->referral_commission_pool = ($referrer->referral_commission_pool ?? 0) + $referrerPoolCommission;
+                        $referrer->pool_wallet_amount = ($referrer->pool_wallet_amount ?? 0) + $referrerPoolWallet;
+                        $referrer->total_commission_earned = ($referrer->total_commission_earned ?? 0) + $referrerCommission;
+                        $referrer->save();
+                        
+                        // Record commission transaction for referrer
+                        CommissionTransaction::create([
+                            'user_id' => $referrer->id,
+                            'plan_selection_id' => $planSelection->id,
+                            'total_commission' => $referrerCommission,
+                            'pool_commission' => $referrerPoolCommission,
+                            'profit_commission' => 0,
+                            'global_pool_commission' => 0,
+                            'commission_type' => CommissionTransaction::TYPE_REFERRAL_CHAIN,
+                            'description' => "Referrer commission from {$user->name}'s second plan (Level 2+)"
+                        ]);
+                    }
+                }
+                
+                // Process commission for matrix parents (30% each)
+                foreach ($matrixParents as $index => $parent) {
+                    $parentCommission = $planAmount * 0.30; // 30% commission
+                    $parentPoolCommission = $parentCommission * 0.60; // 60% to pool commission
+                    $parentPoolWallet = $parentCommission * 0.40; // 40% to pool wallet
+                    
+                    // Update parent's balances
+                    $parent->referral_commission_balance = ($parent->referral_commission_balance ?? 0) + $parentPoolCommission;
+                    $parent->referral_commission_pool = ($parent->referral_commission_pool ?? 0) + $parentPoolCommission;
+                    $parent->pool_wallet_amount = ($parent->pool_wallet_amount ?? 0) + $parentPoolWallet;
+                    $parent->total_commission_earned = ($parent->total_commission_earned ?? 0) + $parentCommission;
+                    $parent->save();
+                    
+                    // Record commission transaction for parent
+                    CommissionTransaction::create([
+                        'user_id' => $parent->id,
+                        'plan_selection_id' => $planSelection->id,
+                        'total_commission' => $parentCommission,
+                        'pool_commission' => $parentPoolCommission,
+                        'profit_commission' => 0,
+                        'global_pool_commission' => 0,
+                        'commission_type' => CommissionTransaction::TYPE_REFERRAL_CHAIN,
+                        'description' => "Level 2 matrix " . ($index === 0 ? 'parent' : 'grandparent') . " commission from {$user->name}'s second plan"
+                    ]);
+                }
+                
                 Log::info('Second plan commission processed', [
                     'user_id' => $user->id,
                     'user_name' => $user->name,
@@ -61,7 +434,13 @@ class CommissionService
                     'pool_commission' => 0,
                     'profit_commission' => 0,
                     'global_pool_commission' => $globalPoolCommission,
-                    'new_level' => 2
+                    'new_level' => 2,
+                    'referrer_id' => $user->referred_by,
+                    'referrer_name' => $user->referred_by ? User::find($user->referred_by)?->name : null,
+                    'matrix_root_user_id' => $this->findMatrixRootUser($user)?->id,
+                    'matrix_root_user_name' => $this->findMatrixRootUser($user)?->name,
+                    'matrix_parents_count' => count($matrixParents),
+                    'matrix_parents' => array_map(function($p) { return ['id' => $p->id, 'name' => $p->name]; }, $matrixParents)
                 ]);
             });
             
@@ -74,7 +453,13 @@ class CommissionService
                     'pool_commission' => 0,
                     'profit_commission' => 0,
                     'global_pool_commission' => $globalPoolCommission,
-                    'new_level' => 2
+                    'new_level' => 2,
+                    'referrer_id' => $user->referred_by,
+                    'referrer_name' => $user->referred_by ? User::find($user->referred_by)?->name : null,
+                    'matrix_root_user_id' => $this->findMatrixRootUser($user)?->id,
+                    'matrix_root_user_name' => $this->findMatrixRootUser($user)?->name,
+                    'matrix_parents_count' => count($matrixParents),
+                    'matrix_parents' => array_map(function($p) { return ['id' => $p->id, 'name' => $p->name]; }, $matrixParents)
                 ]
             ];
             

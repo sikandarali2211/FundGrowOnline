@@ -1,6 +1,34 @@
 @extends('layouts.admin')
 
 @section('content')
+
+@php
+use Illuminate\Support\Facades\DB;
+
+// ✅ Unique users per plan (sirf approved)
+$planUserCounts = \App\Models\PlanSelection::select('plan_name', DB::raw('COUNT(DISTINCT user_id) as users'))
+->where('status', 'approved')
+->groupBy('plan_name')
+->orderBy('users', 'desc')
+->get();
+
+$planLabels = $planUserCounts->pluck('plan_name');
+$planUsers = $planUserCounts->pluck('users')->map(fn($v) => (int)$v); // integers
+
+// (Optional) Agar total purchases (multiple buys count) bhi chahiye hon:
+$planPurchaseCounts = \App\Models\PlanSelection::select('plan_name', DB::raw('COUNT(*) as purchases'))
+->where('status', 'approved')
+->groupBy('plan_name')
+->orderBy('purchases', 'desc')
+->get()
+->keyBy('plan_name');
+
+// Align purchases array with same label order (optional)
+$planPurchases = $planLabels->map(function($label) use ($planPurchaseCounts) {
+return (int) optional($planPurchaseCounts->get($label))->purchases ?? 0;
+});
+@endphp
+
 <style>
     /* Page background */
     .content-wrapper {
@@ -299,13 +327,13 @@
 
                         <div class="statistics-item">
                             <p><i class="fas fa-globe-americas me-2"></i> Global Pool</p>
-                            <h2>${{ number_format(\App\Models\GlobalPool::getTotalAmount(), 2) }}</h2>
+                            <h2>${{ number_format(\App\Models\GlobalPool::getTotalAmount(), 0) }}</h2>
                             <span class="badge badge-outline-info">Total contributed</span>
                         </div>
 
                         <div class="statistics-item">
                             <p><i class="fas fa-clipboard-list me-2"></i> Plan Amount</p>
-                            <h2>${{ number_format(\App\Models\PlanSelection::where('status','approved')->sum('plan_amount'), 2) }}</h2>
+                            <h2>${{ number_format(\App\Models\PlanSelection::where('status','approved')->sum('plan_amount'), 0) }}</h2>
                             <span class="badge badge-outline-success">Approved total</span>
                         </div>
 
@@ -331,15 +359,21 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 grid-margin stretch-card">
-                <div class="card card-statistics">
-                    <div class="card-body">
-                        <h4 class="card-title text-white"><i class="fas fa-clipboard-list me-2"></i> Plan Amount</h4>
-                        <h2 class="mb-4 text-center" style="color: #3bd17a; font-size: 3rem;">${{ number_format(\App\Models\PlanSelection::where('status','approved')->sum('plan_amount'), 2) }}</h2>
-                        <p class="text-center text-muted">Total Approved Plan Purchases</p>
+            
+                    <div class="col-md-6 grid-margin stretch-card">
+                        <div class="card card-statistics">
+                            <div class="card-body">
+                                <h4 class="card-title text-white">
+                                    <i class="fas fa-chart-bar me-2"></i> Total Approved Plan Purchases (by Plan)
+                                </h4>
+                                <div style="height: 360px; position: relative;">
+                                    <canvas id="planTotalsChart"></canvas>
+                                </div>
+                               
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                
         </div>
 
         <!-- Recent Plan Selections -->
@@ -547,4 +581,88 @@
         });
     });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const planCtx = document.getElementById('planTotalsChart').getContext('2d');
+
+  const planLabels   = @json($planLabels);
+  const planUsers    = @json($planUsers);     // ✅ unique users
+  // (Optional) Agar purchases bhi saath dikhani hon:
+  const planPurchases = @json($planPurchases);
+
+  // Distinct colors per bar (dark theme friendly)
+  const palette = [
+    '#3bd17a', '#fdbb2d', '#8dc6ff', '#ff8b8b', '#b38bff',
+    '#00d4ff', '#ffcf66', '#66ffcc', '#ff99cc', '#a8e6cf',
+    '#ffd3b6', '#dcedc1', '#ffaaa5', '#a0c4ff', '#caffbf'
+  ];
+  const bgColors = planLabels.map((_, i) => palette[i % palette.length]);
+
+  // ✅ Primary dataset: unique users per plan
+  const datasets = [{
+    label: 'Unique Users',
+    data: planUsers,
+    backgroundColor: bgColors,
+    borderColor: bgColors,
+    borderWidth: 2,
+    borderRadius: 6,
+    barThickness: 'flex',
+    maxBarThickness: 52,
+  }];
+
+  // (Optional) Agar total purchases bhi dikhani hon, yeh second dataset add rakh do:
+  // datasets.push({
+  //   label: 'Total Purchases',
+  //   data: planPurchases,
+  //   backgroundColor: 'rgba(255,255,255,0.15)',
+  //   borderColor: '#ffffff',
+  //   borderWidth: 1.5,
+  //   borderRadius: 6,
+  //   barThickness: 'flex',
+  //   maxBarThickness: 52,
+  // });
+
+  new Chart(planCtx, {
+    type: 'bar',
+    data: { labels: planLabels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, labels: { color: '#fff' } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const v = ctx.parsed.y ?? 0;
+              return ` ${ctx.dataset.label}: ${v} users`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.08)' },
+          ticks: { color: '#fff', font: { size: 12 } }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255,255,255,0.08)' },
+          ticks: {
+            color: '#fff',
+            font: { size: 12 },
+            // users count hai — integers show karo:
+            callback: (v) => Number.isInteger(v) ? v : ''
+          },
+          // optional: small counts ke liye stepSize 1
+          // suggestedMax: Math.max(...planUsers) + 1,
+          // ticks: { stepSize: 1, color: '#fff', font: { size: 12 } }
+        }
+      },
+      animation: { duration: 800, easing: 'easeOutCubic' }
+    }
+  });
+});
+</script>
+
+
 @endsection

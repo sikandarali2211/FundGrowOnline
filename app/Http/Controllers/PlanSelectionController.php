@@ -173,17 +173,42 @@ class PlanSelectionController extends Controller
                     'return_amount' => $planAmount * ($request->return_percentage / 100),
                 ]);
 
-                // Distribute commission if this is first plan and user has referrer
+                // Distribute Level 1 commission: $10 fixed commission (60% pool commission, 40% pool wallet)
                 if ($isFirstPlan && $user->referred_by) {
                     $referrer = \App\Models\User::find($user->referred_by);
                     if ($referrer) {
-                        $commissionResult = $referrer->distributeCommission($planAmount, 100); // 100% commission
+                        $level1Commission = 10.00; // Fixed $10 commission
+                        $poolCommission = $level1Commission * 0.60; // 60% to pool commission
+                        $poolWallet = $level1Commission * 0.40; // 40% to pool wallet
                         
-                        \Log::info("Commission distribution result", [
+                        // Update referrer's balances
+                        $referrer->referral_commission_balance = ($referrer->referral_commission_balance ?? 0) + $poolCommission;
+                        $referrer->referral_commission_pool = ($referrer->referral_commission_pool ?? 0) + $poolCommission;
+                        $referrer->pool_wallet_amount = ($referrer->pool_wallet_amount ?? 0) + $poolWallet;
+                        $referrer->total_commission_earned = ($referrer->total_commission_earned ?? 0) + $level1Commission;
+                        $referrer->save();
+                        
+                        // Record commission transaction
+                        \App\Models\CommissionTransaction::create([
+                            'user_id' => $referrer->id,
+                            'plan_selection_id' => $planSelection->id,
+                            'total_commission' => $level1Commission,
+                            'pool_commission' => $poolCommission,
+                            'profit_commission' => 0,
+                            'global_pool_commission' => 0,
+                            'commission_type' => \App\Models\CommissionTransaction::TYPE_REFERRAL_CHAIN,
+                            'description' => "Level 1 commission from {$user->name}'s first plan"
+                        ]);
+                        
+                        \Log::info("Level 1 commission distributed", [
                             'referrer_id' => $referrer->id,
+                            'referrer_name' => $referrer->name,
                             'referred_user_id' => $user->id,
+                            'referred_user_name' => $user->name,
                             'plan_amount' => $planAmount,
-                            'commission_result' => $commissionResult
+                            'level1_commission' => $level1Commission,
+                            'pool_commission' => $poolCommission,
+                            'pool_wallet' => $poolWallet
                         ]);
                     }
                 }

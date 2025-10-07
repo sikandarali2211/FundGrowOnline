@@ -3,134 +3,96 @@
 @section('content')
 <div class="main-panel">
     <div class="content-wrapper">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <h4 class="card-title mb-0">
-                                        <i class="fas fa-envelope me-2 text-primary"></i>
-                                        Change Email Address
-                                    </h4>
-                                    <a href="{{ route('user.index') }}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                                    </a>
-                                </div>
-                            </div>
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+                <div class="email-change-container">
+                    <!-- Logo/Title Section -->
+                    <div class="text-center mb-4">
+                        <div class="logo-icon mb-3">
+                            <i class="fas fa-envelope"></i>
                         </div>
-
-                        <!-- Success/Error Messages -->
-                        @if(session('success'))
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <i class="fas fa-check-circle me-2"></i>
-                                {{ session('success') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        @endif
-
-                        @if(session('error'))
-                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i>
-                                {{ session('error') }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        @endif
-
-                        <div class="row justify-content-center">
-                            <div class="col-md-8 col-lg-6">
-                                <div class="card border-0 shadow-sm">
-                                    <div class="card-body p-4">
-                                        <div class="text-center mb-4">
-                                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                                                <i class="fas fa-envelope text-primary" style="font-size: 2rem;"></i>
-                                            </div>
-                                            <h5 class="mb-2">Update Your Email Address</h5>
-                                            <p class="text-muted">Enter your current email and new email address to update your account.</p>
-                                        </div>
-
-                                        <form action="{{ route('user.update.email') }}" method="POST">
-                                            @csrf
-                                            
-                                            <!-- Current Email -->
-                                            <div class="mb-4">
-                                                <label for="current_email" class="form-label fw-semibold">
-                                                    <i class="fas fa-envelope me-2 text-muted"></i>Current Email Address
-                                                </label>
-                                                <input type="email" 
-                                                       class="form-control @error('current_email') is-invalid @enderror" 
-                                                       id="current_email" 
-                                                       name="current_email" 
-                                                       value="{{ old('current_email', $user->email) }}" 
-                                                       readonly
-                                                       style="background-color: #f8f9fa;">
-                                                @error('current_email')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                                <small class="form-text text-muted">This is your current registered email address.</small>
-                                            </div>
-
-                                            <!-- New Email -->
-                                            <div class="mb-4">
-                                                <label for="new_email" class="form-label fw-semibold">
-                                                    <i class="fas fa-envelope-open me-2 text-success"></i>New Email Address
-                                                </label>
-                                                <input type="email" 
-                                                       class="form-control @error('new_email') is-invalid @enderror" 
-                                                       id="new_email" 
-                                                       name="new_email" 
-                                                       value="{{ old('new_email') }}" 
-                                                       placeholder="Enter your new email address"
-                                                       required>
-                                                @error('new_email')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Confirm New Email -->
-                                            <div class="mb-4">
-                                                <label for="confirm_email" class="form-label fw-semibold">
-                                                    <i class="fas fa-envelope-check me-2 text-info"></i>Confirm New Email Address
-                                                </label>
-                                                <input type="email" 
-                                                       class="form-control @error('confirm_email') is-invalid @enderror" 
-                                                       id="confirm_email" 
-                                                       name="confirm_email" 
-                                                       value="{{ old('confirm_email') }}" 
-                                                       placeholder="Confirm your new email address"
-                                                       required>
-                                                @error('confirm_email')
-                                                    <div class="invalid-feedback">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-
-                                            <!-- Security Notice -->
-                                            <div class="alert alert-warning border-0 mb-4">
-                                                <div class="d-flex align-items-start">
-                                                    <i class="fas fa-shield-alt me-3 mt-1 text-warning"></i>
-                                                    <div>
-                                                        <h6 class="alert-heading mb-2">Security Notice</h6>
-                                                        <p class="mb-0 small">
-                                                            Changing your email address will update your login credentials. 
-                                                            Make sure you have access to the new email address before proceeding.
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Submit Button -->
-                                            <div class="d-grid gap-2">
-                                                <button type="submit" class="btn btn-primary btn-lg">
-                                                    <i class="fas fa-save me-2"></i>Update Email Address
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <h4 class="page-title">CHANGE EMAIL</h4>
                     </div>
+
+                    <!-- Success/Error Messages -->
+                    @if(session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @endif
+
+                    @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    @endif
+
+                    <!-- Form -->
+                    <form action="{{ route('user.update.email') }}" method="POST">
+                        @csrf
+
+                        <!-- Current Email -->
+                        <div class="form-group">
+                            <label for="current_email" class="form-label">Current Email Address</label>
+                            <input type="email"
+                                class="form-control @error('current_email') is-invalid @enderror"
+                                id="current_email"
+                                name="current_email"
+                                value="{{ old('current_email', $user->email) }}"
+                                readonly
+                                placeholder="current@example.com">
+                            @error('current_email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- New Email -->
+                        <div class="form-group">
+                            <label for="new_email" class="form-label">New Email Address</label>
+                            <input type="email"
+                                class="form-control @error('new_email') is-invalid @enderror"
+                                id="new_email"
+                                name="new_email"
+                                value="{{ old('new_email') }}"
+                                placeholder="newemail@example.com"
+                                required>
+                            @error('new_email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Confirm New Email -->
+                        <div class="form-group">
+                            <label for="confirm_email" class="form-label">Confirm New Email Address</label>
+                            <input type="email"
+                                class="form-control @error('confirm_email') is-invalid @enderror"
+                                id="confirm_email"
+                                name="confirm_email"
+                                value="{{ old('confirm_email') }}"
+                                placeholder="newemail@example.com"
+                                required>
+                            @error('confirm_email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <!-- Security Notice -->
+                        <div class="security-notice mb-4">
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <span>Changing your email will update your login credentials. Make sure you have access to the new email.</span>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-update">
+                            UPDATE EMAIL
+                        </button>
+
+                       
+                    </form>
                 </div>
             </div>
         </div>
@@ -138,213 +100,277 @@
 </div>
 
 <style>
-/* Main Container */
-.main-panel {
-    background: linear-gradient(135deg, #041a2f, #072d42 60%);
-    min-height: 100vh;
-}
-
-.card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.card-body {
-    background: transparent;
-}
-
-/* Form Container */
-.card.border-0.shadow-sm {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(59, 209, 122, 0.2) !important;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
-}
-
-/* Form Controls */
-.form-control {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
-    border-radius: 10px;
-    padding: 12px 16px;
-    transition: all 0.3s ease;
-    font-size: 14px;
-}
-
-.form-control:focus {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #3bd17a;
-    box-shadow: 0 0 0 0.2rem rgba(59, 209, 122, 0.25);
-    color: #fff;
-}
-
-.form-control[readonly] {
-    background: rgba(255, 255, 255, 0.05);
-    color: #a0a0a0;
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-/* Labels */
-.form-label {
-    color: #e0e0e0;
-    margin-bottom: 8px;
-    font-weight: 600;
-    font-size: 14px;
-}
-
-/* Icons */
-.fa-envelope, .fa-envelope-open, .fa-envelope-check {
-    font-size: 16px;
-}
-
-/* Buttons */
-.btn-primary {
-    background: linear-gradient(135deg, #3bd17a, #00d4aa);
-    border: none;
-    border-radius: 10px;
-    padding: 12px 24px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    font-size: 16px;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #00d4aa, #3bd17a);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(59, 209, 122, 0.3);
-}
-
-.btn-outline-secondary {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-    background: transparent;
-}
-
-.btn-outline-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #3bd17a;
-    color: #3bd17a;
-}
-
-/* Alerts */
-.alert {
-    border-radius: 10px;
-    border: none;
-    font-size: 14px;
-}
-
-.alert-success {
-    background: linear-gradient(135deg, rgba(59, 209, 122, 0.2), rgba(0, 212, 170, 0.2));
-    color: #3bd17a;
-    border-left: 4px solid #3bd17a;
-}
-
-.alert-danger {
-    background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 82, 82, 0.2));
-    color: #ff6b6b;
-    border-left: 4px solid #ff6b6b;
-}
-
-.alert-warning {
-    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 179, 0, 0.2));
-    color: #ffc107;
-    border-left: 4px solid #ffc107;
-}
-
-/* Validation */
-.invalid-feedback {
-    color: #ff6b6b;
-    font-size: 0.875rem;
-    margin-top: 5px;
-}
-
-.is-invalid {
-    border-color: #ff6b6b !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25) !important;
-}
-
-/* Text Colors */
-.text-muted {
-    color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.text-primary {
-    color: #3bd17a !important;
-}
-
-.text-success {
-    color: #3bd17a !important;
-}
-
-.text-info {
-    color: #00d4aa !important;
-}
-
-/* Card Title */
-.card-title {
-    color: #fff !important;
-    font-weight: 700;
-    font-size: 1.5rem;
-}
-
-/* Icon Container */
-.bg-primary.bg-opacity-10 {
-    background: rgba(59, 209, 122, 0.2) !important;
-    border: 2px solid rgba(59, 209, 122, 0.3);
-}
-
-/* Security Notice */
-.alert-warning .alert-heading {
-    color: #ffc107 !important;
-    font-weight: 600;
-}
-
-/* Form Text */
-.form-text {
-    color: rgba(255, 255, 255, 0.7) !important;
-    font-size: 0.875rem;
-}
-
-/* Page Title */
-h4.card-title {
-    color: #fff !important;
-}
-
-/* Back Button */
-.btn-outline-secondary {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #e0e0e0;
-}
-
-.btn-outline-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #3bd17a;
-    color: #3bd17a;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .card-body {
-        padding: 1.5rem;
+    /* Main Container */
+    .main-panel {
+        background: linear-gradient(135deg, #0a3d4a 0%, #0d5563 50%, #106d7d 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 60px 20px;
     }
-    
+
+    .content-wrapper {
+        width: 100%;
+        background: transparent;
+    }
+
+    /* Email Change Container */
+    .email-change-container {
+        background: linear-gradient(145deg, #0f3840, #0a2f38);
+        border-radius: 20px;
+        padding: 50px 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(34, 211, 238, 0.1);
+    }
+
+    /* Logo Icon */
+    .logo-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #22d3ee, #14b8a6);
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 25px rgba(32, 147, 90, 1);
+    }
+
+    .logo-icon i {
+        font-size: 2.5rem;
+        color: #0a3d4a;
+    }
+
+    /* Page Title */
+    .page-title {
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 1.5rem;
+        letter-spacing: 2px;
+        margin-top: 15px;
+    }
+
+    /* Form Groups */
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    .form-label {
+        color: #22d3ee;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 10px;
+        display: block;
+        letter-spacing: 0.5px;
+    }
+
+    /* Form Controls */
     .form-control {
-        padding: 10px 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(34, 211, 238, 0.2);
+        color: #ffffff;
+        border-radius: 10px;
+        padding: 15px 20px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        width: 100%;
     }
-    
-    .btn-primary {
-        padding: 10px 20px;
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #22d3ee;
+        box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+        color: #ffffff;
+        outline: none;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .form-control[readonly] {
+        background: rgba(255, 255, 255, 0.03);
+        border-color: rgba(34, 211, 238, 0.1);
+        color: rgba(255, 255, 255, 0.5);
+        cursor: not-allowed;
+    }
+
+    /* Security Notice */
+    .security-notice {
+        background: rgba(34, 211, 238, 0.08);
+        border: 1px solid rgba(34, 211, 238, 0.2);
+        border-radius: 10px;
+        padding: 15px 18px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 13px;
+        display: flex;
+        align-items: flex-start;
+        line-height: 1.6;
+    }
+
+    .security-notice i {
+        color: #22d3ee;
+        margin-top: 2px;
+        font-size: 16px;
+    }
+
+    /* Update Button */
+    .btn-update {
+        background: linear-gradient(135deg, #22d3ee, #14b8a6);
+        color: #0a3d4a;
+        border: none;
+        border-radius: 10px;
+        padding: 16px 30px;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 1px;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(34, 211, 238, 0.3);
+        margin-bottom: 20px;
+    }
+
+    .btn-update:hover {
+        background: linear-gradient(135deg, #14b8a6, #22d3ee);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(34, 211, 238, 0.4);
+    }
+
+    /* Divider */
+    .divider-section {
+        text-align: center;
+        margin: 30px 0;
+        position: relative;
+    }
+
+    .divider-section::before,
+    .divider-section::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        width: 42%;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .divider-section::before {
+        left: 0;
+    }
+
+    .divider-section::after {
+        right: 0;
+    }
+
+    .divider-section span {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 0 15px;
+        background: linear-gradient(145deg, #0f3840, #0a2f38);
+    }
+
+    /* Back Button */
+    .btn-back {
+        background: transparent;
+        color: #22d3ee;
+        border: 2px solid #22d3ee;
+        border-radius: 10px;
+        padding: 14px 30px;
+        font-weight: 600;
+        font-size: 14px;
+        width: 100%;
+        transition: all 0.3s ease;
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: rgba(34, 211, 238, 0.1);
+        color: #22d3ee;
+        border-color: #22d3ee;
+        transform: translateY(-2px);
+    }
+
+    /* Alerts */
+    .alert {
+        border-radius: 10px;
+        border: none;
+        padding: 15px 20px;
+        margin-bottom: 25px;
         font-size: 14px;
     }
-}
+
+    .alert-success {
+        background: rgba(34, 211, 238, 0.15);
+        color: #22d3ee;
+        border-left: 4px solid #22d3ee;
+    }
+
+    .alert-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: #fca5a5;
+        border-left: 4px solid #ef4444;
+    }
+
+    .btn-close {
+        filter: brightness(0) invert(1);
+        opacity: 0.6;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* Validation */
+    .invalid-feedback {
+        color: #fca5a5;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .is-invalid {
+        border-color: #ef4444 !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .email-change-container {
+            padding: 40px 30px;
+        }
+
+        .page-title {
+            font-size: 1.3rem;
+        }
+
+        .logo-icon {
+            width: 70px;
+            height: 70px;
+        }
+
+        .logo-icon i {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-panel {
+            padding: 20px 15px;
+        }
+
+        .email-change-container {
+            padding: 30px 20px;
+        }
+
+        .form-control {
+            padding: 13px 16px;
+            font-size: 14px;
+        }
+
+        .btn-update,
+        .btn-back {
+            padding: 14px 24px;
+            font-size: 14px;
+        }
+    }
 </style>
 @endsection

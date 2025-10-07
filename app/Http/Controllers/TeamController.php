@@ -56,15 +56,16 @@ class TeamController extends Controller
      * Places children and their referrals in the tree (children's children)
      * Does NOT place grandchildren's referrals (children's grandchildren)
      */
-    private function buildLevel2ForMainUser($rootUserId, $maxChildren = 3)
+    public function buildLevel2ForMainUser($rootUserId, $maxChildren = 3)
     {
         $nodes = [];
         $childCount = [$rootUserId => 0];
         $queue = [[$rootUserId, 0]];
 
-        // Get all users referred by the root user and place them in BFS 1-3-9 matrix
+        // Get all users referred by the root user who are at level 2 or above and place them in BFS 1-3-9 matrix
         // This creates the proper hierarchy: first 3 direct, then 9 grandchildren, etc.
         $allReferredUsers = User::where('referred_by', $rootUserId)
+            ->where('level', '>=', 2)
             ->orderBy('created_at')
             ->get();
 
@@ -106,9 +107,11 @@ class TeamController extends Controller
                         ]);
                     }
 
-                    // Allow unlimited depth for BFS matrix - no 1-3-9 restriction
-                    // This allows more users to be assigned to each child
-                    $queue[] = [$userId, $depth + 1];
+                    // Only enqueue further if depth < 2 (root=0, children=1 → grandchildren=2 max)
+                    // This enforces the 1-3-9 matrix structure
+                    if ($depth < 2) {
+                        $queue[] = [$userId, $depth + 1];
+                    }
 
                     break;
                 } else {
@@ -118,8 +121,9 @@ class TeamController extends Controller
         }
         
         // Now handle referrals from children (like Zayyyan referred by Shezil)
-        // Get all users referred by the direct children
+        // Get all users referred by the direct children who are at level 2 or above
         $childReferrals = User::whereIn('referred_by', $allReferredUsers->pluck('id'))
+            ->where('level', '>=', 2)
             ->orderBy('created_at')
             ->get();
             
@@ -265,8 +269,9 @@ class TeamController extends Controller
             $childCount = [$childUserId => 0];
             $queue = [[$childUserId, 0]]; // (parentId, depth)
 
-            // Get all users referred by this child (their children)
+            // Get all users referred by this child (their children) who are at level 2 or abovew
             $childUsers = User::where('referred_by', $childUserId)
+                ->where('level', '>=', 2)
                 ->orderBy('created_at')
                 ->get();
 
@@ -292,8 +297,11 @@ class TeamController extends Controller
                         $childCount[$parentId] = $count + 1;
                         $childCount[$userId] = 0;
 
-                        // Allow unlimited depth for BFS matrix
-                        $queue[] = [$userId, $depth + 1];
+                        // Only enqueue further if depth < 2 (root=0, children=1 → grandchildren=2 max)
+                        // This enforces the 1-3-9 matrix structure
+                        if ($depth < 2) {
+                            $queue[] = [$userId, $depth + 1];
+                        }
 
                         break;
                     } else {
@@ -347,7 +355,7 @@ class TeamController extends Controller
             $nodeRealId = $node['real_id'];
             $nodeId = $node['id'];
             
-            // Get this node's referrals (grandchildren) - ALL Level 2+ referrals
+            // Get this node's referrals (grandchildren) - only Level 2+ referrals
             $grandchildReferrals = User::where('referred_by', $nodeRealId)
                 ->where('level', '>=', 2)
                 ->orderBy('created_at')
@@ -389,6 +397,55 @@ class TeamController extends Controller
         return $enhancedNodes;
     }
 
+    /**
+     * Filter nodes to show only 1-3-9 structure (13 users max) for display
+     * This preserves all functionality while limiting the visual display
+     */
+    private function limitDisplayToMatrix($nodes, $rootId, $maxDisplay = 12)
+    {
+        if (count($nodes) <= $maxDisplay) {
+            return $nodes; // No need to filter if already within limit
+        }
+
+        $displayNodes = [];
+        $childCount = [$rootId => 0];
+        $queue = [[$rootId, 0]]; // (parentId, depth)
+        $processedCount = 0;
+
+        // Sort nodes by creation order to maintain proper hierarchy
+        usort($nodes, function($a, $b) {
+            return strcmp($a['id'], $b['id']);
+        });
+
+        foreach ($nodes as $node) {
+            if ($processedCount >= $maxDisplay) {
+                break;
+            }
+
+            while (!empty($queue)) {
+                [$parentId, $depth] = $queue[0];
+                $count = $childCount[$parentId] ?? 0;
+
+                if ($count < 3 && $depth < 2) { // 1-3-9 structure: max 3 children, max depth 2
+                    $displayNodes[] = $node;
+                    $childCount[$parentId] = $count + 1;
+                    $childCount[$node['id']] = 0;
+                    $processedCount++;
+
+                    // Only enqueue further if depth < 2 (root=0, children=1 → grandchildren=2 max)
+                    if ($depth < 2) {
+                        $queue[] = [$node['id'], $depth + 1];
+                    }
+                    break;
+                } else {
+                    array_shift($queue);
+                }
+            }
+        }
+
+        return $displayNodes;
+    }
+
     public function index()
     {
         $me = auth()->user();
@@ -403,10 +460,14 @@ class TeamController extends Controller
             
             if ($mainUser) {
             // Build tree showing their branch from main tree + their grandchildren
-            $level2Nodes = $this->buildLevel2TreeForChild($me->id, $mainUser->id, 3);
+            $allLevel2Nodes = $this->buildLevel2TreeForChild($me->id, $mainUser->id, 3);
+            // Limit display to 1-3-9 structure (12 users max) while preserving all functionality
+            $level2Nodes = $this->limitDisplayToMatrix($allLevel2Nodes, $me->id, 12);
             } else {
                 // Fallback: build their own Level 2 tree if main user not found
-                $level2Nodes = $this->buildLevel2TreeForChild($me->id, $me->id, 3);
+                $allLevel2Nodes = $this->buildLevel2TreeForChild($me->id, $me->id, 3);
+                // Limit display to 1-3-9 structure (12 users max) while preserving all functionality
+                $level2Nodes = $this->limitDisplayToMatrix($allLevel2Nodes, $me->id, 12);
             }
             
             // Also build Level 1 for child dashboard (their direct referrals)
@@ -418,7 +479,9 @@ class TeamController extends Controller
         } else {
             // Main/root user viewing their dashboard
             // Build tree with children and children's referrals (but not grandchildren's referrals)
-            $level2Nodes = $this->buildLevel2ForMainUser($me->id, 3);
+            $allLevel2Nodes = $this->buildLevel2ForMainUser($me->id, 3);
+            // Limit display to 1-3-9 structure (12 users max) while preserving all functionality
+            $level2Nodes = $this->limitDisplayToMatrix($allLevel2Nodes, $me->id, 12);
         }
 
         // LEVELS 3-15: Keep original logic (only for display purposes)
